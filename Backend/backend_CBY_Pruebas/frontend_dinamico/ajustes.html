@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ajustes y Acciones</title>
+  <style>
+    .contenedor-ajustes {
+      display: flex;
+      gap: 50px;
+      margin-top: 20px;
+    }
+    .columna {
+      flex: 1;
+    }
+    .columna h3 {
+      margin-bottom: 10px;
+    }
+    .grupo-ajuste {
+      margin-bottom: 20px;
+    }
+    .grupo-ajuste h4 {
+      margin: 10px 0 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Selecciona Ajustes</h1>
+
+  <div class="contenedor-ajustes">
+    <div class="columna" id="columnaAjustes">
+      <h3>Ajustes</h3>
+      <!-- Aquí van los ajustes dinámicos -->
+    </div>
+
+    <div class="columna" id="columnaAcciones">
+      <h3>Acciones</h3>
+      <!-- Aquí van las acciones dinámicas -->
+    </div>
+  </div>
+
+  <button id="guardarCombinacion">Guardar combinación</button>
+
+  <script src="ajustes.js"></script>
+</body>
+</html>

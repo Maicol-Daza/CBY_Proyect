@@ -1,0 +1,742 @@
+USE JeanAndBlues
+
+CREATE TABLE Clientes (
+	IdCliente INT IDENTITY (1,1) PRIMARY KEY NOT NULL,
+	Identificacion VARCHAR (50) UNIQUE NOT NULL,
+	Nombre VARCHAR (100) NULL,
+	Direccion VARCHAR (100) NULL,
+	Movil VARCHAR (30) NULL,
+	Email VARCHAR (150) NULL
+	);
+GO
+
+CREATE TABLE Ajustes (
+	IdAjuste INT IDENTITY (1,1) PRIMARY KEY NOT NULL,
+	Ajuste_Nombre VARCHAR (100) UNIQUE NOT NULL,
+	Costo DECIMAL (18)
+	);
+GO
+
+CREATE TABLE Cajones_Bodega (
+    IdCajon INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    Cajon_Nombre VARCHAR(20) UNIQUE NOT NULL, 
+    Estado VARCHAR(20) NULL
+);
+
+CREATE TABLE Codigos_Cajon (
+    IdCodigo INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    Codigo VARCHAR(20) UNIQUE NOT NULL, 
+	IdCajon INT,
+	FOREIGN KEY (IdCajon) REFERENCES Cajones_Bodega(IdCajon),
+);
+GO
+
+CREATE TABLE PedidoCliente (
+	IdPedidoCliente INT IDENTITY (1,1) PRIMARY KEY NOT NULL,
+	IdCliente INT,
+	FOREIGN KEY (IdCliente) REFERENCES Clientes(IdCliente),
+	IdCodigo INT,
+	FOREIGN KEY (IdCodigo) REFERENCES Codigos_Cajon(IdCodigo),
+	CantidadPrendas INT,
+    FechaSolicitud DATE,
+	FechaEntrega DATE,
+	Abono DECIMAL (18),
+	Total DECIMAL (18),
+	Saldo DECIMAL (18),
+	Observaciones VARCHAR (500),
+	Estado VARCHAR (50) 
+);
+GO
+
+CREATE TABLE HistorialAbonos (
+    IdAbono INT IDENTITY(1,1) PRIMARY KEY,
+    IdPedidoCliente INT,
+    FechaAbono DATETIME DEFAULT GETDATE(),
+    Abono DECIMAL(18),
+    FOREIGN KEY (IdPedidoCliente) REFERENCES PedidoCliente(IdPedidoCliente)
+);
+
+CREATE TABLE Detalles_Pedidos (
+    IdDetalle INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    IdPedidoCliente INT,
+    FOREIGN KEY (IdPedidoCliente) REFERENCES PedidoCliente(IdPedidoCliente),
+    IdAjuste INT,
+	FOREIGN KEY (IdAjuste) REFERENCES Ajustes(IdAjuste),
+	Precio DECIMAL(18),
+	Prendas VARCHAR (100)
+); 
+GO
+------------------ Movimientos o transacciones de caja ---------------
+CREATE TABLE Movimientos_Caja (
+    IdMovimiento INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    IdPedidoCliente INT,
+    FOREIGN KEY (IdPedidoCliente) REFERENCES PedidoCliente(IdPedidoCliente),
+    FechaMovimiento DATE NOT NULL,
+    TipoMovimiento VARCHAR(50) NOT NULL, -- 'Ingreso' o 'Egreso'
+    Monto DECIMAL(18) NOT NULL,
+    Descripcion VARCHAR(255), -- Justificaci�n del movimiento
+    SaldoCaja DECIMAL(18) -- Saldo en caja despu�s del movimiento
+);
+GO
+
+
+Create Table Negocio(
+IdNegocio INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+Nombre Varchar (200),
+NIT Varchar (100),
+Direccion Varchar (300),
+Logo Varbinary(Max) Null
+);
+GO
+
+INSERT INTO Negocio (Nombre, NIT, Direccion, Logo) VALUES ('Negocio', '1234555', 'Palmira, Valle', 0x89504E470D0A1A0A0000000D4948445200000021000000290806000000BBB740020000000467414D410000B18F0BFC6105000000097048597300000EC400000EC401952B0E1B00000524494441545847ED98FB6F544514C7FB07F411895D8CE517520989117FC0B4898D5A5029E00B1222BF088968AB94A7D42028107984B586FA68D5F09067515B2412420C105049B5A97D2C2D85D2B26E77BBAFB67477FBDEBD775FBDC739D3BDDB3B3BB3DDB6E926FEE049BEA1CC9E39E73373EF9C99B9291063634A08C2611F0442832007DC20FBFBC8BF13F2C90EF04AD62969D4D70592E404BFDF0DC1D03084C7FC2483329E4863144251C688D31049E2A28902C17EDAC98F101A009457B271C9A6259F1524120707AA5A8A42468EC903C101422A5320D542618901F0C94E71E019CAEF77912C0AA4F8031E3A6ADE14DA8EC9257FEFB41EC374844F2005674151C69F93A284C9E8BD102060386A9F6417769C4DF9641BA4E0F3570DDF019163B2452006220840A77D78D40CBFFDFE0B947EBE0FB66E2B822D5B0BA1EC8B03D06969140688A746C30D3870701714176F801D25C5505E71189A6EDF10FA3210CD2D35F0D4A22721353595D39C398F50305110AD5C9E0E78B7F02D610CD4B28225D0DBD7C6F46120CE9D3F26ECA8D567A59383AC59F3BAB09FAA8C8C0CB87BAF86E9C33D8E7B6D3550F3D715B87AAD0A2E5D3E0BA74E97C3C79F6C879C9CC53448C1F2A54C00AD06864C30F7311DA4A7A7C3F2152FC2C143BBA1F2FC7770F94A258D575BF7ABF0B19225EAA6B501EB852477730E5AB5DDFF939BCA586112735793F0B778224B74A21825824896FEFB10D7AE57C3DE7D25F0E9FE9DF0C7AD4BCC6F9369C46B81EA0B2760D7EE6D7058BF070CCD37857EAA8410582BD6AD7F937BB3376F7E87EE8CB141B4EA73B5C392A5CF31FD70451C29DB2FF4473110EA06F5E5578798205A9D3E53CE05D16AD3A60DC27E69696974D5A97E385B8EEE563099EA632022DB74EC48B45ABDFA95682091E6CDCB12F643EDFC680BF5C1D9347719C0F84F3D551442D26CD3582BAAAA8F0BD561AC8BFA8954577F55D8EFC2CFDF83DDD9427D1EBAEE4701284432B7E978B2395A58089153B265B337FF0F41951002CF12478F1F61DA6643B8C563E1C2173B2144D17BEBE9722AF9B09869D7CA646E808A6FF4F47CB167EF0ED8B8F16D3879EA6B9A48E48FED2B56BE44E31E3B51065DB6041046523CB2B21E8F0BD2DD7B17162E7C22BAF6B57AF5B502AEA26A01F2F272E9766FEA6C6021446518D7B51A188F67388598FC4EEB2D9A48FD4D243CCAE140D01FF78C9797E5D3769D2E93F6F7F43F60002C961652ACE41E0E025558B48E4BA05576F67C58BB7615BCB16A25E4E63E03BAB93AA19F2A7CCFB0549B2D4D0C84DB434EDB6172C11141B8DCEDB0E869F17913DB9D3DAD8C3F1E6C33331F15FA232C02586DB71900A3B10142A1C0F83510CBB636A0AAFAC6EBDCF35FB0209B1ED344FE67CE567033929F9F472A643358AC3100449E7E273D5646EFA2C93AD08C92191001F4F41A29005AF4568EB7AFD906C1738976B754E570B6D381ABC67C1AA020E42A2F0AA8156E40DB3F789FAE1C14FEADEE90AA0671299A1B1302A0311068F4D42D4D3E233F55F1F7136C537F77B93BE8618503E8EEE000D03808347494E5874C62AD7EF8F12807816D58731CCE3B5C7294CBD51589CE9B1062DC147241764D0BC22E007860FC1BFA077A2231C53609C4B80582835C2916419CABFC9603E8341BC89171281229BE258440C32F385E79E25B8508020FC05A00BBA31DC2E16024C2E4362508347C4F02410F99152BBD5BC6425CBC789226375B9A6178C41DE935359B32846A634A1064BF079E7FE1D928404EEE62181971C0D0307EF5E1DFFE44366D08D50C0603BD7DE37DA2B6B636D23A339B31045A696929E8F5FAC8FF666A00FF02A5CBF0E99415EF660000000049454E44AE426082);
+GO
+
+CREATE TABLE MantenimientoMail(
+IdMantenimiento INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+SenderMail VARCHAR (100) NULL,
+Passwords VARCHAR (100) NULL,
+Host VARCHAR (100) NULL,
+NumberPort VARCHAR (100) NULL,
+SSLs bit null
+);
+GO
+
+-- Insertar un Email para la recuperaci�n de la contrase�a
+INSERT INTO MantenimientoMail (SenderMail, Passwords, Host, NumberPort, SSLs) VALUES ('quincostnoreplay@gmail.com', 'mozfxaphsosmthdb', 'smtp.gmail.com', '587', 1)
+
+CREATE TABLE Usuarios (
+	IdUsuario INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	Documento VARCHAR (30) UNIQUE NOT NULL,
+	NombreCompleto VARCHAR (100) NULL,
+	Correo VARCHAR (100) NULL,
+	Clave VARCHAR (500) NULL,
+	Rol VARCHAR (20) NULL,
+	Foto VARBINARY (MAX) NULL,
+	Estado BIT NULL,
+	);
+GO
+
+-- Insertar el SuperAdministrador del Aplicativo de Escritorio --
+-----84110502469Daniel8008*-----
+
+INSERT INTO Usuarios (Documento, NombreCompleto, Correo, Clave, Rol, Foto, Estado) VALUES ('1', 'Administrador', 'dhanymarth@gmail.com', 'OAA0ADEAMQAwADUAMAAyADQANgA5AEQAYQBuAGkAZQBsADgAMAAwADgAKgA=', 'SuperAdministrador', 0x89504E470D0A1A0A0000000D4948445200000021000000290806000000BBB740020000000467414D410000B18F0BFC6105000000097048597300000EC400000EC401952B0E1B00000524494441545847ED98FB6F544514C7FB07F411895D8CE517520989117FC0B4898D5A5029E00B1222BF088968AB94A7D42028107984B586FA68D5F09067515B2412420C105049B5A97D2C2D85D2B26E77BBAFB67477FBDEBD775FBDC739D3BDDB3B3BB3DDB6E926FEE049BEA1CC9E39E73373EF9C99B9291063634A08C2611F0442832007DC20FBFBC8BF13F2C90EF04AD62969D4D70592E404BFDF0DC1D03084C7FC2483329E4863144251C688D31049E2A28902C17EDAC98F101A009457B271C9A6259F1524120707AA5A8A42468EC903C101422A5320D542618901F0C94E71E019CAEF77912C0AA4F8031E3A6ADE14DA8EC9257FEFB41EC374844F2005674151C69F93A284C9E8BD102060386A9F6417769C4DF9641BA4E0F3570DDF019163B2452006220840A77D78D40CBFFDFE0B947EBE0FB66E2B822D5B0BA1EC8B03D06969140688A746C30D3870701714176F801D25C5505E71189A6EDF10FA3210CD2D35F0D4A22721353595D39C398F50305110AD5C9E0E78B7F02D610CD4B28225D0DBD7C6F46120CE9D3F26ECA8D567A59383AC59F3BAB09FAA8C8C0CB87BAF86E9C33D8E7B6D3550F3D715B87AAD0A2E5D3E0BA74E97C3C79F6C879C9CC53448C1F2A54C00AD06864C30F7311DA4A7A7C3F2152FC2C143BBA1F2FC7770F94A258D575BF7ABF0B19225EAA6B501EB852477730E5AB5DDFF939BCA586112735793F0B778224B74A21825824896FEFB10D7AE57C3DE7D25F0E9FE9DF0C7AD4BCC6F9369C46B81EA0B2760D7EE6D7058BF070CCD37857EAA8410582BD6AD7F937BB3376F7E87EE8CB141B4EA73B5C392A5CF31FD70451C29DB2FF4473110EA06F5E5578798205A9D3E53CE05D16AD3A60DC27E69696974D5A97E385B8EEE563099EA632022DB74EC48B45ABDFA95682091E6CDCB12F643EDFC680BF5C1D9347719C0F84F3D551442D26CD3582BAAAA8F0BD561AC8BFA8954577F55D8EFC2CFDF83DDD9427D1EBAEE4701284432B7E978B2395A58089153B265B337FF0F41951002CF12478F1F61DA6643B8C563E1C2173B2144D17BEBE9722AF9B09869D7CA646E808A6FF4F47CB167EF0ED8B8F16D3879EA6B9A48E48FED2B56BE44E31E3B51065DB6041046523CB2B21E8F0BD2DD7B17162E7C22BAF6B57AF5B502AEA26A01F2F272E9766FEA6C6021446518D7B51A188F67388598FC4EEB2D9A48FD4D243CCAE140D01FF78C9797E5D3769D2E93F6F7F43F60002C961652ACE41E0E025558B48E4BA05576F67C58BB7615BCB16A25E4E63E03BAB93AA19F2A7CCFB0549B2D4D0C84DB434EDB6172C11141B8DCEDB0E869F17913DB9D3DAD8C3F1E6C33331F15FA232C02586DB71900A3B10142A1C0F83510CBB636A0AAFAC6EBDCF35FB0209B1ED344FE67CE567033929F9F472A643358AC3100449E7E273D5646EFA2C93AD08C92191001F4F41A29005AF4568EB7AFD906C1738976B754E570B6D381ABC67C1AA020E42A2F0AA8156E40DB3F789FAE1C14FEADEE90AA0671299A1B1302A0311068F4D42D4D3E233F55F1F7136C537F77B93BE8618503E8EEE000D03808347494E5874C62AD7EF8F12807816D58731CCE3B5C7294CBD51589CE9B1062DC147241764D0BC22E007860FC1BFA077A2231C53609C4B80582835C2916419CABFC9603E8341BC89171281229BE258440C32F385E79E25B8508020FC05A00BBA31DC2E16024C2E4362508347C4F02410F99152BBD5BC6425CBC789226375B9A6178C41DE935359B32846A634A1064BF079E7FE1D928404EEE62181971C0D0307EF5E1DFFE44366D08D50C0603BD7DE37DA2B6B636D23A339B31045A696929E8F5FAC8FF666A00FF02A5CBF0E99415EF660000000049454E44AE426082, 1)
+GO
+
+-------------- Inserciones Estrictas para la lógica del negocio y Consultas C# -------------------------
+
+----- Insertar tipos de ajustes ------ 
+
+INSERT Ajustes (Ajuste_Nombre, Costo)
+VALUES ('Bajar pretina', 24000),
+('Cambiar de botones a cierre', 24000),
+('Cambio de bot�n sencillo', 3000),
+('Cambio de bot�n sigzag sin parche', 5000),
+('Cambio de cierre', 14000),
+('Entallar largo y bota no', 32000),
+('-Cintura -bota ambos lados y ruedo costura sencilla', 42000),
+('-Cintura -bota ambos lados costuras abiertas ruedo a mano', 46000),
+('Entallar -bota ruedo adaptado normal', 42000),
+('Entallar -bota ruedo normal', 40000),
+('Camisa -espalda entallar costura sencilla', 30000),
+('Camisa Entallar costura sencilla ruedo normal', 34000),
+('Entallar ruedo adaptado', 40000),
+('-Espalda entallar subir pu�o y sangria ruedo con abertura', 66000),
+('Entallar subir pu�o con abertura sencilla', 36000),
+('Injerto de ambos lados normal', 38000),
+('Injerto de solo pretina', 28000),
+('-Cintura', 24000),
+('Camisa -espalda entallar embonada', 34000),
+('-Espalda entallar y ruedo recto costura sencilla', 34000),
+('-Lados sobrepisado', 22000),
+('Refuerzo desflecado 10-15 cm', 15000),
+('Parche bot�n', 6000),
+('refuerzo en piernas zigzag normal 10-15 cm', 18000),
+('Parche en borde de bolsillos delanteros', 12000),
+('Parche pasador', 5000),
+('Parche tiro 10-15 cm', 18000),
+('Pinzas normales Jean y Pant', 8000),
+('Pinzas en camisas o blusas desde cero ', 16000),
+('Alforzas', 28000),
+('Recoser botones a mano cada uno', 6000),
+('-Tiro sencillo', 12000),
+('Ruedo adaptado desflecado', 28000),
+('-Bota ruedo normal ', 22000),
+('Ruedo adaptado sencillo', 20000),
+('-Rodilla normal', 12000),
+('Ruedo a mano', 18000),
+('Ruedo con abertura', 28000),
+('Ruedo normal', 18000),
+('Reforzar tiro 10-15 cm', 18000),
+('Cambiar bolsillos delanteros', 40000),
+('-Lados bota-no, ruedo igual', 28000),
+('Tinturados negros caf� turqui', 25000),
+('Entallar embonada -espalda subir pu�o y sangria', 58000),
+('Faja entallar solo cintura', 22000),
+('Entallar costura sencilla buso', 12000),
+('Profundizar pinzas', 12000),
+('Camisa entallar embonada', 18000),
+('Subir pu�o de saco de traje', 38000),
+('Buso entallar y ruedo normal', 28000),
+('Buso -espalda entallar y ruedo abajo normal', 36000),
+('Buso entallar abertura costura sencilla', 22000),
+('Camisa -espalda entallar costura sencilla y ruedo abajo con abertura ', 45000),
+('Camisa -espalda entallar costura sencilla con abertura largo bien', 36000),
+('Sudadera entallar levantando bolsillo -tiro -b ruedo igual poner resorte', 56000),
+('-Tiro -rodilla -bota ruedo igual', 32000),
+('Camisa -espalda entallar embonada ruedo camisero ', 48000),
+('Camisa ruedo camisero ', 20000),
+('Ruedo collar�n', 20000),
+('Chaqueta de Jean -espalda entallar ruedo con abertura costura sencilla subir pu�o y sangr�a', 60000),
+('Ruedo igual de 2cm', 22000),
+('Pant -lados -rlla y bota ambos lados costura sencilla rdo a mano', 30000),
+('Pant -lados -rlla y bota ambos lados costura abierta rdo a mano', 34000),
+('Camisa subir pu�o y sangr�a', 32000),
+('Ruedo normal ancho', 26000),
+('-Cintura -rodilla -bota ruedo igual', 40000),
+('Blusa entallar -espalda ruedo con abertura costura sencilla poner cierre ', 50000),
+('Buso entallar con abertura costura sencilla ', 28000),
+('Buso -espalda entallar costura sencilla ruedo con abertura', 42000),
+('Blusa entallar con abertura costura sencilla ', 28000),
+('Blusa entallar costura sencilla quitar leva ', 24000),
+('Blusa -resorte hombro sencillo ', 12000),
+('Blusa ruedo camisero sin leva -resorte del pu�o ', 28000),
+('Pantalon -resorte poner resorte ne los hilos resorte ', 28000),
+('Blusa -espalda entallar ruedo con abertura costura sencilla subir pu�o y sangria ', 55000),
+('Blusa entallar quitar leva subir pu�o y sangria ', 48000),
+('Chaqueta cambiar resorte del pu�o con forro', 28000),
+('Vestido ruedo ancho con forro fileteado', 35000),
+('Camisa entallar embonada ruedo recto', 38000),
+('Pant -rodilla -bota ambos lados costuras abiertas ruedo a mano', 32000),
+('Pant -ct -bota ruedo normal', 34000),
+('Pant bajar 1 pretina -lados', 36000),
+('Bajar 1 pretina entallar ruedo igual', 46000),
+('Pant soltar ct -rodilla bota-no, ruedo adaptado', 36000),
+('Camisa entallar subir pu�o costura sencilla', 38000),
+('camisa -espalda entallar costura sencilla ruedo abajo igual ', 40000),
+('Jean bajar pretina de arriba -tiro -rodilla costura sencilla', 36000)
+GO
+
+
+----- Insertar cajones y códigos ------ 
+
+-- Inserta los cajones
+DECLARE @i INT = 1;
+WHILE @i <= 16
+BEGIN
+    INSERT INTO Cajones_Bodega (Cajon_Nombre, Estado)
+    VALUES ('CAJON_' + RIGHT('0' + CAST(@i AS VARCHAR(2)), 2), NULL);
+    SET @i = @i + 1;
+END
+
+-- Inserta los c�digos
+DECLARE @codigo INT = 1;
+DECLARE @idCajon INT = 1;
+WHILE @idCajon <= 16
+BEGIN
+    DECLARE @startCode INT = (@idCajon - 1) * 25 + 1;
+    DECLARE @endCode INT = @idCajon * 25;
+
+    WHILE @codigo <= @endCode
+    BEGIN
+        INSERT INTO Codigos_Cajon (Codigo, IdCajon)
+        VALUES (RIGHT('000' + CAST(@codigo AS VARCHAR(3)), 3), @idCajon);
+        SET @codigo = @codigo + 1;
+    END
+
+    SET @idCajon = @idCajon + 1;
+END
+GO
+
+SELECT 
+    cb.Cajon_Nombre, 
+    cc.Codigo
+FROM 
+    Cajones_Bodega cb
+JOIN 
+    Codigos_Cajon cc
+ON 
+    cb.IdCajon = cc.IdCajon
+ORDER BY 
+    cb.Cajon_Nombre, 
+    cc.Codigo;
+GO
+
+---------- Clientes -----------
+
+INSERT INTO Clientes (Identificacion, Nombre, Direccion, Movil, Email)
+VALUES
+('ID001', 'YAQUELINE DIAZ', NULL, NULL, NULL),
+('ID002', 'EMILY QUINTERO', NULL, NULL, NULL),
+('ID003', 'ERIKA BRUBANO', NULL, NULL, NULL),
+('ID004', 'BEATRIZ NAVAS', NULL, NULL, NULL),
+('ID005', 'BLANCA GOMEZ', NULL, NULL, NULL),
+('ID006', 'ARMANDO RODRIGUEZ', NULL, NULL, NULL),
+('ID007', 'ELEONORA LOPEZ', NULL, NULL, NULL),
+('ID008', 'MARIA RUBI CARDONA', NULL, NULL, NULL),
+('ID009', 'CLAUDIA GIL', NULL, NULL, NULL),
+('ID010', 'AIDA APARICIO', NULL, NULL, NULL),
+('ID011', 'ANDRES CAMPO', NULL, NULL, NULL),
+('ID012', 'OSCAR RIVAS', NULL, NULL, NULL),
+('ID013', 'MARIA SOTO', NULL, NULL, NULL),
+('ID014', 'MONICA TAKEGAME', NULL, NULL, NULL),
+('ID015', 'OLMEDO SABOGAL', NULL, NULL, NULL),
+('ID016', 'LUZ ANGELA PENAGOS', NULL, NULL, NULL),
+('ID017', 'NINFA MARTINEZ', NULL, NULL, NULL),
+('ID018', 'CAROL ARANGO', NULL, NULL, NULL),
+('ID019', 'DAVID BELTRAN', NULL, NULL, NULL),
+('ID020', 'MARLON ESTRELLA SOFIA', NULL, NULL, NULL),
+('ID021', 'CARLOS CASTA�EDA', NULL, NULL, NULL),
+('ID022', 'ALEXANDRA AVEDA�O', NULL, NULL, NULL),
+('ID023', 'MONICA BENTACOURT', NULL, NULL, NULL),
+('ID024', 'XIMENA PORTILLA', NULL, NULL, NULL),
+('ID025', 'PAOLA MESA', NULL, NULL, NULL),
+('ID026', 'FABIO CELORIO', NULL, NULL, NULL),
+('ID027', 'MARY RODRIGUEZ', NULL, NULL, NULL),
+('ID028', 'MARINO LASSO', NULL, NULL, NULL),
+('ID029', 'PATRICIA GONZALEZ', NULL, NULL, NULL),
+('ID030', 'KELLY PERAFAN', NULL, NULL, NULL),
+('ID031', 'ALEXANDRA BEJARANO', NULL, NULL, NULL),
+('ID032', 'JUAN CARLOS BELTRAN', NULL, NULL, NULL),
+('ID033', 'EDITH TRIVI�O', NULL, NULL, NULL),
+('ID034', 'HELMER GONZALEZ', NULL, NULL, NULL),
+('ID035', 'MARINO GRANADA', NULL, NULL, NULL),
+('ID036', 'MIRIAM MORENO', NULL, NULL, NULL),
+('ID037', 'MARIELLY MARULANDA', NULL, NULL, NULL),
+('ID038', 'ANGELICA HERMANA', NULL, NULL, NULL),
+('ID039', 'FRANCI SERNA', NULL, NULL, NULL),
+('ID040', 'JOSE GARCIA', NULL, NULL, NULL),
+('ID041', 'ALEJANDRA PATI�O', NULL, NULL, NULL),
+('ID042', 'JUAN PABLO TENORIO', NULL, NULL, NULL),
+('ID043', 'LORENA OSPINA', NULL, NULL, NULL),
+('ID044', 'ANGELICA MEDINA', NULL, NULL, NULL),
+('ID045', 'JORGE RAMIREZ', NULL, NULL, NULL),
+('ID046', 'JORGE ISAZA', NULL, NULL, NULL),
+('ID047', 'BETY VALENCIA', NULL, NULL, NULL),
+('ID048', 'LUCIA QUINTANA', NULL, NULL, NULL),
+('ID049', 'JEFERSON BARRETO', NULL, NULL, NULL),
+('ID050', 'MARTIN ALVARADO', NULL, NULL, NULL),
+('ID051', 'FERNANDA CARDONA', NULL, NULL, NULL),
+('ID052', 'MARIA COBO', NULL, NULL, NULL),
+('ID053', 'ELIZABETH ROMAN', NULL, NULL, NULL),
+('ID054', 'FRANCIA ORDO�EZ', NULL, NULL, NULL),
+('ID055', 'JAIR SEGURA', NULL, NULL, NULL),
+('ID056', 'LINA SERNA', NULL, NULL, NULL),
+('ID057', 'DIANA SINISTERRA', NULL, NULL, NULL),
+('ID058', 'KAREN LOPEZ', NULL, NULL, NULL),
+('ID059', 'ANDREA MONROY', NULL, NULL, NULL),
+('ID060', 'DAVID GONGORA', NULL, NULL, NULL),
+('ID061', 'RODRIGO HERNANDEZ', NULL, NULL, NULL),
+('ID062', 'ANDRES MARIN', NULL, NULL, NULL),
+('ID063', 'ALEXANDRA BASTIDAS', NULL, NULL, NULL),
+('ID064', 'CARLOS BARONA', NULL, NULL, NULL),
+('ID065', 'DAVID DAZA', NULL, NULL, NULL),
+('ID066', 'MARTHA LUARAN', NULL, NULL, NULL),
+('ID067', 'MARIA ELENA DURAN', NULL, NULL, NULL),
+('ID068', 'ESPERANZA MOGOLLON', NULL, NULL, NULL),
+('ID069', 'CONSUELO HERRERA', NULL, NULL, NULL),
+('ID070', 'CRISTINA OTALVARO', NULL, NULL, NULL),
+('ID071', 'GABRIEL GONZALEZ', NULL, NULL, NULL),
+('ID072', 'HELEN GONZALEZ', NULL, NULL, NULL),
+('ID073', 'DUVINEY CAMPUSANO', NULL, NULL, NULL),
+('ID074', 'FERNANDO ARISTIZABAL', NULL, NULL, NULL),
+('ID075', 'ADRIANA CANO', NULL, NULL, NULL),
+('ID076', 'JHON MORROY', NULL, NULL, NULL),
+('ID077', 'JOSE INAGAN', NULL, NULL, NULL),
+('ID078', 'MARCELA BENJUMEA', NULL, NULL, NULL),
+('ID079', 'OLGA ESCOBAR', NULL, NULL, NULL),
+('ID080', 'ISABELA TABARES', NULL, NULL, NULL),
+('ID081', 'ADELAIDA VIERA', NULL, NULL, NULL),
+('ID082', 'EDWIN MAFLA', NULL, NULL, NULL),
+('ID083', 'ALBERTO ZAMORA', NULL, NULL, NULL),
+('ID084', 'BERTA RODRIGUEZ', NULL, NULL, NULL),
+('ID085', 'ANDRES CASTRILLON', NULL, NULL, NULL),
+('ID086', 'ANFRES ROSA', NULL, NULL, NULL),
+('ID087', 'LUIS DONCEL', NULL, NULL, NULL),
+('ID088', 'CLAUDIA VALENCIA', NULL, NULL, NULL),
+('ID089', 'ISABEL CARVAJAL', NULL, NULL, NULL),
+('ID090', 'ANA MARIA ERAZO', NULL, NULL, NULL),
+('ID091', 'ROSALBA OSORIO', NULL, NULL, NULL),
+('ID092', 'ALBA RANIREZ', NULL, NULL, NULL),
+('ID093', 'JULIAN HERNANDEZ', NULL, NULL, NULL),
+('ID094', 'PATRICIA BERNAL', NULL, NULL, NULL),
+('ID095', 'HAROL POSO', NULL, NULL, NULL),
+('ID096', 'DANIEL PAZ', NULL, NULL, NULL),
+('ID097', 'ESPERANCIA VALENCIA', NULL, NULL, NULL),
+('ID098', 'AURA MENA', NULL, NULL, NULL),
+('ID099', 'ANGELICA BONROSEN', NULL, NULL, NULL),
+('ID100', 'DIEGO PLAZA', NULL, NULL, NULL),
+('ID101', 'MARIA GACHA', NULL, NULL, NULL),
+('ID102', 'LUCRECIA MORA', NULL, NULL, NULL),
+('ID103', 'ALEYDA MURILLO', NULL, NULL, NULL),
+('ID104', 'CRISTIAN PACHON', NULL, NULL, NULL),
+('ID105', 'JAIME VALLEJO', NULL, NULL, NULL),
+('ID106', 'HUGO GARCIA', NULL, NULL, NULL),
+('ID107', 'CLAUDIA VALENZUELA', NULL, NULL, NULL),
+('ID108', 'NATALIA AGUDELO', NULL, NULL, NULL),
+('ID109', 'PAOLA ESCOBAR', NULL, NULL, NULL),
+('ID110', 'CARMENZA GARZON', NULL, NULL, NULL),
+('ID111', 'CESAR PEREZ', NULL, NULL, NULL),
+('ID112', 'DIEGO HERNANDEZ', NULL, NULL, NULL),
+('ID121', 'JORGE IVAN MONTOYA', NULL, NULL, NULL),
+('ID122', 'JOSEFINA BARONA', NULL, NULL, NULL),
+('ID123', 'LICIRIA GA�ANO', NULL, NULL, NULL),
+('ID124', 'ORFENI VARGAS', NULL, NULL, NULL),
+('ID125', 'MILLER SUAREZ', NULL, NULL, NULL),
+('ID126', 'FABIO TABARES', NULL, NULL, NULL),
+('ID127', 'LORENA TASAMA', NULL, NULL, NULL),
+('ID128', 'RAFAEL VECINO CAMI', NULL, NULL, NULL),
+('ID129', 'EDWARD FAJARDO', NULL, NULL, NULL),
+('ID130', 'LUZ MARY RENJIFO', NULL, NULL, NULL),
+('ID131', 'GIANCARLO MORERA', NULL, NULL, NULL),
+('ID132', 'LILIANA AGUILAR', NULL, NULL, NULL),
+('ID133', 'ANDRES VERGARA', NULL, NULL, NULL),
+('ID134', 'JHOANA GUERRERO', NULL, NULL, NULL),
+('ID135', 'WILLIAN TROCHEZ', NULL, NULL, NULL),
+('ID136', 'YULIETH QUEVEDO', NULL, NULL, NULL),
+('ID137', 'FERNANDA ROMERO', NULL, NULL, NULL),
+('ID138', 'MARIA FDA BEJARANO', NULL, NULL, NULL),
+('ID139', 'MARIA ISABEL MEJIA', NULL, NULL, NULL),
+('ID140', 'ARLEY RENJIFO', NULL, NULL, NULL),
+('ID141', 'LUZ MARINA ESCARRIA', NULL, NULL, NULL),
+('ID142', 'PATRICIA VALLEJO', NULL, NULL, NULL),
+('ID143', 'PAULA CASTRO', NULL, NULL, NULL),
+('ID144', 'LUZ MARINA ARREDONDO', NULL, NULL, NULL),
+('ID145', 'CRISTIAN LONDO�O', NULL, NULL, NULL),
+('ID146', 'OLGA MORALES', NULL, NULL, NULL),
+('ID147', 'AMPORO TIA', NULL, NULL, NULL),
+('ID148', 'NANCY NARVAEZ', NULL, NULL, NULL),
+('ID149', 'VICTOR TOBAR', NULL, NULL, NULL),
+('ID150', 'JULIAN ANDRES VARGAS', NULL, NULL, NULL),
+('ID151', 'JULIAN LOPEZ', NULL, NULL, NULL),
+('ID152', 'LUZMARY VILLEGAS', NULL, NULL, NULL),
+('ID153', 'JOSE HERRERA', NULL, NULL, NULL),
+('ID154', 'NATALIA OSPINA', NULL, NULL, NULL),
+('ID155', 'GERALDINE TRUJILLO', NULL, NULL, NULL),
+('ID156', 'JOHANA GUZMAN', NULL, NULL, NULL),
+('ID157', 'JORGE TORRES', NULL, NULL, NULL),
+('ID158', 'ALEXANDRA PARDO', NULL, NULL, NULL),
+('ID159', 'ROSALBA OSORIO', NULL, NULL, NULL),
+('ID160', 'MARTHA OREJUELA', NULL, NULL, NULL),
+('ID161', 'NATALIA SARASTI', NULL, NULL, NULL),
+('ID162', 'MAURICIO RAMOS', NULL, NULL, NULL),
+('ID163', 'SANDRA CLAROS', NULL, NULL, NULL),
+('ID164', 'ALEJANDRO GUERRERO', NULL, NULL, NULL),
+('ID165', 'DIANA MARCELA QUINTANA', NULL, NULL, NULL),
+('ID166', 'CAROLINA HERNANDEZ', NULL, NULL, NULL),
+('ID167', 'VICTOR GALINDO', NULL, NULL, NULL),
+('ID168', 'JUAN JOSE OTERO', NULL, NULL, NULL),
+('ID169', 'SANDRA RODAS', NULL, NULL, NULL),
+('ID170', 'ALEXANDRA AVENDA�O', NULL, NULL, NULL),
+('ID171', 'ANA PAYARES', NULL, NULL, NULL),
+('ID172', 'ANGELA DIAZ', NULL, NULL, NULL),
+('ID173', 'CARLOS VAQUERO', NULL, NULL, NULL),
+('ID174', 'BEATRIZ GALINDO', NULL, NULL, NULL),
+('ID175', 'ANA LUCIA ZAMBRANO', NULL, NULL, NULL),
+('ID176', 'NORBERTO ROJAS', NULL, NULL, NULL),
+('ID177', 'SONIA COBO', NULL, NULL, NULL),
+('ID178', 'FREDDY MONDRAGON', NULL, NULL, NULL),
+('ID179', 'SANDRA GIRALDO', NULL, NULL, NULL),
+('ID180', 'ROSA IBA�EZ', NULL, NULL, NULL),
+('ID181', 'ELIKIN VIDAL', NULL, NULL, NULL),
+('ID182', 'ANDRES MONDRAGON', NULL, NULL, NULL),
+('ID183', 'JOSE MONTALVO', NULL, NULL, NULL),
+('ID184', 'MARTHA RINCON', NULL, NULL, NULL),
+('ID185', 'ADRIANA ALZATE', NULL, NULL, NULL),
+('ID186', 'ALEXANDER ARCINIEGAS', NULL, NULL, NULL),
+('ID187', 'LUZ ELENA GOMEZ', NULL, NULL, NULL),
+('ID188', 'ESTELA GARCES', NULL, NULL, NULL),
+('ID189', 'KARLY PATI�O', NULL, NULL, NULL),
+('ID190', 'YULI RODRIGUEZ', NULL, NULL, NULL),
+('ID191', 'MARIA ALEJANDRA MEDINA', NULL, NULL, NULL),
+('ID192', 'JUAN DAVID MARTINEZ', NULL, NULL, NULL),
+('ID193', 'LEYDI GONZALEZ', NULL, NULL, NULL),
+('ID194', 'ELSA DELGADO', NULL, NULL, NULL),
+('ID195', 'LUCIA HENAO', NULL, NULL, NULL),
+('ID196', 'ANA LUZ MORALES', NULL, NULL, NULL),
+('ID197', 'WILLIAN LEAL', NULL, NULL, NULL),
+('ID198', 'SANDRA MOSQUERA', NULL, NULL, NULL),
+('ID199', 'NADIA PACHECO', NULL, NULL, NULL),
+('ID200', 'DANIEL CORREA', NULL, NULL, NULL),
+('ID201', 'GINA CRUZ', NULL, NULL, NULL),
+('ID202', 'KAROL LOZADA', NULL, NULL, NULL),
+('ID203', 'NATALIA AGUDELO', NULL, NULL, NULL),
+('ID204', 'NINI JULIANA RUEDA', NULL, NULL, NULL),
+('ID205', 'FERNANDO ALDANA', NULL, NULL, NULL),
+('ID206', 'MAICOL CORREA', NULL, NULL, NULL),
+('ID207', 'REBECA BERMEO', NULL, NULL, NULL),
+('ID208', 'RUBI GRANADOS', NULL, NULL, NULL),
+('ID209', 'GABRIEL OCAMPO', NULL, NULL, NULL),
+('ID210', 'NATALIA MONROY', NULL, NULL, NULL),
+('ID211', 'LEONOR HINESTROZA', NULL, NULL, NULL),
+('ID212', 'TATIANA VARELA', NULL, NULL, NULL),
+('ID213', 'FABIO ALEJANDRO NARVAEZ', NULL, NULL, NULL),
+('ID214', 'ADRIANA AGUIRRE', NULL, NULL, NULL),
+('ID215', 'JHON WILSON RENGIFO', NULL, NULL, NULL),
+('ID216', 'MARIA DEL MAR GONZALEZ', NULL, NULL, NULL),
+('ID217', 'CARMEN SALCEDO', NULL, NULL, NULL),
+('ID218', 'ANDRES CALVACHE', NULL, NULL, NULL),
+('ID219', 'GLORIA SERRANO', NULL, NULL, NULL),
+('ID220', 'CAROLINA MONTOYA', NULL, NULL, NULL),
+('ID221', 'GLADYS OTERO', NULL, NULL, NULL),
+('ID222', 'ISABELA TOBAR', NULL, NULL, NULL),
+('ID223', 'LUCLILA MAMA DANI', NULL, NULL, NULL),
+('ID224', 'LUISA FDA TORRES', NULL, NULL, NULL),
+('ID225', 'ITALIA CAICEDO', NULL, NULL, NULL),
+('ID226', 'MELISA ACU�A', NULL, NULL, NULL),
+('ID227', 'VALENTINA VASQUEZ', NULL, NULL, NULL),
+('ID228', 'LUCIA QUINTANA', NULL, NULL, NULL),
+('ID229', 'GUSTAVO ACOSTA', NULL, NULL, NULL),
+('ID230', 'CARLOS ORTIZ', NULL, NULL, NULL),
+('ID231', 'OSCAR TRUJILLO', NULL, NULL, NULL),
+('ID232', 'JAIME CARDONA', NULL, NULL, NULL),
+('ID233', 'SAMUEL JAIMES', NULL, NULL, NULL),
+('ID234', 'LUIS DONCEL', NULL, NULL, NULL),
+('ID235', 'WILLIAM TROCHEZ', NULL, NULL, NULL),
+('ID236', 'JULIETA GRAJALES', NULL, NULL, NULL),
+('ID237', 'ANDREA DAZA', NULL, NULL, NULL),
+('ID238', 'LUZ TASCON', NULL, NULL, NULL),
+('ID239', 'DIANA ORTIZ', NULL, NULL, NULL),
+('ID240', 'JULIETH JARAMILLO', NULL, NULL, NULL),
+('ID241', 'ROSA JARAMILLO', NULL, NULL, NULL),
+('ID242', 'MARIA EUGENIA MURILLO', NULL, NULL, NULL),
+('ID243', 'LUISA OSPINA', NULL, NULL, NULL),
+('ID244', 'AMPARO CEDE�O', NULL, NULL, NULL),
+('ID245', 'LAURA MARTINEZ', NULL, NULL, NULL),
+('ID246', 'FABIO ALBERTO AGUIRRE', NULL, NULL, NULL),
+('ID247', 'DANIELA ORTIZ', NULL, NULL, NULL),
+('ID248', 'JHONATAN GARCIA', NULL, NULL, NULL),
+('ID249', 'IVETH PEREZ', NULL, NULL, NULL),
+('ID250', 'BLANCA GALLEGO', NULL, NULL, NULL),
+('ID251', 'JHONATAN GARZON', NULL, NULL, NULL),
+('ID252', 'BERTA MARTINEZ', NULL, NULL, NULL),
+('ID253', 'JANETH CHAVARRO', NULL, NULL, NULL),
+('ID254', 'CARMEN BOTERO', NULL, NULL, NULL),
+('ID255', 'OLGA LOPEZ', NULL, NULL, NULL),
+('ID256', 'KATERINE MENDEZ', NULL, NULL, NULL),
+('ID257', 'JULIO CESAR SANCHEZ', NULL, NULL, NULL),
+('ID258', 'ADOLFO LEON ALZATE', NULL, NULL, NULL),
+('ID259', 'ALEJANDRA LOZANO', NULL, NULL, NULL),
+('ID260', 'JORGE MELLIZO', NULL, NULL, NULL),
+('ID261', 'LUZ MARINA SANCHEZ', NULL, NULL, NULL),
+('ID262', 'EDISON BONILLA', NULL, NULL, NULL),
+('ID263', 'CLAUDIA LUGO', NULL, NULL, NULL),
+('ID264', 'DIANA SALCEDO', NULL, NULL, NULL),
+('ID265', 'LILIANA MONTOYA', NULL, NULL, NULL),
+('ID266', 'MARCELA MORERA', NULL, NULL, NULL),
+('ID267', 'LUIS ERAZO', NULL, NULL, NULL),
+('ID268', 'JULIO VALENCIA', NULL, NULL, NULL),
+('ID269', 'AODLFO VIEIRA', NULL, NULL, NULL),
+('ID270', 'DIEGO AMAYA', NULL, NULL, NULL),
+('ID271', 'CARMEN CASTRILLON', NULL, NULL, NULL);
+GO
+
+SELECT pc.IdPedidoCliente, c.Identificacion, c.Nombre AS 'Cliente', dr.Codigo AS 'C�digo', pc.FechaSolicitud AS 'Solicitud', pc.CantidadPrendas AS 'Cantidad', pc.Total, pc.Abono, pc.Saldo, pc.FechaEntrega AS 'Entrega', pc.Estado FROM PedidoCliente pc JOIN Clientes c ON pc.IdCliente = c.IdCliente JOIN Codigos_Cajon dr ON pc.IdCodigo = dr.IdCodigo WHERE pc.Estado != 'Finalizado'
+GO
+
+SELECT 
+    cb.Cajon_Nombre As 'Cajones',
+    STRING_AGG(cc.Codigo, ', ') AS Codigos
+FROM 
+    Cajones_Bodega cb
+LEFT JOIN 
+    Codigos_Cajon cc ON cb.IdCajon = cc.IdCajon
+GROUP BY 
+    cb.Cajon_Nombre;
+GO
+
+
+SELECT 
+    dep.IdCajon, 
+    dep.Cajon_Nombre As 'Cajones',
+    STRING_AGG(cod.Codigo, ', ') AS Codigos,
+    dep.Estado, 
+    COUNT(cod.IdCodigo) AS 'Capacidad Total C�digos', 
+    COUNT(pc.IdPedidoCliente) AS CodigosUtilizados, 
+    CASE 
+        WHEN COUNT(cod.IdCodigo) = COUNT(pc.IdPedidoCliente) 
+        THEN 'Caj�n Lleno' 
+        ELSE 'Caj�n Disponible' 
+    END AS Disponibilidad 
+FROM 
+    Cajones_Bodega dep 
+LEFT JOIN 
+    Codigos_Cajon cod ON dep.IdCajon = cod.IdCajon 
+LEFT JOIN 
+    PedidoCliente pc ON cod.IdCodigo = pc.IdCodigo 
+GROUP BY 
+    dep.Cajon_Nombre,
+    dep.IdCajon, dep.Cajon_Nombre, dep.Estado 
+HAVING 
+    CASE 
+        WHEN COUNT(cod.IdCodigo) = COUNT(pc.IdPedidoCliente) 
+        THEN 'Caj�n Lleno' 
+        ELSE 'Caj�n Disponible' 
+    END = 'Caj�n Disponible';
+	GO
+
+SELECT pc.IdPedidoCliente, 
+       c.Nombre AS 'Cliente', 
+       c.Identificacion AS 'Cedula', 
+       c.Direccion, 
+       c.Email, 
+       c.Movil AS 'Celular', 
+       dr.Codigo, 
+       pc.CantidadPrendas AS 'Cantidad de prendas',
+       pc.Observaciones,
+       FORMAT(pc.FechaSolicitud, 'dddd, dd-MMM-yyyy', 'es-ES') AS 'Fecha de solicitud', 
+       FORMAT(pc.FechaEntrega, 'dddd, dd-MMM-yyyy', 'es-ES') AS 'Fecha de Entrega', 
+       pctc.Prendas, 
+       tc.Ajuste_Nombre AS 'Ajustes', 
+       pctc.Precio, 
+       pc.Abono, 
+       pc.Saldo, 
+       pc.Total, 
+       pc.Observaciones, 
+       pc.Estado AS 'Estado' 
+FROM PedidoCliente pc 
+JOIN Clientes c ON pc.IdCliente = c.IdCliente 
+JOIN Codigos_Cajon dr ON pc.IdCodigo = dr.IdCodigo 
+INNER JOIN Detalles_Pedidos pctc ON pc.IdPedidoCliente = pctc.IdPedidoCliente 
+INNER JOIN Ajustes tc ON pctc.IdAjuste = tc.IdAjuste 
+
+
+SELECT pc.IdPedidoCliente, 
+       c.Nombre AS 'Cliente', 
+       c.Identificacion AS 'Cedula', 
+       c.Direccion, 
+       c.Email, 
+       c.Movil AS 'Celular', 
+       dr.Codigo, 
+       pc.CantidadPrendas AS 'Cantidad de prendas',
+       pc.Observaciones,
+       FORMAT(pc.FechaSolicitud, 'dddd, dd-MMM-yyyy', 'es-ES') AS 'Fecha de solicitud', 
+       FORMAT(pc.FechaEntrega, 'dddd, dd-MMM-yyyy', 'es-ES') AS 'Fecha de Entrega', 
+       pctc.Prendas, 
+       tc.Ajuste_Nombre AS 'Ajustes', 
+       pctc.Precio, 
+       pc.Abono, 
+       pc.Saldo, 
+       pc.Total, 
+       pc.Observaciones, 
+       pc.Estado AS 'Estado',
+       LAG(pc.Abono) OVER (PARTITION BY pc.IdCliente ORDER BY pc.FechaSolicitud) AS 'AbonoAnterior'
+FROM PedidoCliente pc 
+JOIN Clientes c ON pc.IdCliente = c.IdCliente 
+JOIN Codigos_Cajon dr ON pc.IdCodigo = dr.IdCodigo 
+INNER JOIN Detalles_Pedidos pctc ON pc.IdPedidoCliente = pctc.IdPedidoCliente 
+INNER JOIN Ajustes tc ON pctc.IdAjuste = tc.IdAjuste
+GO
+
+SELECT 
+    pc.IdPedidoCliente, 
+    c.Identificacion, 
+    c.Nombre, 
+    c.Direccion, 
+    c.Movil, 
+    pc.CantidadPrendas, 
+    pc.FechaSolicitud, 
+    pc.FechaEntrega, 
+    pc.Abono, 
+    pc.Saldo, 
+    pc.Total, 
+    pc.Observaciones,
+	pc.IdCodigo,
+    STRING_AGG(dp.Prendas + ' (' + a.Ajuste_Nombre + ' ' + CONVERT(varchar, dp.Precio) + ')', ', ') AS PrendasConAjustes
+FROM 
+    PedidoCliente pc
+INNER JOIN 
+    Clientes c ON pc.IdCliente = c.IdCliente
+LEFT JOIN 
+    Detalles_Pedidos dp ON pc.IdPedidoCliente = dp.IdPedidoCliente
+LEFT JOIN 
+    Ajustes a ON dp.IdAjuste = a.IdAjuste
+WHERE 
+    pc.Estado = 'finalizado'
+GROUP BY 
+    pc.IdPedidoCliente, 
+    c.Identificacion, 
+    c.Nombre, 
+    c.Direccion, 
+    c.Movil, 
+    pc.CantidadPrendas, 
+    pc.FechaSolicitud, 
+    pc.FechaEntrega, 
+    pc.Abono, 
+    pc.Saldo, 
+    pc.Total, 
+    pc.Observaciones,
+	pc.IdCodigo
+ORDER BY 
+    pc.IdPedidoCliente;
+GO
+
+--- Consulta pedido por Id m�s historial de abonos
+SELECT 
+    pc.IdPedidoCliente,
+    c.IdCliente,
+    dr.IdCodigo,
+    dr.IdCajon,
+    tc.IdAjuste,
+    c.Identificacion, 
+    c.Nombre,
+    c.Movil,
+    c.Direccion,
+    c.Email,
+    dr.Codigo, 
+    cb.Cajon_Nombre, 
+    pc.CantidadPrendas,
+    pc.FechaSolicitud, 
+    pc.FechaEntrega, 
+    (SELECT ISNULL(SUM(ha.Abono), 0)
+     FROM HistorialAbonos ha
+     WHERE ha.IdPedidoCliente = pc.IdPedidoCliente) AS Abono,
+    pc.Saldo, 
+    pc.Total, 
+    pc.Observaciones, 
+    pc.Estado,
+    dp.Prendas,
+    tc.Ajuste_Nombre,
+    dp.Precio
+FROM 
+    PedidoCliente pc
+JOIN 
+    Clientes c ON pc.IdCliente = c.IdCliente 
+JOIN 
+    Codigos_Cajon dr ON pc.IdCodigo = dr.IdCodigo 
+JOIN 
+    Cajones_Bodega cb ON dr.IdCajon = cb.IdCajon 
+JOIN 
+    Detalles_Pedidos dp ON pc.IdPedidoCliente = dp.IdPedidoCliente 
+JOIN 
+    Ajustes tc ON dp.IdAjuste = tc.IdAjuste 
+WHERE 
+    pc.IdPedidoCliente = @IdPedidoCliente;
+GO
+
+--Facturas
+
+SELECT pc.IdPedidoCliente, c.Nombre AS 'Cliente', c.Identificacion AS 'Cedula', c.Direccion, c.Email, c.Movil AS 'Celular', dr.Codigo, pc.CantidadPrendas AS 'Cantidad de prendas', CONVERT(varchar, pc.FechaSolicitud, 103) AS 'Fecha de solicitud', CONVERT(varchar, pc.FechaEntrega, 103) AS 'Fecha de Entrega', pctc.Prendas, tc.Ajuste_Nombre AS 'Ajustes', pctc.Precio, (SELECT ISNULL(SUM(ha.Abono), 0) FROM HistorialAbonos ha WHERE ha.IdPedidoCliente = pc.IdPedidoCliente) AS Abono, pc.Saldo, pc.Total, pc.Observaciones, pc.Estado AS 'Estado' FROM PedidoCliente pc JOIN Clientes c ON pc.IdCliente = c.IdCliente JOIN Codigos_Cajon dr ON pc.IdCodigo = dr.IdCodigo INNER JOIN Detalles_Pedidos pctc ON pc.IdPedidoCliente = pctc.IdPedidoCliente INNER JOIN Ajustes tc ON pctc.IdAjuste = tc.IdAjuste WHERE pc.IdPedidoCliente = @IdPedidoCliente AND pc.Estado != 'Finalizado'
+GO
+
+--- Entregas
+
+SELECT pc.IdPedidoCliente, c.Identificacion, c.Nombre AS 'Cliente', dr.Codigo AS 'C�digo', pc.FechaSolicitud AS 'Solicitud', pc.CantidadPrendas AS 'Cantidad', pc.Total,  (SELECT ISNULL(SUM(ha.Abono), 0) FROM HistorialAbonos ha WHERE ha.IdPedidoCliente = pc.IdPedidoCliente) AS Abono, pc.Saldo, pc.FechaEntrega AS 'Entrega', pc.Estado FROM PedidoCliente pc JOIN Clientes c ON pc.IdCliente = c.IdCliente JOIN Codigos_Cajon dr ON pc.IdCodigo = dr.IdCodigo WHERE pc.Estado != 'Finalizado'
+GO
+
+SELECT COUNT(*) FROM HistorialAbonos WHERE IdPedidoCliente = @IdPedidoCliente AND Abono = @Abono AND FechaAbono >= @FechaInicio
+GO
+
+Select * From Movimientos_Caja;
+
+SELECT * FROM HistorialAbonos;
+
+--- Mov caja
+
+SELECT pc.IdPedidoCliente, pc.Abono, pc.Saldo
+FROM PedidoCliente pc
+WHERE pc.Estado <> 'Finalizado';
+GO
+
+SELECT IdCliente, Abono, Saldo, Total FROM PedidoCliente WHERE IdPedidoCliente = 17;
+GO

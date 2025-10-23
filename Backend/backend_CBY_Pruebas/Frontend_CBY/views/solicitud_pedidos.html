@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clínica del Blujean</title>
+  <link rel="stylesheet" href="/css/solicitud_pedidos.css" />
+</head>
+
+<body class="cuerpo">
+  <!-- Barra de navegación -->
+  <nav class="barra-navegacion">
+    <div class="logo-seccion">
+      <img src="/img/Logo.png" alt="Logo" class="logo" />
+      <span class="nombre-app">Clínica del Bluyin</span>
+    </div>
+    <ul class="menu-navegacion">
+      <li><a href="#">Usuarios</a></li>
+      <li><a href="#">Clientes</a></li>
+      <li><a href="#">Servicios</a></li>
+      <li><a href="#">Historial</a></li>
+      <li><a href="#">Caja</a></li>
+      <li><a href="#">Acerca de</a></li>
+      <li><a href="#">Configuraciones</a></li>
+    </ul>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main class="contenido-principal">
+    <h2 class="titulo-seccion">Nuevo Pedido</h2>
+
+    <!-- Datos del cliente -->
+    <section class="seccion">
+      <h3 class="titulo-subseccion">Datos del Cliente</h3>
+      <div class="grid-formulario">
+        <input type="text" placeholder="Nombre del cliente" class="campo" />
+        <input type="text" placeholder="Documento" class="campo" />
+        <input type="text" placeholder="Teléfono" class="campo" />
+        <input type="text" placeholder="Dirección" class="campo" />
+        <input type="email" placeholder="Email" class="campo" />
+      </div>
+    </section>
+
+    <!-- Fechas -->
+    <section class="seccion">
+      <h3 class="titulo-subseccion">Fechas</h3>
+      <div class="grid-formulario">
+        <input type="date" class="campo" placeholder="Fecha de inicio" />
+        <input type="date" class="campo" placeholder="Fecha de entrega" />
+      </div>
+    </section>
+
+    <!-- Prendas -->
+    <section class="seccion">
+      <div class="encabezado-seccion">
+        <h3 class="titulo-subseccion">Prendas</h3>
+        <button id="boton-agregar-prenda" class="boton-agregar-prenda">Agregar prenda</button>
+      </div>
+      <div class="grid-formulario">
+      <input type="text" class="campo" placeholder="Cajón" />
+      <input type="text" class="campo" placeholder="Código" />
+    </div>
+      <div id="contenedor-prendas" class="contenedor-prendas"></div>
+    </section>
+
+    <!-- Observaciones y Totales -->
+    <section class="seccion">
+      <h3 class="titulo-subseccion">Otros detalles</h3>
+      <div class="grid-formulario">
+        <textarea placeholder="Observaciones" class="campo campo-textarea"></textarea>
+        <input type="text" placeholder="Estado" class="campo" />
+        <input type="number" placeholder="Abono" class="campo" id="campo-abono" />
+<input type="number" placeholder="Saldo" class="campo" id="campo-saldo" />
+
+        <input type="number" placeholder="Total" class="campo" id="campo-total" readonly />
+      </div>
+    </section>
+  </main>
+
+  <!-- Template de prenda -->
+  <template id="template-prenda">
+    <div class="prenda-card">
+      <input type="text" placeholder="Tipo de prenda" class="campo" />
+      <input type="number" placeholder="Cantidad" class="campo" />
+      <button type="button" class="boton-eliminar-prenda">Eliminar prenda</button>
+      
+      <!-- Ajustes dinámicos -->
+    
+      <button type="button" class="boton-agregar-ajuste">Agregar ajuste</button>
+      <div class="ajustes-contenedor">
+        <!-- Ajustes se agregan por JS -->
+      </div>
+    </div>
+  </template>
+
+  <!-- Template de ajuste -->
+  <template id="template-ajuste">
+    <div class="ajuste">
+      <select class="campo">
+        <option value="Basta">Basta</option>
+        <option value="Entalle">Entalle</option>
+        <option value="Arreglo general">Arreglo general</option>
+      </select>
+      <input type="number" placeholder="Costo del ajuste" class="costo-ajuste" />
+      <button type="button" class="btn-eliminar-ajuste">Eliminar ajuste</button>
+    </div>
+  </template>
+
+  <!-- JS -->
+  <script src="/js/solicitud_pedidos.js"></script>
+</body>
+
+</html>

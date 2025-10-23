@@ -1,0 +1,228 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body.cuerpo {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f3f4f6;
+    color: #1f2937;
+  }
+  
+  .barra-navegacion {
+    background-color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .logo-seccion {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .logo {
+    height: 40px;
+  }
+  
+  .nombre-app {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #257EFF;
+  }
+  
+  .menu-navegacion {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .menu-navegacion a {
+    text-decoration: none;
+    color: #374151;
+  }
+  
+  .menu-navegacion a:hover {
+    color: #2563eb;
+  }
+  
+  .contenido-principal {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+  
+  .titulo-seccion {
+    font-size: 1.75rem;
+    color: #257EFF;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  
+  .seccion {
+    background-color: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+  }
+  
+  .titulo-subseccion {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  
+  .grid-formulario {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .grid-formulario {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  .campo {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    width: 100%;
+  }
+  
+  .campo-textarea {
+    resize: none;
+  }
+  
+  .encabezado-seccion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .boton-agregar-prenda {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .boton-agregar-prenda:hover {
+    background-color: #1e40af;
+  }
+  
+  .contenedor-prendas > div {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    background-color: #f9fafb;
+    border: 1px solid #d1d5db;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .prenda-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    background-color: #f9f9f9;
+  }
+  
+  .boton-eliminar-prenda {
+    background-color: #747474;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .boton-eliminar-prenda:hover {
+    background-color: #323232fb;
+  }
+  
+/* Ajustes al contenedor de ajustes */
+.ajustes-contenedor {
+  margin-top: 1rem;
+  border-top: 1px dashed #e5e7eb;
+  padding-top: 0.5rem;
+  grid-column: 1 / -1;  /* Hace que ocupe todo el ancho */
+}
+
+/* Estilos para el ajuste individual */
+.ajuste {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  background-color: #f3f4f6;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Input del costo de ajuste */
+.costo-ajuste {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  width: 100%;
+}
+
+/* Botón eliminar ajuste */
+.btn-eliminar-ajuste {
+  background-color: #999999;
+  color: white;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.btn-eliminar-ajuste:hover {
+  background-color: #565656;
+}
+
+/* Botón "Agregar Ajuste" */
+.boton-agregar-ajuste {
+  background-color: #118fef;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease;
+  margin-bottom: 0.75rem;
+  grid-column: 1 / -1;  /* Hace que ocupe todo el ancho */
+}
+
+.boton-agregar-ajuste:hover {
+  background-color: #1dc8de;
+}
+
+  @media (min-width: 768px) {
+    .contenedor-prendas > div {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
