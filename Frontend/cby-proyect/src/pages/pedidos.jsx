@@ -1,9 +1,12 @@
+import React from "react";
+import Pedidos from "../components/pedidos";
+
+
 export default function pedidos() {
     return (
         <>
-
-            <main className="p-4">
-                <p>Gestion de pedidos</p>
+            <main className="pedidosPage">
+                <Pedidos />
             </main>
         </>
     );

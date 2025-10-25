@@ -1,8 +1,10 @@
 import React from "react";
+import "../styles/header.css"
 import { useNavigate, useLocation } from "react-router-dom";
 
 type User = { name: string; role?: string; };
 type Props = { user?: User; onLogout?: () => void; };
+
 
 export default function Header({ user = { name: "", role: "" }, onLogout }: Props) {
     const navigate = useNavigate();
@@ -18,9 +20,9 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
     ];
 
     return (
-        <header className="bg-white shadow-sm">
+        <header className="app-header"> {/* agregado app-header */}
             <div className="container mx-auto flex items-center justify-between px-4 py-2">
-                <div className="text-blue-600 font-semibold">Clínica del Bluyin</div>
+                <div className="brand">Clínica del Bluyin</div>
 
                 <nav>
                     <ul className="flex gap-2">
@@ -31,7 +33,7 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
                                     <button
                                         type="button"
                                         onClick={() => navigate(it.key)}
-                                        className={`px-3 py-1 rounded-md ${active ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+                                        className={`nav-button ${active ? "active" : ""}`} // usa clase nav-button
                                         aria-current={active ? "page" : undefined}
                                     >
                                         {it.label}
@@ -42,11 +44,12 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
                     </ul>
                 </nav>
 
-                <div className="flex items-center gap-3">
+                <div className="user-info">
                     <div className="text-sm text-gray-700">{user.name} - <span className="text-xs text-gray-500">{user.role}</span></div>
-                    <button onClick={() => onLogout?.()} className="text-sm text-gray-600">Salir</button>
+                    <button onClick={() => onLogout?.()} className="logout">Salir</button>
                 </div>
             </div>
         </header>
     );
 }
+// ...existing code...
