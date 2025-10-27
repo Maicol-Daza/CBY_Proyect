@@ -1,191 +1,137 @@
-const db = require('../config/conexion_db');
+const db = require('../config/db'); // ajusta la ruta si tu conexión está en otro archivo
 
 class PedidoClienteController {
-  // Obtener todos los pedidos
-  async obtenerPedidos(req, res) {
-    try {
-      const [resultados] = await db.query(`
-        SELECT 
-          p.id_pedido,
-          p.id_cliente,
-          c.nombre AS cliente,
-          c.telefono,
-          c.email,
-          p.id_codigo,
-          co.codigo_numero,
-          p.fecha_pedido,
-          p.fecha_entrega,
-          p.cantidad_prendas,
-          p.total_pedido,
-          p.abono,
-          p.saldo,
-          p.observaciones,
-          p.garantia,
-          p.estado
-        FROM pedido_cliente p
-        LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
-        LEFT JOIN codigos co ON p.id_codigo = co.id_codigo
-        ORDER BY p.id_pedido DESC
-      `);
-      res.json(resultados);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al obtener los pedidos' });
-    }
-  }
-
-  // Obtener pedido por ID
-  async obtenerPedidoPorId(req, res) {
-    const { id } = req.params;
-    try {
-      const [resultado] = await db.query(
-        `
-        SELECT 
-          p.id_pedido,
-          p.id_cliente,
-          c.nombre AS cliente,
-          c.telefono,
-          c.email,
-          p.id_codigo,
-          co.codigo_numero,
-          p.fecha_pedido,
-          p.fecha_entrega,
-          p.cantidad_prendas,
-          p.total_pedido,
-          p.abono,
-          p.saldo,
-          p.observaciones,
-          p.garantia,
-          p.estado
-        FROM pedido_cliente p
-        LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
-        LEFT JOIN codigos co ON p.id_codigo = co.id_codigo
-        WHERE p.id_pedido = ?
-        `,
-        [id]
-      );
-
-      if (resultado.length === 0) {
-        return res.status(404).json({ error: 'Pedido no encontrado' });
-      }
-
-      res.json(resultado[0]);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al obtener el pedido' });
-    }
-  }
-
-  // Crear nuevo pedido
   async crearPedido(req, res) {
     const {
-      id_cliente,
-      id_codigo,
-      fecha_pedido,
-      fecha_entrega,
-      cantidad_prendas,
-      total_pedido,
-      abono,
-      saldo,
-      observaciones,
-      garantia,
-      estado
+      cliente,
+      pedido
     } = req.body;
 
+    if (!cliente || !pedido) {
+      return res.status(400).json({ message: "Datos incompletos." });
+    }
+
+    const connection = await db.promise().getConnection();
+    await connection.beginTransaction();
+
     try {
-      await db.query(
+      // 1️⃣ Crear o verificar cliente (por cédula o email)
+      const [clienteExistente] = await connection.query(
+        `SELECT id_cliente FROM clientes WHERE nuip = ? OR email = ? LIMIT 1`,
+        [cliente.cedula, cliente.email]
+      );
+
+      let id_cliente;
+
+      if (clienteExistente.length > 0) {
+        id_cliente = clienteExistente[0].id_cliente;
+      } else {
+        const [nuevoCliente] = await connection.query(
+          `INSERT INTO clientes (nombre, nuip, direccion, telefono, email) VALUES (?, ?, ?, ?, ?)`,
+          [
+            cliente.nombre,
+            cliente.cedula,
+            cliente.direccion,
+            cliente.telefono,
+            cliente.email
+          ]
+        );
+        id_cliente = nuevoCliente.insertId;
+      }
+
+      // 2️⃣ Crear pedido asociado
+      const [nuevoPedido] = await connection.query(
         `INSERT INTO pedido_cliente 
-        (id_cliente, id_codigo, fecha_pedido, fecha_entrega, cantidad_prendas, total_pedido, abono, saldo, observaciones, garantia, estado)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          (id_cliente, fecha_pedido, fecha_entrega, total_pedido, abono, saldo, observaciones, estado)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          id_cliente || null,
-          id_codigo || null,
-          fecha_pedido,
-          fecha_entrega,
-          cantidad_prendas,
-          total_pedido,
-          abono || 0,
-          saldo || (total_pedido - (abono || 0)),
-          observaciones,
-          garantia,
-          estado || 'en_proceso'
+          id_cliente,
+          pedido.fechaInicio,
+          pedido.fechaEntrega,
+          pedido.totalPedido || 0,
+          pedido.abonoInicial || 0,
+          pedido.saldoPendiente || 0,
+          pedido.observaciones || "",
+          pedido.estado === "Finalizado" ? "listo" : "en_proceso"
         ]
       );
 
-      res.json({ mensaje: 'Pedido creado correctamente' });
+      await connection.commit();
+
+      res.status(201).json({
+        message: "Pedido y cliente guardados exitosamente",
+        id_cliente,
+        id_pedido: nuevoPedido.insertId
+      });
+
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al crear el pedido' });
+      await connection.rollback();
+      console.error("Error al crear pedido:", error);
+      res.status(500).json({ message: "Error al crear pedido", error: error.message });
+    } finally {
+      connection.release();
     }
   }
 
-  // Actualizar pedido
+  async obtenerPedidos(req, res) {
+    try {
+      const [rows] = await db.promise().query(
+        `SELECT p.*, c.nombre AS cliente_nombre 
+         FROM pedido_cliente p 
+         LEFT JOIN clientes c ON p.id_cliente = c.id_cliente`
+      );
+      res.json(rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error al obtener pedidos" });
+    }
+  }
+
+  async obtenerPedidoPorId(req, res) {
+    try {
+      const [rows] = await db.promise().query(
+        `SELECT * FROM pedido_cliente WHERE id_pedido = ?`,
+        [req.params.id]
+      );
+      res.json(rows[0]);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener pedido" });
+    }
+  }
+
   async actualizarPedido(req, res) {
-    const { id } = req.params;
-    const {
-      id_cliente,
-      id_codigo,
-      fecha_pedido,
-      fecha_entrega,
-      cantidad_prendas,
-      total_pedido,
-      abono,
-      saldo,
-      observaciones,
-      garantia,
-      estado
-    } = req.body;
-
     try {
-      await db.query(
-        `UPDATE pedido_cliente 
-        SET id_cliente = ?, id_codigo = ?, fecha_pedido = ?, fecha_entrega = ?, cantidad_prendas = ?, 
-            total_pedido = ?, abono = ?, saldo = ?, observaciones = ?, garantia = ?, estado = ?
-        WHERE id_pedido = ?`,
-        [
-          id_cliente || null,
-          id_codigo || null,
-          fecha_pedido,
-          fecha_entrega,
-          cantidad_prendas,
-          total_pedido,
-          abono,
-          saldo || (total_pedido - abono),
-          observaciones,
-          garantia,
-          estado,
-          id
-        ]
+      const [result] = await db.promise().query(
+        `UPDATE pedido_cliente SET ? WHERE id_pedido = ?`,
+        [req.body, req.params.id]
       );
-      res.json({ mensaje: 'Pedido actualizado correctamente' });
+      res.json({ message: "Pedido actualizado", result });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al actualizar el pedido' });
+      res.status(500).json({ message: "Error al actualizar pedido" });
     }
   }
 
-  // Eliminar pedido
   async eliminarPedido(req, res) {
-    const { id } = req.params;
     try {
-      await db.query(`DELETE FROM pedido_cliente WHERE id_pedido = ?`, [id]);
-      res.json({ mensaje: 'Pedido eliminado correctamente' });
+      await db.promise().query(
+        `DELETE FROM pedido_cliente WHERE id_pedido = ?`,
+        [req.params.id]
+      );
+      res.json({ message: "Pedido eliminado" });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al eliminar el pedido' });
+      res.status(500).json({ message: "Error al eliminar pedido" });
     }
   }
 
-  // Cambiar estado del pedido
   async cambiarEstado(req, res) {
-    const { id } = req.params;
-    const { estado } = req.body;
     try {
-      await db.query(`UPDATE pedido_cliente SET estado = ? WHERE id_pedido = ?`, [estado, id]);
-      res.json({ mensaje: `Estado del pedido actualizado a "${estado}"` });
+      await db.promise().query(
+        `UPDATE pedido_cliente SET estado = ? WHERE id_pedido = ?`,
+        [req.body.estado, req.params.id]
+      );
+      res.json({ message: "Estado actualizado" });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error al cambiar el estado del pedido' });
+      res.status(500).json({ message: "Error al cambiar estado" });
     }
   }
 }

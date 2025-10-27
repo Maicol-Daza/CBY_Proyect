@@ -1,4 +1,4 @@
-*{
+* {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -9,7 +9,6 @@
     color: #111827;
 }
 
-
 .pedido-top {
     display: grid;
     grid-template-columns: 1fr 360px;
@@ -17,7 +16,6 @@
     align-items: start;
     margin-bottom: 24px;
 }
-
 
 .card {
     background: #fff;
@@ -27,39 +25,41 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-
+/* --- TITULOS --- */
 .pedido-form h2 {
-    margin: 0 0 16px;
-    font-size: 1.1rem;
+    margin: 0 0 14px;
+    font-size: 1rem;
     font-weight: 600;
     color: #111827;
 }
 
-
+/* --- CAMPOS GENERALES --- */
 .pedido-form .field {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .pedido-form label {
     display: block;
-    margin-bottom: 6px;
-    font-size: 0.875rem;
+    margin-bottom: 5px;
+    font-size: 0.8rem;
     font-weight: 500;
     color: #6b7280;
 }
 
-
+.pedido-form input[type="text"],
+.pedido-form input[type="email"],
+.pedido-form input[type="tel"],
 .pedido-form input[type="date"],
 .pedido-form input[type="number"],
 .pedido-form select,
 .pedido-form textarea {
     width: 100%;
-    padding: 10px 12px;
+    padding: 9px 11px;
     border: 1px solid #e6edf3;
     border-radius: 6px;
     background: #f8fafc;
     color: #111827;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-family: inherit;
     box-sizing: border-box;
 }
@@ -77,10 +77,31 @@
     min-height: 80px;
 }
 
+/* --- SECCIÓN CLIENTE --- */
+.cliente-form {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e6edf3;
+    padding-bottom: 16px;
+}
 
+.cliente-form h2 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+    color: #111827;
+}
+
+.cliente-form .field label {
+    font-size: 0.8rem;
+}
+
+.cliente-form input {
+    font-size: 0.88rem;
+}
+
+/* --- CAJONES --- */
 .cajones-section h2 {
     margin: 0 0 12px;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: #111827;
 }
@@ -90,7 +111,6 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
-
 
 .cajon {
     padding: 14px 12px;
@@ -109,60 +129,53 @@
     border-color: #d1d5db;
 }
 
-
+/* --- SECCIÓN PRENDAS --- */
 .prendas-section {
     margin-top: 24px;
 }
 
 .prendas-section h2 {
-    margin: 0 0 16px;
-    font-size: 1.1rem;
+    margin: 0 0 14px;
+    font-size: 1.05rem;
     font-weight: 600;
     color: #111827;
 }
 
-
-.btn-primary {
+/* --- BOTONES --- */
+.btn-primary,
+.NuevoCliente {
     display: inline-block;
-    padding: 10px 18px;
+    padding: 9px 16px;
     border: none;
     border-radius: 6px;
     background: #3b82f6;
     color: #fff;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
+}
+.error {
+  color: #e63946;
+  font-size: 0.9rem;
+  margin-top: 4px;
 }
 
-.NuevoCliente{
-     display: inline-block;
-    padding: 10px 18px;
-    border: none;
-    border-radius: 6px;
-    background: #3b82f6;
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-}
-.NuevoCliente:hover{
-background: #2564eba6;
-}
-.btn-primary:hover {
+.btn-primary:hover,
+.NuevoCliente:hover {
     background: #2563eb;
 }
 
-
+/* --- RESPONSIVE --- */
 @media (max-width: 900px) {
     .pedidos-page {
         padding: 20px;
     }
-    
+
     .pedido-top {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .cajones-grid {
         grid-template-columns: repeat(4, 1fr);
     }
@@ -172,26 +185,29 @@ background: #2564eba6;
     .pedidos-page {
         padding: 16px;
     }
-    
+
     .card {
         padding: 16px;
     }
-    
+
     .cajones-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
-    
+
     .cajon {
         padding: 12px 10px;
         font-size: 0.85rem;
     }
-    
-    .pedido-form input[type="date"],
-    .pedido-form input[type="number"],
+
+    .pedido-form input,
     .pedido-form select,
     .pedido-form textarea {
-        padding: 9px 11px;
+        padding: 8px 10px;
+    }
+
+    .pedido-form label {
+        font-size: 0.78rem;
     }
 }
 
