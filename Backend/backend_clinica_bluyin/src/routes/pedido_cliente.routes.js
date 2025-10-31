@@ -4,6 +4,8 @@ const PedidoClienteController = require('../controllers/pedido_cliente.controlle
 const router = express.Router();
 const pedidoController = new PedidoClienteController();
 
+
+
 router.get('/', (req, res) => pedidoController.obtenerPedidos(req, res));
 router.get('/:id', (req, res) => pedidoController.obtenerPedidoPorId(req, res));
 router.post('/', (req, res) => pedidoController.crearPedido(req, res));

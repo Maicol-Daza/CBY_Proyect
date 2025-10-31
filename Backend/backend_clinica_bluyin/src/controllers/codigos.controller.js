@@ -1,7 +1,7 @@
 const db = require('../config/conexion_db');
 
 class CodigosController {
-    // Obtener todos los códigos con información del cajón
+    // Obtener todos los códigos con información del cajón y estado
     async obtenerCodigos(req, res) {
         try {
             const [codigos] = await db.query(`
@@ -9,6 +9,8 @@ class CodigosController {
           c.id_codigo,
           c.codigo_numero,
           c.id_cajon,
+          c.id_pedido,
+          c.estado,
           cj.nombre_cajon AS nombre_cajon,
           cj.estado AS estado_cajon
         FROM codigos c
@@ -22,6 +24,30 @@ class CodigosController {
         }
     }
 
+    // Obtener solo códigos disponibles
+    async obtenerCodigosDisponibles(req, res) {
+        try {
+            const [codigos] = await db.query(`
+        SELECT 
+          c.id_codigo,
+          c.codigo_numero,
+          c.id_cajon,
+          c.id_pedido,
+          c.estado,
+          cj.nombre_cajon AS nombre_cajon,
+          cj.estado AS estado_cajon
+        FROM codigos c
+        LEFT JOIN cajones cj ON c.id_cajon = cj.id_cajon
+        WHERE c.estado = 'disponible' OR c.estado IS NULL
+      `);
+
+            res.json(codigos);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Error al obtener los códigos disponibles' });
+        }
+    }
+
     // Obtener un código por ID
     async obtenerCodigoPorId(req, res) {
         const { id } = req.params;
@@ -32,6 +58,8 @@ class CodigosController {
           c.id_codigo,
           c.codigo_numero,
           c.id_cajon,
+          c.id_pedido,
+          c.estado,
           cj.nombre_cajon AS nombre_cajon,
           cj.estado AS estado_cajon
         FROM codigos c
@@ -57,7 +85,7 @@ class CodigosController {
         const { codigo_numero, id_cajon } = req.body;
         try {
             await db.query(
-                `INSERT INTO codigos (codigo_numero, id_cajon) VALUES (?, ?)`,
+                `INSERT INTO codigos (codigo_numero, id_cajon, estado) VALUES (?, ?, 'disponible')`,
                 [codigo_numero, id_cajon || null]
             );
             res.json({ mensaje: 'Código agregado correctamente' });
@@ -70,11 +98,11 @@ class CodigosController {
     // Actualizar código
     async actualizarCodigo(req, res) {
         const { id } = req.params;
-        const { codigo_numero, id_cajon } = req.body;
+        const { codigo_numero, id_cajon, estado } = req.body;
         try {
             await db.query(
-                `UPDATE codigos SET codigo_numero = ?, id_cajon = ? WHERE id_codigo = ?`,
-                [codigo_numero, id_cajon || null, id]
+                `UPDATE codigos SET codigo_numero = ?, id_cajon = ?, estado = ? WHERE id_codigo = ?`,
+                [codigo_numero, id_cajon || null, estado || 'disponible', id]
             );
             res.json({ mensaje: 'Código actualizado correctamente' });
         } catch (error) {

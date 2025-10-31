@@ -9,7 +9,7 @@ export default function Layout() {
             <Link to="/pedidos">pedidos</Link>
             <Link to="/historialPedidos">historialPedidos</Link>
             <Link to="/moduloCaja">moduloCaja</Link>
-            <Link to="/configAjustes">configAjustes</Link>
+            <Link to="/configuracionAjustes">ConfiguracionAjustes</Link>
             <Outlet />
         </>
     )

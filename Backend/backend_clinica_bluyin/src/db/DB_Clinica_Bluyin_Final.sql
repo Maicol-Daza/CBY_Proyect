@@ -55,9 +55,12 @@ CREATE TABLE IF NOT EXISTS cajones (
 
 CREATE TABLE IF NOT EXISTS codigos (
     id_codigo INT AUTO_INCREMENT PRIMARY KEY,
-    codigo_numero VARCHAR(50),
+    id_pedido INT,
     id_cajon INT,
-    FOREIGN KEY (id_cajon) REFERENCES cajones(id_cajon) ON DELETE SET NULL ON UPDATE CASCADE
+	codigo_numero VARCHAR(50),
+    estado VARCHAR(20) DEFAULT 'disponible',
+    FOREIGN KEY (id_cajon) REFERENCES cajones(id_cajon) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (id_pedido) REFERENCES pedido_cliente(id_pedido) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS ajustes (
@@ -83,18 +86,15 @@ CREATE TABLE IF NOT EXISTS ajustes_accion (
 CREATE TABLE IF NOT EXISTS pedido_cliente (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT,
-    id_codigo INT,
     fecha_pedido DATE,
     fecha_entrega DATE,
-    cantidad_prendas INT,
     total_pedido DECIMAL(10,2),
     abono DECIMAL(10,2) DEFAULT 0,
     saldo DECIMAL(10,2) DEFAULT 0,
     observaciones VARCHAR(500),
     garantia varchar(500),
     estado ENUM('en_proceso','listo','entregado') DEFAULT 'en_proceso',
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (id_codigo) REFERENCES codigos(id_codigo) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS prendas (
@@ -102,6 +102,7 @@ CREATE TABLE IF NOT EXISTS prendas (
     id_pedido INT,                 -- cada prenda pertenece a un pedido
     tipo VARCHAR(100),
     descripcion TEXT,
+    cantidad INT DEFAULT 1,
     FOREIGN KEY (id_pedido) REFERENCES pedido_cliente(id_pedido) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -160,6 +161,10 @@ SELECT LPAD(n, 3, '0'),
 FROM seq;
 
 
+
+
+
+
 INSERT INTO ajustes (nombre_ajuste) VALUES
 ('Cintura'),
 ('Bota'),
@@ -199,8 +204,18 @@ INSERT INTO acciones (nombre_accion) VALUES
 ('Menos'),
 ('embonada');
 
+INSERT INTO prendas (tipo, descripcion) VALUES
+('Jean', 'Jean azul clásico'),
+('Camisa', 'Camisa manga larga blanca'),
+('Chaqueta', 'Chaqueta de mezclilla');
 
 
-select * from ajustes_accion;
+select * from clientes;
+select * from codigos;
+select * from detalle_pedido_combo;
+select * from pedido_cliente;
+select * from prendas;
 
-drop database ClinicaBluyin
+
+drop database ClinicaBluyin;
+

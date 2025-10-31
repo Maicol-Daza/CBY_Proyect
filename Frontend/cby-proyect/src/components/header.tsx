@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import "../styles/header.css"
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -16,7 +16,7 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
         { key: "/pedidos", label: "Pedidos" },
         { key: "/historialPedidos", label: "Historial" },
         { key: "/moduloCaja", label: "Caja" },
-        { key: "/configAjustes", label: "Config. Arreglos" },
+        { key: "/ConfiguracionAjustes", label: "Config. Ajustes" },
     ];
 
     return (

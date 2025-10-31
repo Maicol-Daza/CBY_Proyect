@@ -3,7 +3,7 @@ export default function inicio() {
         <>
 
             <main className="p-4">
-                <p>Inicio del aplicativo</p>
+              <h1>Pagina Inicio</h1>
             </main>
         </>
     );
