@@ -1,0 +1,33 @@
+.bienvenido-dashboard {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+}
+
+.bienvenido-saludo {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #1e293b;
+}
+
+.bienvenido-rol {
+    font-size: 1.2rem;
+    color: #475569;
+    margin-bottom: 30px;
+}
+
+.btn-cerrar-sesion {
+    padding: 10px 20px;
+    background-color: #334155;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-cerrar-sesion:hover {
+    background-color: #475569;
+}

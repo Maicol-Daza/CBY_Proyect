@@ -1,10 +1,4 @@
-export default function inicio() {
-    return (
-        <>
+import { Navigate } from "react-router-dom";
 
-            <main className="p-4">
-              <h1>Pagina Inicio</h1>
-            </main>
-        </>
-    );
-}
+export const Inicio = () => <Navigate to="/bienvenido" replace />;
+export default Inicio;

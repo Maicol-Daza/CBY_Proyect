@@ -1,0 +1,84 @@
+/* Estilos generales del header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1e293b; /* azul oscuro */
+  color: white;
+  padding: 0.8rem 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Lado izquierdo: logo + navegación */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.header-logo {
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #ffffff;
+  transition: color 0.3s;
+}
+
+.header-logo:hover {
+  color: #93c5fd; /* azul claro al pasar el mouse */
+}
+
+/* Navegación */
+.header-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  color: #e5e7eb; /* gris claro */
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s, border-bottom 0.3s;
+  padding-bottom: 2px;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  border-bottom: 2px solid #60a5fa; /* azul celeste */
+}
+
+.nav-link.active {
+  color: #ffffff;
+  border-bottom: 2px solid #2563eb; /* azul más fuerte */
+}
+
+/* Lado derecho: usuario + logout */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-user {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Botón logout pill-button */
+.logout-btn {
+  background-color: #4b5563; /* gris oscuro */
+  color: white;
+  border: none;
+  padding: 0.35rem 0.9rem; /* más compacto */
+  border-radius: 9999px; /* hace el estilo pill */
+  cursor: pointer;
+  font-size: 0.85rem; /* un poco más pequeño */
+  font-weight: 500;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #374151; /* gris más intenso */
+  transform: scale(1.05); /* efecto sutil al hover */
+}
+

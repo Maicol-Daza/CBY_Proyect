@@ -1,10 +1,9 @@
-export default function historialPedidos() {
-    return (
-        <>
+import LayoutPublic from "../components/layout/LayoutPublic";
 
-            <main className="p-4">
-                <p>Historial de Pedidos</p>
-            </main>
-        </>
-    );
-}
+export const HistorialPedidos = () => (
+    <LayoutPublic>
+        <h1>Historial de Pedidos</h1>
+    </LayoutPublic>
+);
+
+export default HistorialPedidos;

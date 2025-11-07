@@ -1,0 +1,108 @@
+.registro-fondo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f5f5, #d9eaf7);
+}
+
+.registro-tarjeta {
+    background-color: white;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    width: 350px;
+    text-align: center;
+    animation: aparecer 0.5s ease-out;
+}
+
+@keyframes aparecer {
+    0% { opacity: 0; transform: translateY(-20px);}
+    100% { opacity: 1; transform: translateY(0);}
+}
+
+.registro-titulo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 25px;
+    color: #222;
+}
+
+.registro-formulario {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.registro-grupo {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.registro-etiqueta {
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.registro-entrada {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.registro-boton {
+    padding: 12px;
+    background-color: rgb(17, 161, 194);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.registro-boton:hover {
+    background-color: #0a7b8a;
+    transform: translateY(-2px);
+}
+
+.registro-boton:active {
+    background-color: #06676c;
+}
+
+.registro-boton:focus {
+    outline: none;
+}
+
+.registro-error {
+    color: red;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.registro-exito {
+    color: green;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.registro-texto {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.registro-enlace {
+    color: rgb(17, 161, 194);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.registro-enlace:hover {
+    text-decoration: underline;
+}

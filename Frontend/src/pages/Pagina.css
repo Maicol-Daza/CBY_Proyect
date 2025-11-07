@@ -1,0 +1,76 @@
+.pagina-contenedor {
+    padding: 1.5rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+}
+
+.pagina-titulo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.pagina-boton {
+    background-color: #0881b5;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.pagina-boton:hover {
+    background-color: #2599cb;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: white;
+}
+
+.tabla th,
+.tabla td {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.tabla thead {
+    background-color: #f3f4f6;
+}
+
+.tabla-acciones {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.boton-accion {
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    border: none;
+}
+
+.boton-editar {
+    background-color: #20b2aa; 
+    color: white;
+}
+
+.boton-eliminar {
+    background-color: #374151; 
+    color: white;
+}
+
+.ocultar-columna {
+    display: none;
+}
+
+.tabla-vacia {
+    text-align: center;
+    color: #6b7280;
+    padding: 1rem;
+}
