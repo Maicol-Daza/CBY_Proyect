@@ -25,6 +25,7 @@ app.use('/api/pedidos', require('./routes/pedido_cliente.routes'));
 app.use('/api/prendas', require('./routes/prendas.routes'));
 app.use('/api/detalle-pedido-combo', require('./routes/detalle_pedido_combo.routes'));
 app.use('/api/movimientos_caja', require('./routes/movimientos_caja.routes'));
+app.use('/api/caja', require('./routes/caja.routes'));
 app.use('/api/historial_abonos', require('./routes/historial_abonos.routes'));
 
 
