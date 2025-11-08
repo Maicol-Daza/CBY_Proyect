@@ -6,7 +6,6 @@ export default function Pedidos() {
     return (
         <LayoutPublic>
             <main className="pedidosPage">
-                <h1>Pedidos</h1>
                 <PedidosComponent />
             </main>
         </LayoutPublic>

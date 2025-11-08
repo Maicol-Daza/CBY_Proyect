@@ -1,6 +1,7 @@
 import React from "react";
 import "../styles/header.css"
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { FaHome, FaUsers, FaClipboardList, FaHistory, FaCashRegister, FaCog, FaSignOutAlt, FaTshirt } from 'react-icons/fa';
 
 type User = { name: string; role?: string; };
 type Props = { user?: User; onLogout?: () => void; };
@@ -11,18 +12,23 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
     const location = useLocation();
 
     const items = [
-        { key: "/bienvenido", label: "Inicio" },
-        { key: "/clientes", label: "Clientes" },
-        { key: "/pedidos", label: "Pedidos" },
-        { key: "/historialPedidos", label: "Historial" },
-        { key: "/moduloCaja", label: "Caja" },
-        { key: "/configuracionAjustes", label: "Config. Ajustes" },
+        { key: "/bienvenido", label: "Inicio", icon: <FaHome className="text-xl" /> },
+        { key: "/clientes", label: "Clientes", icon: <FaUsers className="text-xl" /> },
+        { key: "/pedidos", label: "Pedidos", icon: <FaClipboardList className="text-xl" /> },
+        { key: "/historialPedidos", label: "Historial", icon: <FaHistory className="text-xl" /> },
+        { key: "/moduloCaja", label: "Caja", icon: <FaCashRegister className="text-xl" /> },
+        { key: "/configuracionAjustes", label: "Config. Ajustes", icon: <FaCog className="text-xl" /> },
     ];
 
     return (
         <header className="app-header">
             <div className="container mx-auto flex items-center justify-between px-4 py-2">
-                <div className="brand"><Link to="/bienvenido">Clínica del Bluyin</Link></div>
+                <div className="brand">
+                    <Link to="/bienvenido" className="flex items-center gap-2">
+                        <FaTshirt className="text-2xl" />
+                        <span>Clínica del Bluyin</span>
+                    </Link>
+                </div>
 
                 <nav>
                     <ul className="flex gap-2">
@@ -30,8 +36,12 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
                             const active = location.pathname === it.key;
                             return (
                                 <li key={it.key}>
-                                    <Link to={it.key} className={active ? "nav-button active" : "nav-button"}>
-                                        {it.label}
+                                    <Link 
+                                        to={it.key} 
+                                        className={active ? "nav-button active" : "nav-button"}
+                                    >
+                                        <span className="icon-container">{it.icon}</span>
+                                        <span className="label">{it.label}</span>
                                     </Link>
                                 </li>
                             );
@@ -40,8 +50,14 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
                 </nav>
 
                 <div className="user-info">
-                    <div className="text-sm text-gray-700">{user.name} - <span className="text-xs text-gray-500">{user.role}</span></div>
-                    <button onClick={() => onLogout?.()} className="logout">Salir</button>
+                    <div className="user-details">
+                        <span className="user-name">{user.name}</span>
+                        <span className="user-role">{user.role}</span>
+                    </div>
+                    <button onClick={() => onLogout?.()} className="logout-button">
+                        <FaSignOutAlt />
+                        <span>Salir</span>
+                    </button>
                 </div>
             </div>
         </header>

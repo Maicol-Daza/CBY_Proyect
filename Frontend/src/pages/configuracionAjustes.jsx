@@ -1,13 +1,12 @@
 import React from "react";
 import LayoutPublic from "../components/layout/LayoutPublic";
-
+import ConfiguracionAjustesComponent from "../components/configuracionAjustes";
 export default function ConfiguracionAjustes() {
     return (
         <LayoutPublic>
-            <div style={{ padding: 20 }}>
-                <h1>Configuración y Ajustes</h1>
-                <p>Contenido de configuración (provisional).</p>
-            </div>
+            <main className="configuracionAjustesPage">
+                <ConfiguracionAjustesComponent />
+            </main>
         </LayoutPublic>
     );
 }

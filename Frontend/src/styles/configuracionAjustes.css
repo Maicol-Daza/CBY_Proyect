@@ -69,17 +69,22 @@
   background-color: #dc3545;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
-  min-width: 70px;
+  min-width: 75px;
+  width: calc(50% - 4px); /* Toma la mitad del espacio menos el gap */
   white-space: nowrap;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 36px; /* Altura fija para todos los botones */
+  margin: 0;
 }
 
 .btn-eliminar:hover {
@@ -423,17 +428,22 @@
   background-color: #007bff;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  min-width: 75px;
+  width: calc(50% - 4px); /* Toma la mitad del espacio menos el gap */
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   font-size: 14px;
   font-weight: 500;
-  min-width: 60px;
-  white-space: nowrap;
-  display: inline-block;
-  text-align: center;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 36px; /* Altura fija para todos los botones */
+  margin: 0;
 }
 
 .btn-editar:hover {
@@ -460,6 +470,7 @@
   gap: 8px;
   justify-content: flex-end;
   align-items: center;
+  min-width: 160px; /* Asegura un ancho mínimo para los botones */
 }
 
 /* Lista de elementos */
@@ -550,14 +561,18 @@
 @media (max-width: 768px) {
   .acciones-combinacion,
   .acciones-elemento {
-    flex-direction: column;
-    gap: 5px;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-end;
+    padding: 0 8px;
   }
   
   .btn-editar,
   .btn-eliminar {
-    min-width: 100%;
+    width: auto;
+    min-width: 80px;
     padding: 8px 12px;
+    font-size: 13px;
   }
   
   .combinaciones-table {
@@ -567,5 +582,16 @@
   .combinaciones-table th,
   .combinaciones-table td {
     padding: 8px 10px;
+  }
+  
+  .elemento-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .elemento-item .acciones-elemento {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 8px;
   }
 }

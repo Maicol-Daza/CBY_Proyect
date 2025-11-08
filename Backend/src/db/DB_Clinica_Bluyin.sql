@@ -215,3 +215,41 @@ select * from codigos;
 select * from detalle_pedido_combo;
 select * from pedido_cliente;
 select * from prendas;
+select * from usuarios;
+
+
+
+-- Insertar roles
+INSERT INTO roles (nombre) VALUES 
+('Administrador'),
+('Empleado');
+
+-- Insertar permisos
+INSERT INTO permisos (nombre, descripcion) VALUES
+('Crear', 'Permite crear nuevos registros'),
+('Leer', 'Permite visualizar registros'),
+('Actualizar', 'Permite modificar registros existentes'),
+('Eliminar', 'Permite eliminar registros');
+
+-- Asignar permisos al rol Administrador (id_rol = 1)
+INSERT INTO rol_permiso (id_rol, permiso_id) VALUES
+(1, 1), -- Crear
+(1, 2), -- Leer
+(1, 3), -- Actualizar
+(1, 4); -- Eliminar
+
+-- Asignar permisos al rol Empleado (id_rol = 2), solo Leer
+INSERT INTO rol_permiso (id_rol, permiso_id) VALUES
+(2, 2);
+
+-- Insertar usuario Admin (contraseña: 123456)
+INSERT INTO usuarios (nombre, email, clave, id_rol)
+VALUES 
+('Admin', 'admin@gmail.com', '$2b$10$wLyuMd5mP.D5YekcUa2uSOQIRXvXFyKmpz3go/ryHgHU1ihTtioa6', 1); 
+-- La contraseña es: 1
+
+-- Insertar usuario Empleado (contraseña: 123456)
+INSERT INTO usuarios (nombre, email, clave, id_rol)
+VALUES 
+('Empleado', 'empleado@gmail.com', '$2b$10$wLyuMd5mP.D5YekcUa2uSOQIRXvXFyKmpz3go/ryHgHU1ihTtioa6', 2);
+-- La contraseña es: 1

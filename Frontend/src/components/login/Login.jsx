@@ -12,16 +12,23 @@ export const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const success = await login(email, password);
-        if (success) {
-            // Redirigir según rol
-            if (user?.rol === "Administrador") {
-                navigate("/principal");
+        // login ahora devuelve el usuario (o null). Usamos el usuario retornado
+        // para evitar condiciones de carrera con el contexto.
+        try {
+            const usuario = await login(email, password);
+            if (usuario) {
+                const rol = usuario.rol || user?.rol;
+                if (rol === "Administrador") {
+                    navigate("/principal");
+                } else {
+                    navigate("/bienvenido");
+                }
             } else {
-                navigate("/bienvenido");
+                alert("Credenciales inválidas");
             }
-        } else {
-            alert("Credenciales inválidas");
+        } catch (err) {
+            console.error("Error en login:", err);
+            alert("Ocurrió un error al iniciar sesión. Intenta de nuevo.");
         }
     };
 

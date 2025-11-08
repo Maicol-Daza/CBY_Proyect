@@ -12,7 +12,7 @@ import Clientes from "../pages/Clientes";
 import Pedidos from "../pages/Pedidos";
 import HistorialPedidos from "../pages/HistorialPedidos";
 import ModuloCaja from "../pages/ModuloCaja";
-import ConfiguracionAjustes from "../pages/ConfiguracionAjustes";
+import ConfiguracionAjustes from "../pages/configuracionAjustes";
 import { useAuthContext } from "../context/AuthContext";
 
 const PrivateRoute = ({ children, allowedRoles }) => {

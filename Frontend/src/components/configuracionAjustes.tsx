@@ -337,7 +337,7 @@ export default function ConfiguracionAjustes() {
   return (
     <div className="configuracion-ajustes">
       <div className="configuracion-header">
-        <h1>Constructor de Ajustes - Pantalin</h1>
+        <h1>Constructor de Ajustes </h1>
         <button 
           className="btn-primary"
           onClick={() => setMostrarModal(true)}

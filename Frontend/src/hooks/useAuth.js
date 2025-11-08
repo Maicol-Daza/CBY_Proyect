@@ -23,9 +23,10 @@ export const useAuth = () => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.usuario));
 
-        return true;
+        // Devolver el usuario para que el llamador pueda usar su rol inmediatamente
+        return data.usuario;
         }
-        return false;
+        return null;
     };
 
     const logout = () => {
