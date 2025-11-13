@@ -1,8 +1,9 @@
 import LayoutPublic from "../components/layout/LayoutPublic";
+import { HistorialModule } from "../components/historialModule";
 
 export const HistorialPedidos = () => (
     <LayoutPublic>
-        <h1>Historial de Pedidos</h1>
+        <HistorialModule />
     </LayoutPublic>
 );
 

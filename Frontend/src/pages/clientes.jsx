@@ -1,9 +1,11 @@
 import LayoutPublic from "../components/layout/LayoutPublic";
+import ClientesModule from "../components/clientesModule";
 
 export const Clientes = () => (
     <LayoutPublic>
-        <h1>Clientes</h1>
-        <p>Página de clientes (contenido provisional)</p>
+         <main className="pedidosPage">
+               <ClientesModule />
+            </main>
     </LayoutPublic>
 );
 

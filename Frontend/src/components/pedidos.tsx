@@ -463,6 +463,26 @@ export default function Pedidos() {
     }
   };
 
+  // Si venimos desde "Nuevo Pedido" (clientes), rellenar cliente automáticamente
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("nuevoPedidoCliente");
+      if (raw) {
+        const data = JSON.parse(raw);
+        setCliente({
+          nombre: data.nombre || "",
+          cedula: data.cedula || "",
+          telefono: data.telefono || "",
+          direccion: data.direccion || "",
+          email: data.email || ""
+        });
+        localStorage.removeItem("nuevoPedidoCliente");
+      }
+    } catch (err) {
+      console.error("Error leyendo nuevoPedidoCliente:", err);
+    }
+  }, []);
+  
   // 🎨 Render
   return (
     <div className="pedidos-page">
