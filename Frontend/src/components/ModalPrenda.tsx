@@ -4,6 +4,8 @@ import { type Ajuste } from "../services/ajustesService";
 import { type Accion } from "../services/accionesService";
 import { type AjusteAccion } from "../services/ajustesAccionService";
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
+import { FaTrash  } from 'react-icons/fa';
+
 
 interface ModalPrendaProps {
   isOpen: boolean;
@@ -362,7 +364,7 @@ export default function ModalPrenda({
                 onClick={() => handleSeleccionarArreglo(arreglo)}
               >
                 <div className="arreglo-nombre">{arreglo.nombre}</div>
-                <div className="arreglo-precio">
+                <div className="arreglo-precio-Prendas ">
                   {arreglo.precio > 0 ? `$${arreglo.precio.toLocaleString()}` : 'Sin precio'}
                 </div>
               </div>
@@ -390,16 +392,20 @@ export default function ModalPrenda({
                         : arreglo.nombre_accion
                       }
                     </span>
-                    <span className="arreglo-precio">
+                    <span className="arreglo-precio-Prendas">
                       ${arreglo.precio.toLocaleString()}
                     </span>
                   </div>
+
+                  {/* Espacio entre el boton y el precio en el modal */}
+                  <p className="Espacio-precio"><br /></p>
+                  
                   <button
                     type="button"
-                    className="btn-eliminar"
+                    className="btn-eliminar-prendas"
                     onClick={() => handleEliminarArreglo(index)}
                   >
-                    ✕
+                    <FaTrash /> Eliminar
                   </button>
                 </div>
               ))}

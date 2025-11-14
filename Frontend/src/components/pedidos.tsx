@@ -7,6 +7,7 @@ import { obtenerAcciones, type Accion } from "../services/accionesService";
 import { obtenerAjustesAccion, type AjusteAccion } from "../services/ajustesAccionService";
 import ModalPrenda from "../components/ModalPrenda";
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
+import { FaEdit } from "react-icons/fa";
 
 // Interfaces (manteniendo las existentes)
 interface Pedido {
@@ -33,15 +34,15 @@ interface Errores {
 
 // Configuración de cajones basada en la imagen
 const CONFIG_CAJONES = [
-  { id: 1, nombre: "Cajón 1", rango: "1-26" },
-  { id: 2, nombre: "Cajón 2", rango: "27-53" },
-  { id: 3, nombre: "Cajón 3", rango: "54-80" },
-  { id: 4, nombre: "Cajón 4", rango: "81-107" },
-  { id: 5, nombre: "Cajón 5", rango: "108-134" },
-  { id: 6, nombre: "Cajón 6", rango: "Pedidos grandes 135-145" },
-  { id: 7, nombre: "Cajón 7", rango: "146-172" },
-  { id: 8, nombre: "Cajón 8", rango: "173-199" },
-  { id: 9, nombre: "Cajón 9", rango: "200-226" },
+  { id: 1, nombre: "Cajón 01", rango: "1-26" },
+  { id: 2, nombre: "Cajón 02", rango: "27-53" },
+  { id: 3, nombre: "Cajón 03", rango: "54-80" },
+  { id: 4, nombre: "Cajón 04", rango: "81-107" },
+  { id: 5, nombre: "Cajón 05", rango: "108-134" },
+  { id: 6, nombre: "Cajón 06", rango: "Pedidos grandes 135-145" },
+  { id: 7, nombre: "Cajón 07", rango: "146-172" },
+  { id: 8, nombre: "Cajón 08", rango: "173-199" },
+  { id: 9, nombre: "Cajón 09", rango: "200-226" },
   { id: 10, nombre: "Cajón 10", rango: "227-253" },
   { id: 11, nombre: "Cajón 11", rango: "254-280" },
   { id: 12, nombre: "Cajón 12", rango: "281-307" },
@@ -154,7 +155,7 @@ export default function Pedidos() {
     setPrecioModificado(totalPrendas); // Inicializar el precio modificado
   }, [prendasTemporales]);
 
-  // ✅ Validar campos antes de enviar
+  //  Validar campos antes de enviar
   const validarCampos = (): boolean => {
     const nuevosErrores: Errores = {};
 
@@ -334,7 +335,7 @@ export default function Pedidos() {
     }
   };
 
-  // Manejar editar prenda
+  // Manejar editar prenda0
   const handleEditarPrenda = (index: number) => {
     setPrendaEditando(index);
     setMostrarModalPrenda(true);
@@ -553,7 +554,7 @@ export default function Pedidos() {
             >
               <option value="">Seleccione una opción</option>
               <option value="En proceso">En proceso</option>
-              <option value="Finalizado">Finalizado</option>
+              {/* <option value="Finalizado">Finalizado</option> */}
             </select>
             {errores.estado && <p className="error">{errores.estado}</p>}
           </div>
@@ -591,7 +592,8 @@ export default function Pedidos() {
                 className="btn-modificar-precio"
                 onClick={() => setMostrarModificarPrecio(true)}
               >
-                ✏️ Modificar
+                <FaEdit /> Modificar
+
               </button>
             </div>
             

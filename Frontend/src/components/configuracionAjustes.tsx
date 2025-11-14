@@ -23,6 +23,8 @@ import {
   type AjusteAccion 
 } from "../services/ajustesAccionService";
 
+import { FaEdit, FaTrash } from "react-icons/fa";
+
 export default function ConfiguracionAjustes() {
   // Estados
   const [ajustes, setAjustes] = useState<Ajuste[]>([]);
@@ -311,16 +313,16 @@ export default function ConfiguracionAjustes() {
           !a.nombre_ajuste.includes('mano')
         )
       },
-      {
-        nombre: "Técnicas de Ajuste",
-        ajustes: ajustes.filter(a => 
-          a.nombre_ajuste.includes('(menos)') || 
-          a.nombre_ajuste.includes('Zig-Zag') ||
-          a.nombre_ajuste.includes('Coser') ||
-          a.nombre_ajuste.includes('Adapíá') ||
-          a.nombre_ajuste.includes('mano')
-        )
-      }
+      // {
+      //   nombre: "Técnicas de Ajuste",
+      //   ajustes: ajustes.filter(a => 
+      //     a.nombre_ajuste.includes('(menos)') || 
+      //     a.nombre_ajuste.includes('Zig-Zag') ||
+      //     a.nombre_ajuste.includes('Coser') ||
+      //     a.nombre_ajuste.includes('Adapíá') ||
+      //     a.nombre_ajuste.includes('mano')
+      //   )
+      // }
     ];
   };
 
@@ -383,13 +385,13 @@ export default function ConfiguracionAjustes() {
                             setMostrarModalEditarCombinacion(true);
                           }}
                         >
-                          Editar
+                          <FaEdit /> Editar
                         </button>
                         <button 
                           className="btn-eliminar"
                           onClick={() => handleEliminarCombinacion(combinacion.id_ajuste_accion)}
                         >
-                          Eliminar
+                          <FaTrash /> Eliminar
                         </button>
                       </div>
                     </td>
@@ -431,13 +433,13 @@ export default function ConfiguracionAjustes() {
                       setMostrarModalEditarAjuste(true);
                     }}
                   >
-                    Editar
+                   <FaEdit /> Editar
                   </button>
                   <button 
                     className="btn-eliminar"
                     onClick={() => handleEliminarAjuste(ajuste.id_ajuste, ajuste.nombre_ajuste)}
                   >
-                    Eliminar
+                    <FaTrash /> Eliminar
                   </button>
                 </div>
               </div>
@@ -473,13 +475,13 @@ export default function ConfiguracionAjustes() {
                       setMostrarModalEditarAccion(true);
                     }}
                   >
-                    Editar
+                    <FaEdit /> Editar
                   </button>
                   <button 
                     className="btn-eliminar"
                     onClick={() => handleEliminarAccion(accion.id_accion, accion.nombre_accion)}
                   >
-                    Eliminar
+                   <FaTrash /> Eliminar
                   </button>
                 </div>
               </div>

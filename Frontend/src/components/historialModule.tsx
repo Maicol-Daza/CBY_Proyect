@@ -3,6 +3,7 @@ import "../styles/historialModule.css";
 import { FaDownload, FaEye, FaTimes } from "react-icons/fa";
 import { obtenerCodigos } from "../services/codigosService";
 import { obtenerCajones } from "../services/cajonesService";
+import { FaEdit } from 'react-icons/fa';
 
 export const HistorialModule = () => {
     const [pedidos, setPedidos] = useState<any[]>([]);
@@ -239,7 +240,7 @@ export const HistorialModule = () => {
                                     <th>Fecha Entrega</th>
                                     <th>Estado</th>
                                     <th>Total</th>
-                                    <th>Saldo</th>
+                                    <th>Saldo Pediente</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>

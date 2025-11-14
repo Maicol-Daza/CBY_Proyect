@@ -27,11 +27,15 @@
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .btn-agregar:hover {
     background-color: #0043a3;
+    transform: translateY(-1px);
 }
 
 .clientes-busqueda {
@@ -110,6 +114,7 @@
     display: flex;
     gap: 8px;
     justify-content: center;
+    align-items: center;
 }
 
 .btn-accion {
@@ -120,21 +125,76 @@
     cursor: pointer;
     font-size: 14px;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    gap: 5px;
 }
 
-.btn-accion:hover {
-    border-color: #0052cc;
+/* Botón Editar - Color Azul */
+.btn-accion.editar {
     color: #0052cc;
-    background-color: #f0f6ff;
+    border-color: #0052cc;
+}
+
+.btn-accion.editar:hover {
+    background-color: #0052cc;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Botón Nuevo Pedido - Color Verde/Naranja */
+.btn-nuevo-pedido {
+    color: #10b981;
+    border-color: #10b981;
+}
+
+.btn-nuevo-pedido:hover {
+    background-color: #10b981;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Botón Eliminar - Color Rojo */
+.btn-accion.eliminar {
+    color: #dc3545;
+    border-color: #dc3545;
 }
 
 .btn-accion.eliminar:hover {
-    border-color: #dc3545;
-    color: #dc3545;
-    background-color: #fff5f6;
+    background-color: #dc3545;
+    color: white;
+    transform: translateY(-1px);
 }
 
-/* Modal Styles */
+
+.btn-accion.nuevo-pedido {
+    color: #1e40af;
+    border-color: #1e40af;
+}
+
+.btn-accion.nuevo-pedido:hover {
+    background-color: #1e40af;
+    color: white;
+}
+.btn-accion i, 
+.btn-accion svg, 
+.btn-accion img {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+    font-size: 16px;
+    color: inherit;
+}
+
+.btn-accion span {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+    color: inherit;
+}
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -239,12 +299,13 @@
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     flex: 1;
 }
 
 .btn-actualizar:hover {
     background-color: #0043a3;
+    transform: translateY(-1px);
 }
 
 .btn-cancelar {
@@ -261,6 +322,7 @@
 
 .btn-cancelar:hover {
     background-color: #e8e8e8;
+    transform: translateY(-1px);
 }
 
 .sin-resultados {
@@ -270,7 +332,6 @@
     font-size: 14px;
 }
 
-/* Confirm modal bonito */
 .confirm-overlay {
     position: fixed;
     inset: 0;
@@ -313,6 +374,8 @@
     color: white;
     width: 40px;
     height: 40px;
+    display: block;
+    line-height: 1;
 }
 
 .confirm-title {
@@ -344,10 +407,12 @@
     cursor: pointer;
     font-weight: 700;
     box-shadow: 0 8px 20px rgba(0,102,255,0.18);
-    transition: transform .08s ease, box-shadow .12s ease;
+    transition: all 0.2s;
 }
 
-.btn-confirm:hover { transform: translateY(-1px); }
+.btn-confirm:hover { 
+    transform: translateY(-1px); 
+}
 
 .btn-cancel {
     background: #fff;
@@ -358,10 +423,12 @@
     color: #334;
     font-weight: 600;
     box-shadow: none;
+    transition: all 0.2s;
 }
 
 .btn-cancel:hover {
     background: #f6f8fb;
+    transform: translateY(-1px);
 }
 
 .confirm-cliente-info {
@@ -399,4 +466,9 @@
 .clipboard-icon {
     font-size: 40px;
     color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }

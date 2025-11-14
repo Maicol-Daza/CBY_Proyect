@@ -64,33 +64,28 @@
   font-size: 1.1em;
 }
 
-/* BOTÓN ELIMINAR ORGANIZADO */
+/* BOTÓN ELIMINAR ORGANIZADO _Ajustes y modal prenda */
 .btn-eliminar {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  min-width: 75px;
-  width: calc(50% - 4px); /* Toma la mitad del espacio menos el gap */
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  height: 36px; /* Altura fija para todos los botones */
-  margin: 0;
+     background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    gap: 5px;
+    color: #dc3545;
+    border-color: #dc3545;
 }
 
 .btn-eliminar:hover {
-  background-color: #c82333;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+     background-color: #dc3545;
+    color: white;
+    transform: translateY(-1px);
 }
 
 .btn-eliminar:active {
@@ -425,31 +420,26 @@
 
 /* Botones de acción */
 .btn-editar {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  min-width: 75px;
-  width: calc(50% - 4px); /* Toma la mitad del espacio menos el gap */
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  height: 36px; /* Altura fija para todos los botones */
-  margin: 0;
+    background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    gap: 5px;
+     color: #0052cc;
+    border-color: #0052cc;
 }
 
 .btn-editar:hover {
-  background-color: #0056b3;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+     background-color: #0052cc;
+    color: white;
+    transform: translateY(-1px);
 }
 
 .btn-editar:active {

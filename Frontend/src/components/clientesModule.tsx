@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "../styles/clIentesModule.css";
 import { Cliente, obtenerClientes, eliminarCliente, actualizarCliente } from "../services/clientesService";
-import { FaShoppingCart, FaClipboardList } from 'react-icons/fa';
+import { FaClipboardList, FaEdit, FaTrash, } from 'react-icons/fa';
+import { CgAdd } from "react-icons/cg";
+
 
 export const ClientesModule = () => {
     const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -48,7 +50,7 @@ export const ClientesModule = () => {
         const valor = e.target.value.toLowerCase().trim();
         console.log("Buscando:", valor);
         console.log("Clientes totales:", clientes);
-        
+
         setBusqueda(valor);
 
         if (valor === "") {
@@ -63,7 +65,7 @@ export const ClientesModule = () => {
                 const direccion = String(cliente.direccion || "").toLowerCase();
                 const idCliente = String(cliente.id_cliente || "").toLowerCase();
 
-                const coincide = 
+                const coincide =
                     nombre.includes(valor) ||
                     nuip.includes(valor) ||
                     telefono.includes(valor) ||
@@ -145,7 +147,7 @@ export const ClientesModule = () => {
             }
         }
     };
-    
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData({
@@ -222,33 +224,33 @@ export const ClientesModule = () => {
                                     <td>{cliente.direccion}</td>
                                     <td>{cliente.email}</td>
                                     <td className="acciones">
-                                        <button 
-                                            className="btn-accion editar" 
+                                        <button
+                                            className="btn-accion editar"
                                             onClick={() => handleEditar(cliente)}
                                             title="Editar"
                                         >
-                                            ✎
+                                            <FaEdit /> Editar
                                         </button>
                                         <button
                                             className="btn-accion nuevo-pedido"
                                             onClick={() => handleNuevoPedido(cliente)}
                                             title="Nuevo Pedido"
                                         >
-                                            ➕
+                                            <CgAdd /> Nuevo Pedido
                                         </button>
-                                        <button 
-                                            className="btn-accion duplicar" 
+                                        {/* <button
+                                            className="btn-accion duplicar"
                                             onClick={() => handleDuplicar(cliente.id_cliente)}
                                             title="Duplicar"
                                         >
                                             ⧉
-                                        </button>
-                                        <button 
-                                            className="btn-accion eliminar" 
+                                        </button> */}
+                                        <button
+                                            className="btn-accion eliminar"
                                             onClick={() => handleEliminar(cliente.id_cliente)}
                                             title="Eliminar"
                                         >
-                                            🗑
+                                            <FaTrash /> Eliminar
                                         </button>
                                     </td>
                                 </tr>
@@ -346,7 +348,7 @@ export const ClientesModule = () => {
                                     <span className="info-value"><strong>{clienteParaPedido.nombre}</strong></span>
                                 </div>
                                 <div className="info-row">
-                                    <span className="info-label">NIT/Cédula:</span>
+                                    <span className="info-label">Indentificación:</span>
                                     <span className="info-value">{clienteParaPedido.nuip}</span>
                                 </div>
                                 <div className="info-row">
