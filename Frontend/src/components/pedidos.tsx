@@ -8,6 +8,7 @@ import { obtenerAjustesAccion, type AjusteAccion } from "../services/ajustesAcci
 import ModalPrenda from "../components/ModalPrenda";
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { obtenerClientes, type Cliente as ClienteService } from "../services/clientesService";
 
 // Interfaces (manteniendo las existentes)
 interface Pedido {
@@ -70,6 +71,11 @@ export default function Pedidos() {
     email: "",
   });
 
+  // Mini búsqueda de clientes dentro del formulario
+  const [clientesLista, setClientesLista] = useState<ClienteService[]>([]);
+  const [busquedaCliente, setBusquedaCliente] = useState("");
+  const [sugerenciasClientes, setSugerenciasClientes] = useState<ClienteService[]>([]);
+
   const [cajones, setCajones] = useState<Cajon[]>([]);
   const [codigos, setCodigos] = useState<Codigo[]>([]);
   const [codigosFiltrados, setCodigosFiltrados] = useState<Codigo[]>([]);
@@ -121,6 +127,20 @@ export default function Pedidos() {
   // Cargar todos los datos al montar el componente
   useEffect(() => {
     cargarDatos();
+  }, []);
+
+  // Cargar lista de clientes para la mini búsqueda (opcional)
+  useEffect(() => {
+    const cargarClientes = async () => {
+      try {
+        const datos = await obtenerClientes();
+        setClientesLista(datos || []);
+      } catch (err) {
+        console.warn("No se pudieron cargar clientes para búsqueda rápida:", err);
+      }
+    };
+
+    cargarClientes();
   }, []);
 
   const cargarDatos = async () => {
@@ -263,6 +283,41 @@ export default function Pedidos() {
   // Manejo de inputs cliente
   const handleInputCliente = (e: ChangeEvent<HTMLInputElement>) => {
     setCliente({ ...cliente, [e.target.name]: e.target.value });
+  };
+
+  // Mini búsqueda: filtrar sugerencias en vivo
+  const handleBusquedaCliente = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setBusquedaCliente(val);
+    if (!val.trim()) {
+      setSugerenciasClientes([]);
+      return;
+    }
+    const term = val.toLowerCase();
+    const filtradas = clientesLista.filter(c => {
+      return (
+        String(c.nombre || "").toLowerCase().includes(term) ||
+        String(c.nuip || "").toLowerCase().includes(term) ||
+        String(c.telefono || "").toLowerCase().includes(term) ||
+        String(c.email || "").toLowerCase().includes(term)
+      );
+    }).slice(0, 6);
+    setSugerenciasClientes(filtradas);
+  };
+
+  // Usar cliente seleccionado para rellenar el formulario de pedido
+  const handleUsarCliente = (c: ClienteService) => {
+    setCliente({
+      nombre: c.nombre || "",
+      cedula: c.nuip || "",
+      telefono: c.telefono || "",
+      direccion: c.direccion || "",
+      email: c.email || "",
+    });
+    setBusquedaCliente("");
+    setSugerenciasClientes([]);
+    const firstInput = document.querySelector('.pedido-form input[name="fechaInicio"]') as HTMLInputElement | null;
+    if (firstInput) firstInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   // Manejo de inputs pedido
@@ -515,6 +570,31 @@ export default function Pedidos() {
           {/* Información del Cliente */}
           <div className="cliente-form">
             <h2>Información del Cliente</h2>
+            {/* Mini búsqueda rápida de clientes */}
+            <div className="cliente-mini-search">
+              <input
+                type="text"
+                placeholder="Buscar cliente rápido..."
+                value={busquedaCliente}
+                onChange={handleBusquedaCliente}
+                className="input-mini-busqueda"
+              />
+              {sugerenciasClientes.length > 0 && (
+                <div className="sugerencias-clientes">
+                  {sugerenciasClientes.map((c) => (
+                    <div key={c.id_cliente} className="sugerencia-row">
+                      <div className="sugerencia-info">
+                        <strong>{c.nombre}</strong>
+                        <div className="sugerencia-meta">{c.nuip} · {c.email} · {c.telefono} </div>
+                      </div>
+                      <div>
+                        <button type="button" className="btn-primary btn-usar-cliente" onClick={() => handleUsarCliente(c)}>Usar</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             {["nombre", "cedula", "telefono", "direccion", "email"].map(
               (campo) => (
                 <div className="field" key={campo}>

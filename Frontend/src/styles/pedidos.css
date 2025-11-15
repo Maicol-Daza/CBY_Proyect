@@ -179,6 +179,49 @@
   background: #f8fafc;
 }
 
+/* Mini búsqueda de clientes dentro del formulario */
+.cliente-mini-search {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.input-mini-busqueda {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e6edf3;
+  border-radius: 6px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.sugerencias-clientes {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 42px;
+  background: #fff;
+  border: 1px solid #e6edf3;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(13,30,60,0.08);
+  z-index: 1200;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.sugerencia-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sugerencia-row:last-child { border-bottom: none; }
+
+.sugerencia-info { font-size: 0.9rem; }
+.sugerencia-meta { font-size: 0.8rem; color:#6b7280; }
+.btn-usar-cliente { padding:6px 10px; font-size:0.85rem; }
+
 .total-pedido {
   background: #f1f5f9;
   padding: 12px;

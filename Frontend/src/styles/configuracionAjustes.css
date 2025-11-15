@@ -66,26 +66,26 @@
 
 /* BOTÓN ELIMINAR ORGANIZADO _Ajustes y modal prenda */
 .btn-eliminar {
-     background-color: transparent;
-    border: 1px solid #ddd;
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 32px;
-    gap: 5px;
-    color: #6c6e70;
-    border-color: #6c6e70;
+  background-color: transparent;
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  gap: 5px;
+  color: #6c6e70;
+  border-color: #6c6e70;
 }
 
 .btn-eliminar:hover {
-     background-color: #6c6e70;
-    color: white;
-    transform: translateY(-1px);
+  background-color: #6c6e70;
+  color: white;
+  transform: translateY(-1px);
 }
 
 .btn-eliminar:active {
@@ -94,7 +94,7 @@
 }
 
 /* Formularios de configuración */
-.configuracion-forms {
+/* .configuracion-forms {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
@@ -123,7 +123,7 @@
 }
 
 /* Modal */
-.modal-overlay {
+/* .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -157,11 +157,12 @@
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   align-items: start;
-}
+} */ 
 
 /* Asegura que cada sección tenga un alto consistente y separaciones correctas */
 .seccion-ajustes {
-  margin: 0; /* removido margin-bottom para que el grid gestione el espacio */
+  margin: 0;
+  /* removido margin-bottom para que el grid gestione el espacio */
 }
 
 /* Secciones de ajustes */
@@ -311,20 +312,20 @@
   .configuracion-forms {
     grid-template-columns: 1fr;
   }
-  
+
   .form-combinacion {
     grid-template-columns: 1fr;
   }
-  
+
   .combinaciones-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .modal-content {
     width: 95%;
     padding: 20px;
   }
-  
+
   .opciones-grid {
     grid-template-columns: 1fr;
   }
@@ -420,26 +421,26 @@
 
 /* Botones de acción */
 .btn-editar {
-    background-color: transparent;
-    border: 1px solid #ddd;
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 32px;
-    gap: 5px;
-     color: #0d98d8;
-    border-color: #0d98d8;
+  background-color: transparent;
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  gap: 5px;
+  color: #0d98d8;
+  border-color: #0d98d8;
 }
 
 .btn-editar:hover {
-     background-color: #0d98d8;
-    color: white;
-    transform: translateY(-1px);
+  background-color: #0d98d8;
+  color: white;
+  transform: translateY(-1px);
 }
 
 .btn-editar:active {
@@ -460,7 +461,8 @@
   gap: 8px;
   justify-content: flex-end;
   align-items: center;
-  min-width: 160px; /* Asegura un ancho mínimo para los botones */
+  min-width: 160px;
+  /* Asegura un ancho mínimo para los botones */
 }
 
 /* Lista de elementos */
@@ -549,6 +551,7 @@
 
 /* Responsive para botones en móvil */
 @media (max-width: 768px) {
+
   .acciones-combinacion,
   .acciones-elemento {
     flex-direction: row;
@@ -556,7 +559,7 @@
     justify-content: flex-end;
     padding: 0 8px;
   }
-  
+
   .btn-editar,
   .btn-eliminar {
     width: auto;
@@ -564,21 +567,21 @@
     padding: 8px 12px;
     font-size: 13px;
   }
-  
+
   .combinaciones-table {
     font-size: 14px;
   }
-  
+
   .combinaciones-table th,
   .combinaciones-table td {
     padding: 8px 10px;
   }
-  
+
   .elemento-item {
     flex-wrap: wrap;
     gap: 8px;
   }
-  
+
   .elemento-item .acciones-elemento {
     width: 100%;
     justify-content: flex-end;
