@@ -7,7 +7,7 @@ import { obtenerAcciones, type Accion } from "../services/accionesService";
 import { obtenerAjustesAccion, type AjusteAccion } from "../services/ajustesAccionService";
 import ModalPrenda from "../components/ModalPrenda";
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 // Interfaces (manteniendo las existentes)
 interface Pedido {
@@ -97,6 +97,26 @@ export default function Pedidos() {
   const [mostrarModificarPrecio, setMostrarModificarPrecio] = useState(false);
   const [precioModificado, setPrecioModificado] = useState(0);
   const [motivoModificacion, setMotivoModificacion] = useState("");
+
+  // Estados para foto del pedido (preview + archivo)
+  const [imagenPreview, setImagenPreview] = useState<string | null>(null);
+  const [imagenFile, setImagenFile] = useState<File | null>(null);
+
+  // Handler para cambiar la imagen (preview)
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImagenFile(file);
+      const reader = new FileReader();
+      reader.onload = () => setImagenPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagenFile(null);
+    setImagenPreview(null);
+  };
 
   // Cargar todos los datos al montar el componente
   useEffect(() => {
@@ -559,6 +579,88 @@ export default function Pedidos() {
             {errores.estado && <p className="error">{errores.estado}</p>}
           </div>
 
+          {/* Sección de prendas (movida): Gestión de Prendas integrada aquí */}
+          <div className="prendas-section card">
+            <h2>Gestión de Prendas</h2>
+            {errores.prendas && <p className="error">{errores.prendas}</p>}
+            
+            {/* Lista de prendas temporales */}
+            {prendasTemporales.length > 0 && (
+              <div className="prendas-lista">
+                <table className="prendas-table">
+                  <thead>
+                    <tr>
+                      <th>Prenda</th>
+                      <th>Cantidad</th>
+                      <th>Arreglos</th>
+                      <th>Subtotal</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prendasTemporales.map((prenda, index) => (
+                      <tr key={index}>
+                        <td>{prenda.tipo}</td>
+                        <td>{prenda.cantidad}</td>
+                        <td>
+                          {(prenda.arreglos || []).map((arreglo, i) => (
+                            <div key={i} className="arreglo-mini">
+                              {arreglo.tipo === 'combinacion' 
+                                ? `${arreglo.nombre_ajuste} ${arreglo.nombre_accion}`
+                                : arreglo.tipo === 'ajuste'
+                                ? arreglo.nombre_ajuste
+                                : arreglo.nombre_accion
+                              } - ${arreglo.precio.toLocaleString()}
+                            </div>
+                          ))}
+                        </td>
+                        <td>
+                          ${((prenda.arreglos || []).reduce((total, arreglo) => 
+                            total + arreglo.precio, 0) * (prenda.cantidad || 1)
+                          ).toLocaleString()}
+                        </td>
+                        <td>
+                          <div className="acciones-prenda">
+                            <button 
+                              className="btn-editar"
+                              onClick={() => handleEditarPrenda(index)}
+                              title="Editar prenda"
+                            >
+                              <FaEdit />
+                            </button>
+                            <button 
+                              className="btn-eliminar"
+                              onClick={() => handleEliminarPrendaTemporal(index)}
+                              title="Eliminar prenda"
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {/* Total del pedido */}
+                <div className="total-pedido">
+                  <h3>Total Calculado: ${calcularTotalPrendas().toLocaleString()}</h3>
+                  <h3>Total Final: ${precioModificado.toLocaleString()}</h3>
+                </div>
+              </div>
+            )}
+            
+            <button 
+              className="btn-primary" 
+              onClick={() => {
+                setPrendaEditando(null);
+                setMostrarModalPrenda(true);
+              }}
+            >
+              Agregar Prenda
+            </button>
+          </div>
+
           <div className="field">
             <label>Observaciones:</label>
             <textarea
@@ -694,87 +796,7 @@ export default function Pedidos() {
         </div>
       </div>
 
-      {/* Sección de prendas */}
-      <div className="prendas-section card">
-        <h2>Gestión de Prendas</h2>
-        {errores.prendas && <p className="error">{errores.prendas}</p>}
-        
-        {/* Lista de prendas temporales */}
-        {prendasTemporales.length > 0 && (
-          <div className="prendas-lista">
-            <table className="prendas-table">
-              <thead>
-                <tr>
-                  <th>Prenda</th>
-                  <th>Cantidad</th>
-                  <th>Arreglos</th>
-                  <th>Subtotal</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {prendasTemporales.map((prenda, index) => (
-                  <tr key={index}>
-                    <td>{prenda.tipo}</td>
-                    <td>{prenda.cantidad}</td>
-                    <td>
-                      {(prenda.arreglos || []).map((arreglo, i) => (
-                        <div key={i} className="arreglo-mini">
-                          {arreglo.tipo === 'combinacion' 
-                            ? `${arreglo.nombre_ajuste} ${arreglo.nombre_accion}`
-                            : arreglo.tipo === 'ajuste'
-                            ? arreglo.nombre_ajuste
-                            : arreglo.nombre_accion
-                          } - ${arreglo.precio.toLocaleString()}
-                        </div>
-                      ))}
-                    </td>
-                    <td>
-                      ${((prenda.arreglos || []).reduce((total, arreglo) => 
-                        total + arreglo.precio, 0) * (prenda.cantidad || 1)
-                      ).toLocaleString()}
-                    </td>
-                    <td>
-                      <div className="acciones-prenda">
-                        <button 
-                          className="btn-editar"
-                          onClick={() => handleEditarPrenda(index)}
-                          title="Editar prenda"
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          className="btn-eliminar"
-                          onClick={() => handleEliminarPrendaTemporal(index)}
-                          title="Eliminar prenda"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            {/* Total del pedido */}
-            <div className="total-pedido">
-              <h3>Total Calculado: ${calcularTotalPrendas().toLocaleString()}</h3>
-              <h3>Total Final: ${precioModificado.toLocaleString()}</h3>
-            </div>
-          </div>
-        )}
-        
-        <button 
-          className="btn-primary" 
-          onClick={() => {
-            setPrendaEditando(null);
-            setMostrarModalPrenda(true);
-          }}
-        >
-          Agregar Prenda
-        </button>
-      </div>
+      
 
       {/* Modal de prenda */}
       <ModalPrenda

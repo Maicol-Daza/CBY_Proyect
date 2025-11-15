@@ -134,48 +134,38 @@
 
 /* Botón Editar - Color Azul */
 .btn-accion.editar {
-    color: #0052cc;
-    border-color: #0052cc;
+    color: #1284cf;
+    border-color: #1284cf;
 }
 
 .btn-accion.editar:hover {
-    background-color: #0052cc;
+    background-color: #1284cf;
     color: white;
     transform: translateY(-1px);
 }
 
-/* Botón Nuevo Pedido - Color Verde/Naranja */
-.btn-nuevo-pedido {
-    color: #10b981;
-    border-color: #10b981;
-}
 
-.btn-nuevo-pedido:hover {
-    background-color: #10b981;
-    color: white;
-    transform: translateY(-1px);
-}
 
 /* Botón Eliminar - Color Rojo */
 .btn-accion.eliminar {
-    color: #dc3545;
-    border-color: #dc3545;
+    color: #6c6e70;
+    border-color: #6c6e70;
 }
 
 .btn-accion.eliminar:hover {
-    background-color: #dc3545;
+    background-color: #6c6e70;
     color: white;
     transform: translateY(-1px);
 }
 
 
 .btn-accion.nuevo-pedido {
-    color: #1e40af;
-    border-color: #1e40af;
+    color: #0d98d8;
+    border-color: #0d98d8;
 }
 
 .btn-accion.nuevo-pedido:hover {
-    background-color: #1e40af;
+    background-color: #0d98d8;
     color: white;
 }
 .btn-accion i, 

@@ -184,9 +184,9 @@ export const ClientesModule = () => {
         <div className="clientes-container">
             <div className="clientes-header">
                 <h1>Gestión de Clientes</h1>
-                <button className="btn-agregar" onClick={handleAgregarCliente}>
+                {/* <button className="btn-agregar" onClick={handleAgregarCliente}>
                     + Agregar Cliente
-                </button>
+                </button> */}
             </div>
 
             <div className="clientes-busqueda">

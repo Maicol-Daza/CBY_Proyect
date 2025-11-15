@@ -78,12 +78,12 @@
     justify-content: center;
     min-height: 32px;
     gap: 5px;
-    color: #dc3545;
-    border-color: #dc3545;
+    color: #6c6e70;
+    border-color: #6c6e70;
 }
 
 .btn-eliminar:hover {
-     background-color: #dc3545;
+     background-color: #6c6e70;
     color: white;
     transform: translateY(-1px);
 }
@@ -432,12 +432,12 @@
     justify-content: center;
     min-height: 32px;
     gap: 5px;
-     color: #0052cc;
-    border-color: #0052cc;
+     color: #0d98d8;
+    border-color: #0d98d8;
 }
 
 .btn-editar:hover {
-     background-color: #0052cc;
+     background-color: #0d98d8;
     color: white;
     transform: translateY(-1px);
 }

@@ -130,18 +130,112 @@
 }
 
 /* --- SECCIÓN PRENDAS --- */
-.prendas-section {
-  margin-top: 24px;
+.pedido-form .prendas-section {
+  margin-top: 20px;
+  margin-bottom: 14px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e6edf3;
+  border-radius: 6px;
+  box-shadow: none;
 }
 
-.prendas-section h2 {
+.pedido-form .prendas-section h2 {
   margin: 0 0 14px;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 1px solid #e6edf3;
+  padding-bottom: 10px;
+}
+
+.prendas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.prendas-table thead {
+  background: #f1f5f9;
+  border-bottom: 2px solid #e6edf3;
+}
+
+.prendas-table th {
+  padding: 10px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.8rem;
+}
+
+.prendas-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e6edf3;
+  color: #111827;
+}
+
+.prendas-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.total-pedido {
+  background: #f1f5f9;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.total-pedido h3 {
+  margin: 4px 0;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #111827;
 }
 
-/* --- BOTONES --- */
+.arreglo-mini {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+  padding: 4px;
+  background: #f8fafc;
+  border-radius: 3px;
+}
+
+.acciones-prenda {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-editar,
+.btn-eliminar {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  gap: 5px;
+}
+
+.btn-editar:hover {
+  background-color: #1284cf;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-eliminar:hover {
+  background-color: #6c6e70;
+  color: white;
+  transform: translateY(-1px);
+}
+
 .btn-primary,
 .NuevoCliente {
   display: inline-block;
@@ -153,6 +247,13 @@
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
+}
+
+.pedido-form .prendas-section .btn-primary {
+  background: #3b82f6;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  margin-top: 8px;
 }
 
 .error {
@@ -624,13 +725,13 @@
   justify-content: center;
   min-height: 32px;
   gap: 5px;
-  color: #dc3545;
-  border-color: #dc3545;
+  color: #6c6e70;
+  border-color: #6c6e70;
 }
 
 
 .btn-eliminar-prendas:hover {
-  background-color: #dc3545;
+  background-color: #6c6e70;
   color: white;
   transform: translateY(-1px);
 }
