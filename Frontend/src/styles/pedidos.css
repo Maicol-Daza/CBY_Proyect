@@ -202,7 +202,7 @@
   background: #fff;
   border: 1px solid #e6edf3;
   border-radius: 6px;
-  box-shadow: 0 6px 18px rgba(13,30,60,0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   z-index: 1200;
   max-height: 220px;
   overflow-y: auto;
@@ -592,11 +592,23 @@
 
 /* Agregar al archivo pedidos.css */
 
-/* Modal de prenda */
-.prenda-modal .modal-content {
+/* Modal de prenda (scope único para evitar conflictos con historialModule.css) */
+.prenda-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2400;
+  padding: 16px;
+}
+
+.prenda-modal-content {
   width: 92%;
   max-width: 920px;
-  max-height: 90vh;
+  max-height: calc(90vh - 40px);
+  /* ocultar scroll externo; el scroll será interno en .modal-scroll */
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -607,14 +619,26 @@
   box-sizing: border-box;
 }
 
-.prenda-modal h2 {
+/* Contenedor desplazable dentro del modal (permite scroll vertical sin interferir con otros modales/archivos) */
+.prenda-modal-content .modal-scroll {
+  flex: 1 1 auto; /* crecer y contraerse dentro del modal */
+  min-height: 0; /* importante para que flex + overflow funcione en chrome/firefox */
+  overflow-y: auto;
+  padding-right: 8px; /* espacio para el scroll */
+}
+
+.prenda-modal-content .modal-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+.prenda-modal-content .modal-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
+
+.prenda-modal-content h2 {
   text-align: center;
   margin: 0 0 16px;
   font-size: 1.15rem;
   font-weight: 700;
 }
 
-.prenda-info {
+/* Formulario interno del modal */
+.prenda-modal-content .prenda-info {
   display: grid;
   grid-template-columns: 1fr 120px;
   gap: 14px;
@@ -622,11 +646,11 @@
   align-items: end;
 }
 
-.busqueda-arreglos {
+.prenda-modal-content .busqueda-arreglos {
   margin-bottom: 14px;
 }
 
-.search-box input {
+.prenda-modal-content .search-box input {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #e0e6ef;
@@ -635,11 +659,12 @@
   background: #fbfdff;
 }
 
-.arreglos-disponibles {
+/* Lista de arreglos dentro del modal (scoped) */
+.prenda-modal-content .arreglos-disponibles {
   margin-bottom: 8px;
 }
 
-.arreglos-grid {
+.prenda-modal-content .arreglos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
@@ -651,7 +676,7 @@
   background: #ffffff;
 }
 
-.arreglo-item {
+.prenda-modal-content .arreglo-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -664,53 +689,53 @@
   background: #fbfdff;
 }
 
-.arreglo-item:hover {
+.prenda-modal-content .arreglo-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 14px rgba(18, 52, 86, 0.06);
 }
 
-.arreglo-item.selected {
+.prenda-modal-content .arreglo-item.selected {
   border-color: #0b74ff;
   background: #eaf4ff;
 }
 
-.arreglo-nombre {
+.prenda-modal-content .arreglo-nombre {
   font-weight: 600;
   color: #0f172a;
   font-size: 0.95rem;
 }
 
-.arreglo-precio {
+.prenda-modal-content .arreglo-precio {
   min-width: 84px;
   text-align: right;
   font-weight: 700;
   color: #0f5132;
 }
 
-.arreglo-precio.empty {
+.prenda-modal-content .arreglo-precio.empty {
   color: #d97706;
   font-weight: 700;
 }
 
-.sin-resultados {
+.prenda-modal-content .sin-resultados {
   text-align: center;
   color: #6b7280;
   font-style: italic;
   padding: 18px;
 }
 
-/* Arreglos seleccionados */
-.arreglos-seleccionados {
+/* Arreglos seleccionados (scoped) */
+.prenda-modal-content .arreglos-seleccionados {
   border-top: 2px solid #0b74ff;
   padding-top: 16px;
   margin-top: 16px;
 }
 
-.lista-arreglos {
+.prenda-modal-content .lista-arreglos {
   margin-bottom: 12px;
 }
 
-.arreglo-seleccionado {
+.prenda-modal-content .arreglo-seleccionado {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -721,14 +746,14 @@
   background: #fbfdff;
 }
 
-.arreglo-info {
+.prenda-modal-content .arreglo-info {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   flex: 1;
 }
 
-.arreglo-precio-Prendas {
+.prenda-modal-content .arreglo-precio-Prendas {
   font-size: 14px;
   font-weight: 700;
   color: #ffc107;
@@ -737,25 +762,11 @@
   min-width: 70px;
 }
 
-.Espacio-precio {
+.prenda-modal-content .Espacio-precio {
   min-width: 10px;
 }
 
-/* .btn-eliminar {
-  background: #e11d48;
-  color: white;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-} */
-
-.btn-eliminar-prendas {
+.prenda-modal-content .btn-eliminar-prendas {
   background-color: transparent;
   border: 1px solid #ddd;
   padding: 6px 10px;
@@ -772,40 +783,34 @@
   border-color: #6c6e70;
 }
 
-
-.btn-eliminar-prendas:hover {
+.prenda-modal-content .btn-eliminar-prendas:hover {
   background-color: #6c6e70;
   color: white;
   transform: translateY(-1px);
 }
 
-
-.btn-eliminar:hover {
-  background: #c81a42;
-}
-
-.resumen-precios {
+.prenda-modal-content .resumen-precios {
   border-top: 1px solid #e6eef7;
   padding-top: 12px;
 }
 
-.precio-linea {
+.prenda-modal-content .precio-linea {
   display: flex;
   justify-content: space-between;
   margin-bottom: 8px;
 }
 
-.precio-linea.total {
+.prenda-modal-content .precio-linea.total {
   font-weight: 800;
   font-size: 1.05rem;
 }
 
-/* Zona de sugerencias (autocompletar tipo prenda) */
-.tipo-prenda-container {
+/* Autocomplete / sugerencias en modal (scoped) */
+.prenda-modal-content .tipo-prenda-container {
   position: relative;
 }
 
-.sugerencias-lista {
+.prenda-modal-content .sugerencias-lista {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
@@ -819,32 +824,32 @@
   box-shadow: 0 8px 18px rgba(13, 30, 60, 0.08);
 }
 
-.sugerencia-item {
+.prenda-modal-content .sugerencia-item {
   padding: 8px 12px;
   cursor: pointer;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.sugerencia-item:hover {
+.prenda-modal-content .sugerencia-item:hover {
   background: #f8fafc;
 }
 
-.texto-ayuda {
+.prenda-modal-content .texto-ayuda {
   color: #6b7280;
   font-size: 0.85em;
   margin-top: 6px;
   display: block;
 }
 
-/* Botones del modal */
-.modal-actions {
+/* Botones del modal (scoped) */
+.prenda-modal-content .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 18px;
 }
 
-.btn-cancelar {
+.prenda-modal-content .btn-cancelar {
   background: #6b7280;
   color: #fff;
   border: none;
@@ -853,11 +858,11 @@
   cursor: pointer;
 }
 
-.btn-cancelar:hover {
+.prenda-modal-content .btn-cancelar:hover {
   background: #565e66;
 }
 
-.btn-primary {
+.prenda-modal-content .btn-primary {
   background: #0b74ff;
   color: #fff;
   border: none;
@@ -866,34 +871,22 @@
   cursor: pointer;
 }
 
-.btn-primary:hover {
+.prenda-modal-content .btn-primary:hover {
   background: #095fcc;
 }
 
-/* Overlay y contenedor base (garantizar prioridad) */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.48);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2400;
-  padding: 16px;
-}
-
-/* Ajustes responsivos */
+/* Ajustes responsivos scoped */
 @media (max-width: 900px) {
-  .prenda-modal .modal-content {
+  .prenda-modal-content {
     width: 96%;
     padding: 16px;
   }
 
-  .prenda-info {
+  .prenda-modal-content .prenda-info {
     grid-template-columns: 1fr;
   }
 
-  .arreglos-grid {
+  .prenda-modal-content .arreglos-grid {
     max-height: 220px;
   }
 }

@@ -4,7 +4,6 @@ import { Cliente, obtenerClientes, eliminarCliente, actualizarCliente } from "..
 import { FaClipboardList, FaEdit, FaTrash, } from 'react-icons/fa';
 import { CgAdd } from "react-icons/cg";
 
-
 export const ClientesModule = () => {
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [clientesFiltrados, setClientesFiltrados] = useState<Cliente[]>([]);
@@ -103,9 +102,7 @@ export const ClientesModule = () => {
         }
     };
 
-    // Nueva acción: crear nuevo pedido con los datos del cliente
     const handleNuevoPedido = (cliente: Cliente) => {
-        // abrir modal de confirmación
         setClienteParaPedido(cliente);
         setConfirmAbierto(true);
     };
@@ -121,7 +118,6 @@ export const ClientesModule = () => {
         };
         try {
             localStorage.setItem("nuevoPedidoCliente", JSON.stringify(payload));
-            // cerrar modal y redirigir
             setConfirmAbierto(false);
             setClienteParaPedido(null);
             window.location.href = "/pedidos";
@@ -184,9 +180,6 @@ export const ClientesModule = () => {
         <div className="clientes-container">
             <div className="clientes-header">
                 <h1>Gestión de Clientes</h1>
-                {/* <button className="btn-agregar" onClick={handleAgregarCliente}>
-                    + Agregar Cliente
-                </button> */}
             </div>
 
             <div className="clientes-busqueda">
@@ -238,13 +231,6 @@ export const ClientesModule = () => {
                                         >
                                             <CgAdd /> Nuevo Pedido
                                         </button>
-                                        {/* <button
-                                            className="btn-accion duplicar"
-                                            onClick={() => handleDuplicar(cliente.id_cliente)}
-                                            title="Duplicar"
-                                        >
-                                            ⧉
-                                        </button> */}
                                         <button
                                             className="btn-accion eliminar"
                                             onClick={() => handleEliminar(cliente.id_cliente)}
@@ -264,70 +250,76 @@ export const ClientesModule = () => {
 
             {modalAbierto && clienteEditando && (
                 <div className="modal-overlay" onClick={handleCancelar}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>Editar Cliente</h2>
                             <button className="btn-cerrar" onClick={handleCancelar}>✕</button>
                         </div>
 
                         <div className="modal-body">
-                            <div className="form-group">
-                                <label>Identificación *</label>
-                                <input
-                                    type="text"
-                                    value={clienteEditando.nuip}
-                                    disabled
-                                    className="input-disabled"
-                                />
-                            </div>
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <label>Identificación *</label>
+                                    <input
+                                        type="text"
+                                        value={clienteEditando.nuip}
+                                        disabled
+                                        className="input-disabled"
+                                    />
+                                </div>
 
-                            <div className="form-group">
-                                <label>Nombre *</label>
-                                <input
-                                    type="text"
-                                    name="nombre"
-                                    value={formData.nombre}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
+                                <div className="form-group">
+                                    <label>Nombre *</label>
+                                    <input
+                                        type="text"
+                                        name="nombre"
+                                        value={formData.nombre}
+                                        onChange={handleInputChange}
+                                        placeholder="Ingrese el nombre completo"
+                                    />
+                                </div>
 
-                            <div className="form-group">
-                                <label>Teléfono *</label>
-                                <input
-                                    type="text"
-                                    name="telefono"
-                                    value={formData.telefono}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
+                                <div className="form-group">
+                                    <label>Teléfono *</label>
+                                    <input
+                                        type="text"
+                                        name="telefono"
+                                        value={formData.telefono}
+                                        onChange={handleInputChange}
+                                        placeholder="Número de contacto"
+                                    />
+                                </div>
 
-                            <div className="form-group">
-                                <label>Dirección</label>
-                                <input
-                                    type="text"
-                                    name="direccion"
-                                    value={formData.direccion}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
+                                <div className="form-group full-width">
+                                    <label>Dirección</label>
+                                    <input
+                                        type="text"
+                                        name="direccion"
+                                        value={formData.direccion}
+                                        onChange={handleInputChange}
+                                        placeholder="Dirección completa"
+                                    />
+                                </div>
 
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                />
+                                <div className="form-group full-width">
+                                    <label>Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        placeholder="correo@ejemplo.com"
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn-actualizar" onClick={handleActualizar}>
-                                Actualizar
-                            </button>
                             <button className="btn-cancelar" onClick={handleCancelar}>
                                 Cancelar
+                            </button>
+                            <button className="btn-actualizar" onClick={handleActualizar}>
+                                Actualizar Cliente
                             </button>
                         </div>
                     </div>
@@ -337,10 +329,13 @@ export const ClientesModule = () => {
             {confirmAbierto && clienteParaPedido && (
                 <div className="confirm-overlay" onClick={cancelarConfirmacion}>
                     <div className="confirm-box" onClick={(e) => e.stopPropagation()}>
-                        <div className="confirm-icon">
-                            <FaClipboardList className="clipboard-icon" />
+                        <div className="confirm-header">
+                            <div className="confirm-icon">
+                                <FaClipboardList className="clipboard-icon" />
+                            </div>
+                            <h3 className="confirm-title">Crear nuevo pedido</h3>
                         </div>
-                        <h3 className="confirm-title">Crear nuevo pedido</h3>
+                        
                         <div className="confirm-body">
                             <div className="confirm-cliente-info">
                                 <div className="info-row">
@@ -348,7 +343,7 @@ export const ClientesModule = () => {
                                     <span className="info-value"><strong>{clienteParaPedido.nombre}</strong></span>
                                 </div>
                                 <div className="info-row">
-                                    <span className="info-label">Indentificación:</span>
+                                    <span className="info-label">Identificación:</span>
                                     <span className="info-value">{clienteParaPedido.nuip}</span>
                                 </div>
                                 <div className="info-row">
@@ -366,8 +361,12 @@ export const ClientesModule = () => {
                             </div>
                         </div>
                         <div className="confirm-buttons">
-                            <button className="btn-confirm" onClick={confirmarNuevoPedido}>Confirmar</button>
-                            <button className="btn-cancel" onClick={cancelarConfirmacion}>Cancelar</button>
+                            <button className="btn-confirm" onClick={confirmarNuevoPedido}>
+                                Confirmar
+                            </button>
+                            <button className="btn-cancel" onClick={cancelarConfirmacion}>
+                                Cancelar
+                            </button>
                         </div>
                     </div>
                 </div>

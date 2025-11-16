@@ -268,9 +268,9 @@ export default function ModalPrenda({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content prenda-modal">
-        <h2>{prendaEditando ? "Editar Prenda" : "Nueva Prenda"}</h2>
+    <div className="modal-overlay prenda-modal-overlay">
+      <div className="modal-content prenda-modal-content">
+         <h2>{prendaEditando ? "Editar Prenda" : "Nueva Prenda"}</h2>
 
         {/* Información básica de la prenda */}
         <div className="prenda-info">
@@ -425,16 +425,16 @@ export default function ModalPrenda({
           </div>
         )}
 
-        {/* Botones de acción */}
+        {/* Botones de acción */} 
         <div className="modal-actions">
-          <button type="button" className="btn-cancelar" onClick={handleCancelar}>
-            Cancelar
-          </button>
-          <button type="button" className="btn-primary" onClick={handleAgregar}>
-            {prendaEditando ? "Actualizar" : "Agregar"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+           <button type="button" className="btn-cancelar" onClick={handleCancelar}>
+             Cancelar
+           </button>
+           <button type="button" className="btn-primary" onClick={handleAgregar}>
+             {prendaEditando ? "Actualizar" : "Agregar"}
+           </button>
+         </div>
+       </div>
+     </div>
+   );
 }
