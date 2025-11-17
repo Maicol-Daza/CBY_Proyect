@@ -501,45 +501,103 @@ class PedidoClienteController {
       connection.release();
     }
   }
-
   async cambiarEstado(req, res) {
-    const { id } = req.params;
-    const { estado } = req.body;
+  const { id } = req.params;
+  const { estado, abonoEntrega } = req.body;
 
-    const connection = await db.getConnection();
-    await connection.beginTransaction();
+  console.log("🔍 Recibido:", { id, estado, abonoEntrega });
 
-    try {
-      let estadoBD = 'en_proceso';
-      
-      if (estado === "Finalizado") estadoBD = "listo";
-      else if (estado === "Entregado") estadoBD = "entregado";
-      else if (estado === "Cancelado") estadoBD = "cancelado";
+  if (!id || !estado) {
+    return res.status(400).json({ message: "ID y estado son requeridos" });
+  }
 
-      await connection.query(
-        `UPDATE pedido_cliente SET estado = ? WHERE id_pedido = ?`,
-        [estadoBD, id]
-      );
+  const connection = await db.getConnection();
+  await connection.beginTransaction();
 
-      // Si el estado es "entregado", liberar los códigos asociados
-      if (estadoBD === 'entregado') {
-        await this.liberarCodigosPedido(id, connection);
+  try {
+    let estadoBD = 'en_proceso';
+    
+    if (estado === "Finalizado") estadoBD = "listo";
+    else if (estado === "Entregado") estadoBD = "entregado";
+    else if (estado === "Cancelado") estadoBD = "cancelado";
+
+    // Si el estado es "entregado", guardar el registro del cajón antes de liberar
+    if (estadoBD === 'entregado') {
+      try {
+        // Obtener el cajón actual del pedido
+        const [pedidoActual] = await connection.query(
+          `SELECT id_cajon FROM pedido_cliente WHERE id_pedido = ?`,
+          [id]
+        );
+
+        if (pedidoActual.length > 0 && pedidoActual[0].id_cajon) {
+          // Insertar registro en historial de cajones (si tienes esta tabla)
+          // Si no la tienes, créala o guarda en una tabla de auditoría
+          await connection.query(
+            `INSERT INTO historial_cajon_pedido 
+             (id_pedido, id_cajon, fecha_liberacion, estado_anterior)
+             VALUES (?, ?, NOW(), 'ocupado')`,
+            [id, pedidoActual[0].id_cajon]
+          );
+        }
+      } catch (e) {
+        console.warn("⚠️ Aviso al guardar historial de cajón:", e.message);
+        // No fallar la transacción por esto
       }
 
-      await connection.commit();
-      
-      res.json({ 
-        message: "Estado actualizado correctamente",
-        nuevo_estado: estadoBD
-      });
-    } catch (error) {
-      await connection.rollback();
-      console.error(error);
-      res.status(500).json({ message: "Error al cambiar estado", error: error.message });
-    } finally {
-      connection.release();
+      // Ahora liberar los códigos y el cajón
+      await this.liberarCodigosPedido(id, connection);
     }
+
+    // Si se está marcando como entregado y hay un abono adicional
+    if (estadoBD === 'entregado' && abonoEntrega && abonoEntrega > 0) {
+      await connection.query(
+        `INSERT INTO historial_abonos (id_pedido, fecha_abono, abono, observaciones)
+         VALUES (?, NOW(), ?, ?)`,
+        [id, abonoEntrega, 'Abono en el momento de la entrega']
+      );
+
+      const [pedidoActual] = await connection.query(
+        `SELECT abono, saldo FROM pedido_cliente WHERE id_pedido = ?`,
+        [id]
+      );
+
+      if (pedidoActual.length > 0) {
+        const nuevoAbono = Number(pedidoActual[0].abono) + Number(abonoEntrega);
+        const nuevoSaldo = Number(pedidoActual[0].saldo) - Number(abonoEntrega);
+        
+        await connection.query(
+          `UPDATE pedido_cliente SET abono = ?, saldo = ? WHERE id_pedido = ?`,
+          [nuevoAbono, Math.max(nuevoSaldo, 0), id]
+        );
+      }
+    }
+
+    // Actualizar estado del pedido
+    await connection.query(
+      `UPDATE pedido_cliente SET estado = ? WHERE id_pedido = ?`,
+      [estadoBD, id]
+    );
+
+    await connection.commit();
+    
+    return res.json({ 
+      message: "Estado actualizado correctamente",
+      nuevo_estado: estadoBD,
+      id_pedido: id
+    });
+    
+  } catch (error) {
+    await connection.rollback();
+    console.error("❌ Error:", error);
+    return res.status(500).json({ 
+      message: "Error al cambiar estado", 
+      error: error.message 
+    });
+  } finally {
+    connection.release();
   }
+}
 
   async obtenerEstadisticas(req, res) {
     try {

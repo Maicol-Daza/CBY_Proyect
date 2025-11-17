@@ -18,7 +18,7 @@ interface Pedido {
   estado: string;
   observaciones: string;
   abonoInicial: number | string;
-  abonoObservaciones?: string; // <-- nuevo campo para observaciones del abono
+  abonoObservaciones?: string;
   totalPedido: number;
   saldoPendiente: number;
 }
@@ -33,6 +33,18 @@ interface Cliente {
 
 interface Errores {
   [key: string]: string;
+}
+
+interface PedidoEntrega {
+  id_pedido: number;
+  cliente_nombre: string;
+  cliente_cedula: string;
+  total_pedido: number;
+  abono: number;
+  saldo: number;
+  estado: string;
+  fecha_pedido: string;
+  fecha_entrega: string;
 }
 
 // Configuración de cajones basada en la imagen
@@ -73,6 +85,14 @@ export default function Pedidos() {
     direccion: "",
     email: "",
   });
+
+  // Estados para entrega de pedidos
+  const [mostrarModalEntrega, setMostrarModalEntrega] = useState(false);
+  const [pedidosLista, setPedidosLista] = useState<PedidoEntrega[]>([]);
+  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoEntrega | null>(null);
+  const [busquedaPedido, setBusquedaPedido] = useState("");
+  const [abonoEntrega, setAbonoEntrega] = useState(0);
+  const [cargandoEntrega, setCargandoEntrega] = useState(false);
 
   // Mini búsqueda de clientes dentro del formulario
   const [clientesLista, setClientesLista] = useState<ClienteService[]>([]);
@@ -146,6 +166,13 @@ export default function Pedidos() {
     cargarClientes();
   }, []);
 
+  // Cargar pedidos cuando se abre el modal de entrega
+  useEffect(() => {
+    if (mostrarModalEntrega) {
+      cargarPedidosParaEntrega();
+    }
+  }, [mostrarModalEntrega]);
+
   const cargarDatos = async () => {
     try {
       setCargandoCajones(true);
@@ -172,6 +199,61 @@ export default function Pedidos() {
       setCargandoCajones(false);
       setCargandoCodigos(false);
       setCargandoAjustes(false);
+    }
+  };
+
+  // Función para cargar pedidos listos para entrega
+  const cargarPedidosParaEntrega = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/pedidos");
+      if (response.ok) {
+        const data = await response.json();
+        // Mostrar TODOS los pedidos EXCEPTO los ya entregados
+        const pedidosNoEntregados = data.filter((pedido: any) => 
+          pedido.estado !== 'entregado' && pedido.estado !== 'cancelado'
+        );
+        setPedidosLista(pedidosNoEntregados);
+      }
+    } catch (error) {
+      console.error("Error al cargar pedidos:", error);
+      alert("Error al cargar los pedidos");
+    }
+  };
+
+  // Función para manejar la entrega del pedido
+  const handleEntregarPedido = async () => {
+    if (!pedidoSeleccionado) return;
+
+    try {
+      setCargandoEntrega(true);
+      
+      const response = await fetch(`http://localhost:3000/api/pedidos/${pedidoSeleccionado.id_pedido}/estado`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          estado: "Entregado",
+          abonoEntrega: abonoEntrega > 0 ? abonoEntrega : null
+        }),
+      });
+
+      if (response.ok) {
+        alert(" Pedido marcado como entregado exitosamente");
+        setMostrarModalEntrega(false);
+        setPedidoSeleccionado(null);
+        setAbonoEntrega(0);
+        setBusquedaPedido("");
+        
+        // Recargar la lista de pedidos
+        cargarPedidosParaEntrega();
+      } else {
+        const error = await response.json();
+        alert(`❌ Error: ${error.message || "No se pudo entregar el pedido"}`);
+      }
+    } catch (error) {
+      console.error("Error al entregar pedido:", error);
+      alert("❌ Error al conectar con el servidor");
+    } finally {
+      setCargandoEntrega(false);
     }
   };
 
@@ -573,7 +655,20 @@ export default function Pedidos() {
   // 🎨 Render
   return (
     <div className="pedidos-page">
-      <h1 style={{ marginBottom: 12 }}>Gestión de Pedidos</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h1 style={{ margin: 0 }}>Gestión de Pedidos</h1>
+        <button
+          className="btn-primary"
+          onClick={() => setMostrarModalEntrega(true)}
+          style={{
+            padding: "12px 24px",
+            fontSize: "1rem",
+            backgroundColor: "#3b82f6"
+          }}
+        >
+           Entrega de Pedidos
+        </button>
+      </div>
 
       <div className="pedido-top">
         {/* Formulario principal */}
@@ -806,7 +901,6 @@ export default function Pedidos() {
                 onClick={() => setMostrarModificarPrecio(true)}
               >
                 <FaEdit /> Modificar
-
               </button>
             </div>
             
@@ -907,8 +1001,6 @@ export default function Pedidos() {
         </div>
       </div>
 
-      
-
       {/* Modal de prenda */}
       <ModalPrenda
         isOpen={mostrarModalPrenda}
@@ -981,6 +1073,171 @@ export default function Pedidos() {
                 onClick={handleAplicarModificacionPrecio}
               >
                 Aplicar Cambio
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Entrega de Pedidos */}
+      {mostrarModalEntrega && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "800px" }}>
+            <h2> Entrega de Pedidos</h2>
+            
+            {/* Barra de búsqueda */}
+            <div className="field">
+              <label>Buscar Pedido:</label>
+              <input
+                type="text"
+                placeholder="Buscar por nombre del cliente, cédula o ID..."
+                value={busquedaPedido}
+                onChange={(e) => setBusquedaPedido(e.target.value)}
+                style={{ width: "100%", padding: "10px" }}
+              />
+            </div>
+
+            {/* Lista de pedidos */}
+            <div className="pedidos-lista" style={{ maxHeight: "400px", overflowY: "auto", margin: "20px 0" }}>
+              <h3>Pedidos Listos para Entrega</h3>
+              
+              {pedidosLista
+                .filter(pedido => 
+                  pedido.cliente_nombre.toLowerCase().includes(busquedaPedido.toLowerCase()) ||
+                  pedido.cliente_cedula.includes(busquedaPedido) ||
+                  pedido.id_pedido.toString().includes(busquedaPedido)
+                )
+                .map(pedido => (
+                  <div 
+                    key={pedido.id_pedido}
+                    className={`pedido-item ${pedidoSeleccionado?.id_pedido === pedido.id_pedido ? 'selected' : ''}`}
+                    onClick={() => {
+                      setPedidoSeleccionado(pedido);
+                      setAbonoEntrega(pedido.saldo);
+                    }}
+                    style={{
+                      padding: "15px",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "8px",
+                      marginBottom: "10px",
+                      cursor: "pointer",
+                      backgroundColor: pedidoSeleccionado?.id_pedido === pedido.id_pedido ? "#e3f2fd" : "#fff",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <strong>{pedido.cliente_nombre}</strong>
+                        <div style={{ fontSize: "0.9rem", color: "#666" }}>
+                          Cédula: {pedido.cliente_cedula} | Pedido #: {pedido.id_pedido}
+                        </div>
+                        <div style={{ fontSize: "0.9rem", color: "#666" }}>
+                          Total: {formatCOP(pedido.total_pedido)} | Abonado: {formatCOP(pedido.abono)} | Saldo: {formatCOP(pedido.saldo)}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ 
+                          padding: "4px 8px", 
+                          borderRadius: "4px", 
+                          backgroundColor: "#3b82f6",
+                          color: "#fff8f8",
+                          fontSize: "0.8rem",
+                          fontWeight: "bold"
+                        }}>
+                          Pedido
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              
+              {pedidosLista.length === 0 && (
+                <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+                  No hay pedidos listos para entrega
+                </div>
+              )}
+            </div>
+
+            {/* Información del pedido seleccionado */}
+            {pedidoSeleccionado && (
+              <div className="pedido-seleccionado" style={{ 
+                padding: "20px", 
+                backgroundColor: "#f8f9fa", 
+                borderRadius: "8px",
+                marginTop: "20px"
+              }}>
+                <h3>Información de Entrega</h3>
+                
+                <div className="field">
+                  <label> Ingrese el abono en este momento (Saldo Pendiente):</label>
+                  <input
+                    type="number"
+                    value={abonoEntrega}
+                    onChange={(e) => setAbonoEntrega(Number(e.target.value))}
+                    min="0"
+                    max={pedidoSeleccionado.saldo}
+                    placeholder="0"
+                    style={{ width: "100%", fontSize: "1.1rem", padding: "10px" }}
+                  />
+                  <small style={{ color: "#666", marginTop: "5px" }}>
+                     Saldo pendiente total: <strong>{formatCOP(pedidoSeleccionado.saldo)}</strong>
+                  </small>
+                </div>
+
+                <div style={{ 
+                  display: "grid", 
+                  gridTemplateColumns: "1fr 1fr", 
+                  gap: "10px",
+                  marginTop: "15px",
+                  padding: "15px",
+                  backgroundColor: "#fff",
+                  borderRadius: "6px"
+                }}>
+                  <div>
+                    <strong> Cliente:</strong> {pedidoSeleccionado.cliente_nombre}
+                  </div>
+                  <div>
+                    <strong> Cédula:</strong> {pedidoSeleccionado.cliente_cedula}
+                  </div>
+                  <div>
+                    <strong> Total Pedido:</strong> {formatCOP(pedidoSeleccionado.total_pedido)}
+                  </div>
+                  <div>
+                    <strong> Abonado:</strong> {formatCOP(pedidoSeleccionado.abono)}
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <strong> Saldo Pendiente:</strong> {formatCOP(pedidoSeleccionado.saldo)}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Botones de acción */}
+            <div className="modal-actions" style={{ marginTop: "20px" }}>
+              <button 
+                type="button" 
+                className="btn-cancelar"
+                onClick={() => {
+                  setMostrarModalEntrega(false);
+                  setPedidoSeleccionado(null);
+                  setAbonoEntrega(0);
+                  setBusquedaPedido("");
+                }}
+              >
+                Cancelar
+              </button>
+              
+              <button 
+                type="button" 
+                className="btn-primary"
+                onClick={handleEntregarPedido}
+                disabled={!pedidoSeleccionado || cargandoEntrega}
+                style={{ 
+                  backgroundColor: "#3b82f6",
+                  opacity: !pedidoSeleccionado ? 0.6 : 1
+                }}
+              >
+                {cargandoEntrega ? "Procesando..." : " Entregar Pedido"}
               </button>
             </div>
           </div>

@@ -325,7 +325,7 @@
 }
 
 .compact-modal .btn-actualizar {
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: linear-gradient(135deg, #3b82f6);
     color: white;
     border: none;
     padding: 8px 16px;
@@ -340,7 +340,7 @@
 
 .compact-modal .btn-actualizar:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    /* box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); */
 }
 
 .compact-modal .btn-cancelar {

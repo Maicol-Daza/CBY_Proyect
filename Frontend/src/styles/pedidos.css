@@ -1261,6 +1261,99 @@
   background: #fbfdff;
 }
 
+/* Estilos para el modal de entrega de pedidos */
+.pedido-item {
+  transition: all 0.2s ease;
+}
+
+.pedido-item:hover {
+  background-color: #f5f5f5;
+  transform: translateY(-1px);
+}
+
+.pedido-item.selected {
+  border-color: #3b82f6 !important;
+  background-color: #e3f2fd;
+}
+
+.pedidos-lista {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+/* Estilos para el botón de entrega */
+.btn-entrega {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-entrega:hover {
+  background-color: #059669;
+}
+
+.btn-entrega:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Estilos para el resumen del pedido */
+.resumen-pedido {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+  border: 1px solid #e6edf3;
+}
+
+.precio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.btn-modificar-precio {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-modificar-precio:hover {
+  background: #4b5563;
+}
+
+.diferencia-precio {
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 4px;
+  background: #fef3cd;
+}
+
+.diferencia-precio .rebaja {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.diferencia-precio .aumento {
+  color: #198754;
+  font-weight: bold;
+}
+
+
 /* Responsive */
 @media (max-width: 900px) {
   .modal-content {

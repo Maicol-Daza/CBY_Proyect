@@ -377,36 +377,41 @@ export const HistorialModule = () => {
 
                                     {/* INFORMACIÓN DEL PEDIDO */}
                                     <div className="detalle-seccion pedido-info">
-                                        <h3>Información del Pedido</h3>
-                                        <div className="info-items">
-                                            <div className="info-item">
-                                                <label>Código:</label>
-                                                <p>{pedidoSeleccionado.id_pedido}</p>
-                                            </div>
-                                            <div className="info-item">
-                                                <label>Cajón:</label>
-                                                <p>{pedidoSeleccionado.nombre_cajon ?? pedidoSeleccionado.id_cajon ?? "-"}</p>
-                                            </div>
-                                            <div className="info-item">
-                                                <label>Fecha Inicio:</label>
-                                                <p>{formatearFecha(pedidoSeleccionado.fecha_pedido)}</p>
-                                            </div>
-                                            <div className="info-item">
-                                                <label>Fecha Entrega:</label>
-                                                <p>{formatearFecha(pedidoSeleccionado.fecha_entrega)}</p>
-                                            </div>
-                                            <div className="info-item">
-                                                <label>Estado:</label>
-                                                <p>
-                                                    <span className={`estado-badge estado-${pedidoSeleccionado.estado?.toLowerCase()}`}>
-                                                        {pedidoSeleccionado.estado === "en_proceso" ? "En proceso" :
-                                                            pedidoSeleccionado.estado === "listo" ? "Finalizado" :
-                                                                pedidoSeleccionado.estado === "entregado" ? "Entregado" :
-                                                                    pedidoSeleccionado.estado || "En proceso"}
-                                                    </span>
-                                                </p>
-                                            </div>
+                                      <h3>Información del Pedido</h3>
+                                      <div className="info-items">
+                                        <div className="info-item">
+                                          <label>Código:</label>
+                                          <p>{pedidoSeleccionado.id_pedido}</p>
                                         </div>
+                                        
+                                        {/*  OCULTAR CAJÓN SI EL PEDIDO YA ESTÁ ENTREGADO */}
+                                        {pedidoSeleccionado.estado !== "entregado" && (
+                                          <div className="info-item">
+                                            <label>Cajón:</label>
+                                            <p>{pedidoSeleccionado.nombre_cajon ?? pedidoSeleccionado.id_cajon ?? "-"}</p>
+                                          </div>
+                                        )}
+                                        
+                                        <div className="info-item">
+                                          <label>Fecha Inicio:</label>
+                                          <p>{formatearFecha(pedidoSeleccionado.fecha_pedido)}</p>
+                                        </div>
+                                        <div className="info-item">
+                                          <label>Fecha Entrega:</label>
+                                          <p>{formatearFecha(pedidoSeleccionado.fecha_entrega)}</p>
+                                        </div>
+                                        <div className="info-item">
+                                          <label>Estado:</label>
+                                          <p>
+                                            <span className={`estado-badge estado-${pedidoSeleccionado.estado?.toLowerCase()}`}>
+                                              {pedidoSeleccionado.estado === "en_proceso" ? "En proceso" :
+                                                pedidoSeleccionado.estado === "listo" ? "Finalizado" :
+                                                  pedidoSeleccionado.estado === "entregado" ? " Entregado (Cajón Liberado)" :
+                                                    pedidoSeleccionado.estado || "En proceso"}
+                                            </span>
+                                          </p>
+                                        </div>
+                                      </div>
                                     </div>
                                 </div>
 
