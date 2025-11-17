@@ -5,6 +5,7 @@ import { type Accion } from "../services/accionesService";
 import { type AjusteAccion } from "../services/ajustesAccionService";
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
 import { FaTrash  } from 'react-icons/fa';
+import { formatCOP } from '../utils/formatCurrency';
 
 
 interface ModalPrendaProps {
@@ -50,6 +51,18 @@ export default function ModalPrenda({
   combinaciones,
   prendaEditando = null
 }: ModalPrendaProps) {
+  // Helper: convertir cualquier valor de precio a número seguro
+  const parsePrecio = (v: any): number => {
+    if (v === null || v === undefined) return 0;
+    if (typeof v === "number") return isNaN(v) ? 0 : v;
+    const s = String(v).trim();
+    if (s === "") return 0;
+    // quitar símbolos no numéricos, mantener punto decimal
+    const cleaned = s.replace(/[^\d.-]/g, "").replace(/,/g, "");
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? 0 : n;
+  };
+
   // Estados del formulario
   const [tipoPrenda, setTipoPrenda] = useState("");
   const [cantidad, setCantidad] = useState(1);
@@ -68,7 +81,12 @@ export default function ModalPrenda({
       setTipoPrenda(prendaEditando.tipo);
       setCantidad(prendaEditando.cantidad || 1);
       setDescripcion(prendaEditando.descripcion || "");
-      setArreglosSeleccionados(prendaEditando.arreglos || []);
+      // Normalizar precios al abrir para editar (evitar strings con $)
+      const arreglosNormalizados = (prendaEditando.arreglos || []).map(a => ({
+        ...a,
+        precio: parsePrecio((a as any).precio)
+      }));
+      setArreglosSeleccionados(arreglosNormalizados);
     } else if (isOpen) {
       // Resetear formulario para nueva prenda
       setTipoPrenda("");
@@ -110,22 +128,26 @@ export default function ModalPrenda({
     const todosLosArreglos = [
       ...combinaciones.map(combinacion => ({
         id: `combinacion_${combinacion.id_ajuste_accion}`,
-        nombre: `${combinacion.nombre_ajuste} ${combinacion.nombre_accion}`,
-        precio: combinacion.precio,
+        nombre: combinacion.descripcion_combinacion && combinacion.descripcion_combinacion.trim().length > 0
+                ? combinacion.descripcion_combinacion
+                : `${(combinacion.nombre_ajuste ?? '').trim()} ${(combinacion.nombre_accion ?? '').trim()}`.trim(),
+        precio: parsePrecio(combinacion.precio),
         tipo: 'combinacion' as const,
         datos: combinacion
       })),
       ...ajustes.map(ajuste => ({
         id: `ajuste_${ajuste.id_ajuste}`,
         nombre: ajuste.nombre_ajuste,
-        precio: 0,
+        // usar el precio guardado en la tabla ajustes
+        precio: parsePrecio((ajuste as any).precio_ajuste ?? (ajuste as any).precio ?? 0),
         tipo: 'ajuste' as const,
         datos: ajuste
       })),
       ...acciones.map(accion => ({
         id: `accion_${accion.id_accion}`,
         nombre: accion.nombre_accion,
-        precio: 0,
+        // usar el precio guardado en la tabla acciones
+        precio: parsePrecio((accion as any).precio_acciones ?? (accion as any).precio ?? 0),
         tipo: 'accion' as const,
         datos: accion
       }))
@@ -144,7 +166,9 @@ export default function ModalPrenda({
     const filtrados = [
       ...combinaciones.map(combinacion => ({
         id: `combinacion_${combinacion.id_ajuste_accion}`,
-        nombre: `${combinacion.nombre_ajuste} ${combinacion.nombre_accion}`,
+        nombre: combinacion.descripcion_combinacion && combinacion.descripcion_combinacion.trim().length > 0
+                ? combinacion.descripcion_combinacion
+                : `${(combinacion.nombre_ajuste ?? '').trim()} ${(combinacion.nombre_accion ?? '').trim()}`.trim(),
         precio: combinacion.precio,
         tipo: 'combinacion' as const,
         datos: combinacion
@@ -176,13 +200,16 @@ export default function ModalPrenda({
   };
 
   const handleSeleccionarArreglo = (arreglo: any) => {
+    const precioNum = parsePrecio(arreglo.precio);
     const arregloSeleccionado: ArregloSeleccionado = {
-      precio: arreglo.precio,
+      precio: precioNum,
       tipo: arreglo.tipo,
+      // Para combinaciones guardamos también la descripcion si existe
       ...(arreglo.tipo === 'combinacion' && {
         id_ajuste_accion: arreglo.datos.id_ajuste_accion,
-        nombre_ajuste: arreglo.datos.nombre_ajuste,
-        nombre_accion: arreglo.datos.nombre_accion
+        nombre_ajuste: arreglo.datos.nombre_ajuste ?? '',
+        nombre_accion: arreglo.datos.nombre_accion ?? '',
+        descripcion_combinacion: arreglo.datos.descripcion_combinacion ?? arreglo.nombre // guardamos la descripcion para mostrar
       }),
       ...(arreglo.tipo === 'ajuste' && {
         nombre_ajuste: arreglo.datos.nombre_ajuste
@@ -218,11 +245,15 @@ export default function ModalPrenda({
   };
 
   const calcularSubtotal = () => {
-    return arreglosSeleccionados.reduce((total, arreglo) => total + arreglo.precio, 0);
+    return arreglosSeleccionados.reduce((total, arreglo) => {
+      const p = parsePrecio((arreglo as any).precio);
+      return total + p;
+    }, 0);
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() * cantidad;
+    const cant = Number(cantidad) || 1;
+    return calcularSubtotal() * (isNaN(cant) || cant <= 0 ? 1 : cant);
   };
 
   const handleAgregar = () => {
@@ -236,11 +267,41 @@ export default function ModalPrenda({
       return;
     }
 
+    // Construir lista legible de arreglos (usa descripcion_combinacion si existe)
+    const nombresArreglos = arreglosSeleccionados.map(a => {
+      if (a.tipo === 'combinacion') {
+        const nombre = (a as any).descripcion_combinacion
+          ?? `${(a as any).nombre_ajuste ?? ''} ${(a as any).nombre_accion ?? ''}`.trim();
+        const precio = Number((a as any).precio) || 0;
+        const precioStr = precio > 0 ? ` - ${formatCOP(precio)}` : '';
+        return `${nombre}${precioStr}`;
+      }
+      if (a.tipo === 'ajuste') {
+        const nombre = (a as any).nombre_ajuste ?? '';
+        return nombre;
+      }
+      if (a.tipo === 'accion') {
+        const nombre = (a as any).nombre_accion ?? '';
+        return nombre;
+      }
+      return '';
+    }).filter(Boolean).join(' + ');
+
+    const descripcionFinal = descripcion && descripcion.trim()
+      ? descripcion.trim()
+      : (nombresArreglos ? `${nombresArreglos}` : `Prenda: ${tipoPrenda} - ${arreglosSeleccionados.length} arreglos`);
+
+    // asegurar que los precios en la prenda sean números
+    const arreglosParaGuardar = arreglosSeleccionados.map(a => ({
+      ...a,
+      precio: parsePrecio((a as any).precio)
+    }));
+
     const nuevaPrenda: Prenda = {
       tipo: tipoPrenda,
       cantidad: cantidad,
-      arreglos: arreglosSeleccionados,
-      descripcion: descripcion || `Prenda: ${tipoPrenda} - ${arreglosSeleccionados.length} arreglos`
+      arreglos: arreglosParaGuardar,
+      descripcion: descripcionFinal
     };
 
     onAgregarPrenda(nuevaPrenda);
@@ -364,8 +425,8 @@ export default function ModalPrenda({
                 onClick={() => handleSeleccionarArreglo(arreglo)}
               >
                 <div className="arreglo-nombre">{arreglo.nombre}</div>
-                <div className="arreglo-precio-Prendas ">
-                  {arreglo.precio > 0 ? `$${arreglo.precio.toLocaleString()}` : 'Sin precio'}
+                <div className="arreglo-precio-Prendas">
+                  {arreglo.precio && Number(arreglo.precio) > 0 ? formatCOP(arreglo.precio) : 'Sin precio'}
                 </div>
               </div>
             ))}
@@ -386,18 +447,18 @@ export default function ModalPrenda({
                   <div className="arreglo-info">
                     <span className="arreglo-nombre">
                       {arreglo.tipo === 'combinacion' 
-                        ? `${arreglo.nombre_ajuste} ${arreglo.nombre_accion}`
+                        ? (arreglo.descripcion_combinacion ?? `${arreglo.nombre_ajuste} ${arreglo.nombre_accion}`.trim())
                         : arreglo.tipo === 'ajuste'
                         ? arreglo.nombre_ajuste
                         : arreglo.nombre_accion
                       }
                     </span>
                     <span className="arreglo-precio-Prendas">
-                      ${arreglo.precio.toLocaleString()}
+                      {formatCOP(arreglo.precio)}
                     </span>
                   </div>
 
-                  {/* Espacio entre el boton y el precio en el modal */}
+                  {/* Espacio entre el boton y el precio en el modal */ }
                   <p className="Espacio-precio"><br /></p>
                   
                   <button
@@ -415,11 +476,11 @@ export default function ModalPrenda({
             <div className="resumen-precios">
               <div className="precio-linea">
                 <span>Subtotal por prenda:</span>
-                <span>${calcularSubtotal().toLocaleString()}</span>
+                <span>{formatCOP(calcularSubtotal())}</span>
               </div>
               <div className="precio-linea total">
-                <span>Total ({cantidad} prenda{cantidad > 1 ? 's' : ''}):</span>
-                <span>${calcularTotal().toLocaleString()}</span>
+                <span>Total (prenda):</span>
+                <span>{formatCOP(calcularTotal())}</span>
               </div>
             </div>
           </div>

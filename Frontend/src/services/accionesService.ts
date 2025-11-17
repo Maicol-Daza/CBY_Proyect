@@ -4,6 +4,7 @@ const API_URL = "http://localhost:3000/api/acciones";
 export interface Accion {
   id_accion: number;
   nombre_accion: string;
+  precio_acciones: number;
 }
 
 export async function obtenerAcciones(): Promise<Accion[]> {
@@ -17,12 +18,12 @@ export async function obtenerAcciones(): Promise<Accion[]> {
   }
 }
 
-export async function crearAccion(nombre_accion: string): Promise<any> {
+export async function crearAccion(nombre_accion: string, precio_acciones: number): Promise<any> {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre_accion }),
+      body: JSON.stringify({ nombre_accion, precio_acciones }),
     });
     if (!response.ok) throw new Error('Error al crear acción');
     return await response.json();
@@ -32,12 +33,12 @@ export async function crearAccion(nombre_accion: string): Promise<any> {
   }
 }
 
-export async function actualizarAccion(id_accion: number, nombre_accion: string): Promise<any> {
+export async function actualizarAccion(id_accion: number, nombre_accion: string, precio_acciones: number): Promise<any> {
   try {
     const response = await fetch(`${API_URL}/${id_accion}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre_accion }),
+      body: JSON.stringify({ nombre_accion, precio_acciones }),
     });
     if (!response.ok) throw new Error('Error al actualizar acción');
     return await response.json();

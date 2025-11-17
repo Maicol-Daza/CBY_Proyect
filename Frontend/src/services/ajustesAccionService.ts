@@ -42,25 +42,6 @@ export async function crearAjusteAccion(
   }
 }
 
-export async function actualizarAjusteAccion(
-  id_ajuste_accion: number,
-  precio: number,
-  descripcion_combinacion?: string
-): Promise<any> {
-  try {
-    const response = await fetch(`${API_URL}/${id_ajuste_accion}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ precio, descripcion_combinacion }),
-    });
-    if (!response.ok) throw new Error('Error al actualizar combinación');
-    return await response.json();
-  } catch (error) {
-    console.error("Error en actualizarAjusteAccion:", error);
-    throw error;
-  }
-}
-
 export async function eliminarAjusteAccion(id: number): Promise<any> {
   try {
     const response = await fetch(`${API_URL}/${id}`, {

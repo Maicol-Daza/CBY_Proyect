@@ -9,6 +9,7 @@ import ModalPrenda from "../components/ModalPrenda";
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { obtenerClientes, type Cliente as ClienteService } from "../services/clientesService";
+import { formatCOP } from '../utils/formatCurrency';
 
 // Interfaces (manteniendo las existentes)
 interface Pedido {
@@ -424,10 +425,15 @@ export default function Pedidos() {
   // Calcular el total de las prendas
   const calcularTotalPrendas = () => {
     return prendasTemporales.reduce((total, prenda) => {
-      const subtotalPrenda = (prenda.arreglos || []).reduce((subtotal, arreglo) => 
-        subtotal + arreglo.precio, 0
-      );
-      return total + (subtotalPrenda * (prenda.cantidad || 1));
+      const subtotalPrenda = (prenda.arreglos || []).reduce((subtotal, arreglo) => {
+        const precio = Number(arreglo?.precio ?? 0);
+        return subtotal + (isNaN(precio) ? 0 : precio);
+      }, 0);
+
+      const cantidad = Number(prenda?.cantidad ?? 1);
+      const cantidadSegura = isNaN(cantidad) || cantidad <= 0 ? 1 : cantidad;
+
+      return total + subtotalPrenda * cantidadSegura;
     }, 0);
   };
 
@@ -683,21 +689,30 @@ export default function Pedidos() {
                         <td>{prenda.tipo}</td>
                         <td>{prenda.cantidad}</td>
                         <td>
-                          {(prenda.arreglos || []).map((arreglo, i) => (
-                            <div key={i} className="arreglo-mini">
-                              {arreglo.tipo === 'combinacion' 
-                                ? `${arreglo.nombre_ajuste} ${arreglo.nombre_accion}`
-                                : arreglo.tipo === 'ajuste'
+                          {(prenda.arreglos || []).map((arreglo, i) => {
+                            const nombreArreglo = arreglo.tipo === 'combinacion'
+                              ? (arreglo.descripcion_combinacion && arreglo.descripcion_combinacion.trim()
+                                  ? arreglo.descripcion_combinacion
+                                  : `${arreglo.nombre_ajuste ?? ''} ${arreglo.nombre_accion ?? ''}`.trim()
+                                )
+                              : arreglo.tipo === 'ajuste'
                                 ? arreglo.nombre_ajuste
-                                : arreglo.nombre_accion
-                              } - ${arreglo.precio.toLocaleString()}
-                            </div>
-                          ))}
+                                : arreglo.nombre_accion;
+
+                            return (
+                              <div key={i} className="arreglo-mini">
+                                {nombreArreglo} - {formatCOP(Number(arreglo.precio) || 0)}
+                              </div>
+                            );
+                          })}
                         </td>
                         <td>
-                          ${((prenda.arreglos || []).reduce((total, arreglo) => 
-                            total + arreglo.precio, 0) * (prenda.cantidad || 1)
-                          ).toLocaleString()}
+                          {formatCOP(
+                            (prenda.arreglos || []).reduce(
+                              (total, arreglo) => total + Number(arreglo.precio || 0),
+                              0
+                            ) * (prenda.cantidad || 1)
+                          )}
                         </td>
                         <td>
                           <div className="acciones-prenda">
@@ -724,8 +739,8 @@ export default function Pedidos() {
                 
                 {/* Total del pedido */}
                 <div className="total-pedido">
-                  <h3>Total Calculado: ${calcularTotalPrendas().toLocaleString()}</h3>
-                  <h3>Total Final: ${precioModificado.toLocaleString()}</h3>
+                  <h3>Total Calculado: {formatCOP(calcularTotalPrendas())}</h3>
+                  <h3>Total Final: {formatCOP(precioModificado)}</h3>
                 </div>
               </div>
             )}
@@ -779,19 +794,19 @@ export default function Pedidos() {
               </button>
             </div>
             
-            <p><strong>Total calculado:</strong> ${calcularTotalPrendas().toLocaleString()}</p>
-            <p><strong>Total final:</strong> ${precioModificado.toLocaleString()}</p>
+            <p><strong>Total calculado:</strong> {formatCOP(calcularTotalPrendas())}</p>
+            <p><strong>Total final:</strong> {formatCOP(precioModificado)}</p>
             {precioModificado !== calcularTotalPrendas() && (
               <p className="diferencia-precio">
                 <strong>Diferencia:</strong> 
                 <span className={precioModificado < calcularTotalPrendas() ? "rebaja" : "aumento"}>
                   {precioModificado < calcularTotalPrendas() ? " -" : " +"}
-                  ${Math.abs(precioModificado - calcularTotalPrendas()).toLocaleString()}
+                  {formatCOP(Math.abs(precioModificado - calcularTotalPrendas()))}
                 </span>
               </p>
             )}
-            <p><strong>Abono inicial:</strong> ${Number(pedido.abonoInicial || 0).toLocaleString()}</p>
-            <p><strong>Saldo pendiente:</strong> ${pedido.saldoPendiente.toLocaleString()}</p>
+            <p><strong>Abono inicial:</strong> {formatCOP(Number(pedido.abonoInicial || 0))}</p>
+            <p><strong>Saldo pendiente:</strong> {formatCOP(Number(pedido.saldoPendiente || 0))}</p>
           </div>
 
           <button
@@ -895,10 +910,10 @@ export default function Pedidos() {
       {/* Modal para modificar precio */}
       {mostrarModificarPrecio && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="modal-content-modificar">
             <h2>Modificar Precio Final</h2>
             
-            <div className="form-group">
+            <div className="form-group-modificar">
               <label>Total Calculado:</label>
               <input
                 type="text"
@@ -908,7 +923,7 @@ export default function Pedidos() {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group-modifica">
               <label>Nuevo Precio Final *</label>
               <input
                 type="number"
@@ -922,7 +937,7 @@ export default function Pedidos() {
               )}
             </div>
 
-            <div className="form-group">
+            <div className="forform-group-modifica">
               <label>Motivo de la modificación (opcional)</label>
               <textarea
                 value={motivoModificacion}

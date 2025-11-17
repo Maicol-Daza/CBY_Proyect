@@ -36,11 +36,11 @@ class AccionesController {
 
     // Agregar nueva acción
     async agregarAccion(req, res) {
-        const { nombre_accion } = req.body;
+        const { nombre_accion, precio_acciones } = req.body;
         try {
             await db.query(
-                `INSERT INTO acciones (nombre_accion) VALUES (?)`,
-                [nombre_accion]
+                `INSERT INTO acciones (nombre_accion, precio_acciones) VALUES (?, ?)`,
+                [nombre_accion, precio_acciones]
             );
             res.json({ mensaje: 'Acción agregada correctamente' });
         } catch (error) {
@@ -57,11 +57,11 @@ class AccionesController {
     // Actualizar acción
     async actualizarAccion(req, res) {
         const { id } = req.params;
-        const { nombre_accion } = req.body;
+        const { nombre_accion, precio_acciones } = req.body;
         try {
             await db.query(
-                `UPDATE acciones SET nombre_accion = ? WHERE id_accion = ?`,
-                [nombre_accion, id]
+                `UPDATE acciones SET nombre_accion = ?, precio_acciones = ? WHERE id_accion = ?`,
+                [nombre_accion, precio_acciones, id]
             );
             res.json({ mensaje: 'Acción actualizada correctamente' });
         } catch (error) {

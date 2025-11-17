@@ -5,7 +5,7 @@ class AjustesController {
     async obtenerAjustes(req, res) {
         try {
             const [ajustes] = await db.query(
-                `SELECT id_ajuste, nombre_ajuste FROM ajustes`
+                `SELECT id_ajuste, nombre_ajuste, precio_ajuste FROM ajustes`
             );
             res.json(ajustes);
         } catch (error) {
@@ -36,12 +36,12 @@ class AjustesController {
 
     // Agregar un nuevo ajuste
     async agregarAjuste(req, res) {
-        const { nombre_ajuste } = req.body;
+        const { nombre_ajuste, precio_ajuste } = req.body;
 
         try {
             await db.query(
-                `INSERT INTO ajustes (nombre_ajuste) VALUES (?)`,
-                [nombre_ajuste]
+                `INSERT INTO ajustes (nombre_ajuste, precio_ajuste) VALUES (?, ?)`,
+                [nombre_ajuste, precio_ajuste]
             );
             res.json({ mensaje: 'Ajuste agregado correctamente' });
         } catch (error) {
@@ -56,12 +56,12 @@ class AjustesController {
     // Actualizar ajuste
     async actualizarAjuste(req, res) {
         const { id } = req.params;
-        const { nombre_ajuste } = req.body;
+        const { nombre_ajuste, precio_ajuste } = req.body;
 
         try {
             await db.query(
-                `UPDATE ajustes SET nombre_ajuste = ? WHERE id_ajuste = ?`,
-                [nombre_ajuste, id]
+                `UPDATE ajustes SET nombre_ajuste = ?, precio_ajuste = ? WHERE id_ajuste = ?`,
+                [nombre_ajuste, precio_ajuste, id]
             );
             res.json({ mensaje: 'Ajuste actualizado correctamente' });
         } catch (error) {

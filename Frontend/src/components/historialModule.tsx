@@ -4,6 +4,7 @@ import { FaDownload, FaEye, FaTimes } from "react-icons/fa";
 import { obtenerCodigos } from "../services/codigosService";
 import { obtenerCajones } from "../services/cajonesService";
 import { FaEdit } from 'react-icons/fa';
+import { formatCOP } from '../utils/formatCurrency';
 
 export const HistorialModule = () => {
     const [pedidos, setPedidos] = useState<any[]>([]);
@@ -25,11 +26,11 @@ export const HistorialModule = () => {
         try {
             setCargando(true);
             const response = await fetch("http://localhost:3000/api/pedidos");
-            
+
             if (!response.ok) {
                 throw new Error("Error al cargar pedidos");
             }
-            
+
             const data = await response.json();
             setPedidos(data);
             setError(null);
@@ -68,11 +69,11 @@ export const HistorialModule = () => {
         try {
             setCargandoDetalles(true);
             const response = await fetch(`http://localhost:3000/api/pedidos/${id_pedido}`);
-            
+
             if (!response.ok) {
                 throw new Error("Error al cargar detalles");
             }
-            
+
             const data = await response.json();
             console.log("Datos del pedido (raw):", data);
 
@@ -132,7 +133,7 @@ export const HistorialModule = () => {
 
             console.log("Prendas:", pedidoNormalizado.prendas);
             console.log("Observaciones normalizadas:", pedidoNormalizado.observaciones);
-            
+
             if (pedidoNormalizado.prendas && pedidoNormalizado.prendas[0]) {
                 console.log("Primera prenda arreglos:", pedidoNormalizado.prendas[0].arreglos);
             }
@@ -151,16 +152,16 @@ export const HistorialModule = () => {
     };
 
     const pedidosFiltrados = pedidos.filter(pedido => {
-        const cumpleBusqueda = 
+        const cumpleBusqueda =
             pedido.id_pedido?.toString().includes(filtros.busqueda.toLowerCase()) ||
             pedido.cliente_nombre?.toLowerCase().includes(filtros.busqueda.toLowerCase());
-        
-        const cumpleEstado = 
+
+        const cumpleEstado =
             filtros.estado === "todos" || pedido.estado === filtros.estado;
-        
-        const cumpleFecha = 
+
+        const cumpleFecha =
             filtros.fecha === "" || pedido.fecha_pedido?.split("T")[0] === filtros.fecha;
-        
+
         return cumpleBusqueda && cumpleEstado && cumpleFecha;
     });
 
@@ -180,7 +181,7 @@ export const HistorialModule = () => {
 
             <div className="filtros-section">
                 <h3 className="filtros-title">Filtros de Búsqueda</h3>
-                
+
                 <div className="filtros-grid">
                     <div className="filtro-group">
                         <label>Buscar</label>
@@ -254,19 +255,19 @@ export const HistorialModule = () => {
                                         <td>
                                             <span className={`estado-badge estado-${pedido.estado?.toLowerCase() || "en_proceso"}`}>
                                                 {pedido.estado === "en_proceso" ? "En proceso" :
-                                                 pedido.estado === "listo" ? "Finalizado" :
-                                                 pedido.estado === "entregado" ? "Entregado" :
-                                                 pedido.estado || "En proceso"}
+                                                    pedido.estado === "listo" ? "Finalizado" :
+                                                        pedido.estado === "entregado" ? "Entregado" :
+                                                            pedido.estado || "En proceso"}
                                             </span>
                                         </td>
-                                        <td className="monto">${parseFloat(pedido.total_pedido || 0).toLocaleString("es-CO")}</td>
+                                        <td>{formatCOP(pedido.total_pedido ?? pedido.totalPedido ?? 0)}</td>
                                         <td className={parseFloat(pedido.saldo || 0) > 0 ? "monto pendiente" : "monto pagado"}>
-                                            ${parseFloat(pedido.saldo || 0).toLocaleString("es-CO")}
+                                            {formatCOP(pedido.saldo ?? pedido.saldoPendiente ?? 0)}
                                         </td>
                                         <td className="acciones">
-                                            <button 
-                                                className="btn-accion-ver" 
-                                                title="Ver detalles" 
+                                            <button
+                                                className="btn-accion-ver"
+                                                title="Ver detalles"
                                                 type="button"
                                                 onClick={() => handleVerDetalles(pedido.id_pedido)}
                                             >
@@ -333,7 +334,7 @@ export const HistorialModule = () => {
                                             </div>
                                             <div className="info-item">
                                                 <label>Cajón:</label>
-                                              <p>{pedidoSeleccionado.nombre_cajon ?? pedidoSeleccionado.id_cajon ?? "-"}</p>
+                                                <p>{pedidoSeleccionado.nombre_cajon ?? pedidoSeleccionado.id_cajon ?? "-"}</p>
                                             </div>
                                             <div className="info-item">
                                                 <label>Fecha Inicio:</label>
@@ -348,9 +349,9 @@ export const HistorialModule = () => {
                                                 <p>
                                                     <span className={`estado-badge estado-${pedidoSeleccionado.estado?.toLowerCase()}`}>
                                                         {pedidoSeleccionado.estado === "en_proceso" ? "En proceso" :
-                                                         pedidoSeleccionado.estado === "listo" ? "Finalizado" :
-                                                         pedidoSeleccionado.estado === "entregado" ? "Entregado" :
-                                                         pedidoSeleccionado.estado || "En proceso"}
+                                                            pedidoSeleccionado.estado === "listo" ? "Finalizado" :
+                                                                pedidoSeleccionado.estado === "entregado" ? "Entregado" :
+                                                                    pedidoSeleccionado.estado || "En proceso"}
                                                     </span>
                                                 </p>
                                             </div>
@@ -378,21 +379,36 @@ export const HistorialModule = () => {
                                                             ${parseFloat(prenda.precio_unitario || prenda.precio || 0).toLocaleString("es-CO")}
                                                         </p>
                                                     </div>
-                                                    
+
                                                     {prenda.arreglos && Array.isArray(prenda.arreglos) && prenda.arreglos.length > 0 ? (
                                                         <div className="arreglos-container">
                                                             <p className="arreglos-titulo"><strong>Ajustes/Arreglos:</strong></p>
                                                             {prenda.arreglos.map((arreglo: any, idx2: number) => {
-                                                                const nombreArreglo = arreglo.nombre || arreglo.tipo || arreglo.descripcion || "Sin nombre";
-                                                                const precioArreglo = parseFloat(arreglo.precio || arreglo.valor || 0);
-                                                                
+                                                                // Normalizar nombre: primero usar descripcion_combinacion, luego combinación nombre_ajuste + nombre_accion,
+                                                                // luego campos comunes (nombre, descripcion, tipo), finalmente "Sin nombre"
+                                                                const nombreArreglo = (arreglo.descripcion_combinacion && String(arreglo.descripcion_combinacion).trim())
+                                                                    ? String(arreglo.descripcion_combinacion).trim()
+                                                                    : (arreglo.nombre_ajuste && arreglo.nombre_accion)
+                                                                        ? `${String(arreglo.nombre_ajuste).trim()} + ${String(arreglo.nombre_accion).trim()}`
+                                                                        : arreglo.nombre_ajuste
+                                                                            ? String(arreglo.nombre_ajuste).trim()
+                                                                            : arreglo.nombre_accion
+                                                                                ? String(arreglo.nombre_accion).trim()
+                                                                                : arreglo.nombre || arreglo.descripcion || arreglo.tipo || "Sin nombre";
+
+                                                                // Normalizar precio probando múltiples campos que pueden venir desde backend
+                                                                const precioArregloNum = parseFloat(
+                                                                    (arreglo.precio ?? arreglo.valor ?? arreglo.precio_ajuste ?? arreglo.precio_acciones ?? arreglo.monto ?? 0)
+                                                                        .toString()
+                                                                ) || 0;
+
                                                                 return (
                                                                     <div key={idx2} className="arreglo-item">
                                                                         <div className="arreglo-content">
                                                                             <span className="arreglo-nombre">{nombreArreglo}</span>
                                                                         </div>
                                                                         <span className="arreglo-precio">
-                                                                            ${precioArreglo.toLocaleString("es-CO")}
+                                                                            {formatCOP(precioArregloNum)}
                                                                         </span>
                                                                     </div>
                                                                 );
@@ -428,17 +444,17 @@ export const HistorialModule = () => {
                                 <div className="detalle-seccion resumen-financiero">
                                     <h3>Resumen Financiero</h3>
                                     <div className="resumen-items">
-                                        <div className="resumen-item">
-                                            <label>Total del pedido:</label>
-                                            <p>${parseFloat(pedidoSeleccionado.total_pedido || 0).toLocaleString("es-CO")}</p>
+                                        <div className="line-item">
+                                            <span>Total pedido:</span>
+                                            <strong>{formatCOP(pedidoSeleccionado.total_pedido ?? pedidoSeleccionado.totalPedido ?? 0)}</strong>
                                         </div>
-                                        <div className="resumen-item">
-                                            <label>Abono inicial:</label>
-                                            <p>${parseFloat(pedidoSeleccionado.abono || 0).toLocaleString("es-CO")}</p>
+                                        <div className="line-item">
+                                            <span>Abono inicial:</span>
+                                            <strong>{formatCOP(pedidoSeleccionado.abono_inicial ?? pedidoSeleccionado.abonoInicial ?? 0)}</strong>
                                         </div>
-                                        <div className="resumen-item highlight">
-                                            <label>Saldo pendiente:</label>
-                                            <p>${parseFloat(pedidoSeleccionado.saldo || 0).toLocaleString("es-CO")}</p>
+                                        <div className="line-item">
+                                            <span>Saldo pendiente:</span>
+                                            <strong>{formatCOP(pedidoSeleccionado.saldo ?? pedidoSeleccionado.saldoPendiente ?? 0)}</strong>
                                         </div>
                                     </div>
                                 </div>

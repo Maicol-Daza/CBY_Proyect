@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/configuracionAjustes.css';
-import { obtenerAjustes, Ajuste, crearAjuste } from '../services/ajustesService';
-import { obtenerAcciones, Accion, crearAccion } from '../services/accionesService';
+import { 
+  obtenerAjustes, 
+  Ajuste, 
+  crearAjuste, 
+  actualizarAjuste, 
+  eliminarAjuste 
+} from '../services/ajustesService';
+import { 
+  obtenerAcciones, 
+  Accion, 
+  crearAccion, 
+  actualizarAccion, 
+  eliminarAccion 
+} from '../services/accionesService';
 import { obtenerAjustesAccion, crearAjusteAccion, eliminarAjusteAccion, AjusteAccion } from '../services/ajustesAccionService';
 import { FaEdit, FaTrash, } from 'react-icons/fa';
+import { formatCOP } from '../utils/formatCurrency';
 
 export default function ConfiguracionAjustes() {
   const [ajustes, setAjustes] = useState<Ajuste[]>([]);
@@ -12,24 +25,35 @@ export default function ConfiguracionAjustes() {
   const [showModal, setShowModal] = useState(false);
   const [selectedAjustes, setSelectedAjustes] = useState<number[]>([]);
   const [selectedAcciones, setSelectedAcciones] = useState<number[]>([]);
+  // valor numérico real
   const [precio, setPrecio] = useState<number>(0);
+  // valor mostrado en el input (formateado / mientras se escribe)
+  const [precioDisplay, setPrecioDisplay] = useState<string>(formatCOP(0));
   const [loading, setLoading] = useState(false);
-  
+
   // Estados para crear ajustes
   const [showModalAjuste, setShowModalAjuste] = useState(false);
   const [nuevoAjuste, setNuevoAjuste] = useState('');
+  const [precioAjuste, setPrecioAjuste] = useState<number>(0);
   const [loadingAjuste, setLoadingAjuste] = useState(false);
   const [editandoAjuste, setEditandoAjuste] = useState<number | null>(null);
-  
+
   // Estados para crear acciones
   const [showModalAccion, setShowModalAccion] = useState(false);
   const [nuevaAccion, setNuevaAccion] = useState('');
+  const [precioAccion, setPrecioAccion] = useState<number>(0);
   const [loadingAccion, setLoadingAccion] = useState(false);
   const [editandoAccion, setEditandoAccion] = useState<number | null>(null);
 
-  // Estado para editar combinación
-  const [editandoCombinacion, setEditandoCombinacion] = useState<number | null>(null);
-  const [precioEditando, setPrecioEditando] = useState<number>(0);
+  const parsePrecio = (v: any): number => {
+    if (v === null || v === undefined) return 0;
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    const s = String(v).trim();
+    if (s === '') return 0;
+    const cleaned = s.replace(/[^\d.-]/g, '').replace(/,/g, '');
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? 0 : n;
+  };
 
   useEffect(() => {
     cargarDatos();
@@ -70,23 +94,23 @@ export default function ConfiguracionAjustes() {
 
     setLoading(true);
     try {
-      const nombresAjustes = selectedAjustes.map(id => 
+      const nombresAjustes = selectedAjustes.map(id =>
         ajustes.find(a => a.id_ajuste === id)?.nombre_ajuste
       ).join(' + ');
-      
-      const nombresAcciones = selectedAcciones.map(id => 
+
+      const nombresAcciones = selectedAcciones.map(id =>
         acciones.find(a => a.id_accion === id)?.nombre_accion
       ).join(' + ');
-      
+
       const descripcion = `${nombresAjustes} / ${nombresAcciones}`;
 
       await crearAjusteAccion(
-        selectedAjustes[0], 
-        selectedAcciones[0], 
-        precio, 
+        selectedAjustes[0],
+        selectedAcciones[0],
+        precio,
         descripcion
       );
-      
+
       alert('Combinación agregada correctamente');
       resetModal();
       await cargarDatos();
@@ -103,18 +127,28 @@ export default function ConfiguracionAjustes() {
       alert('Ingresa un nombre para el ajuste');
       return;
     }
+    if (precioAjuste <= 0) {
+      alert('Ingresa un precio válido para el ajuste');
+      return;
+    }
 
     setLoadingAjuste(true);
     try {
-      await crearAjuste(nuevoAjuste);
-      alert('Ajuste creado correctamente');
+      if (editandoAjuste) {
+        await actualizarAjuste(editandoAjuste, nuevoAjuste, precioAjuste);
+        alert('Ajuste actualizado correctamente');
+      } else {
+        await crearAjuste(nuevoAjuste, precioAjuste);
+        alert('Ajuste creado correctamente');
+      }
       setNuevoAjuste('');
+      setPrecioAjuste(0);
       setEditandoAjuste(null);
       setShowModalAjuste(false);
       await cargarDatos();
     } catch (error) {
-      console.error('Error al crear ajuste:', error);
-      alert('Error al crear el ajuste');
+      console.error('Error al guardar ajuste:', error);
+      alert(`Error al ${editandoAjuste ? 'actualizar' : 'crear'} el ajuste`);
     } finally {
       setLoadingAjuste(false);
     }
@@ -125,31 +159,46 @@ export default function ConfiguracionAjustes() {
       alert('Ingresa un nombre para la acción');
       return;
     }
+    if (precioAccion <= 0) {
+      alert('Ingresa un precio válido para la acción');
+      return;
+    }
 
     setLoadingAccion(true);
     try {
-      await crearAccion(nuevaAccion);
-      alert('Acción creada correctamente');
+      if (editandoAccion) {
+        // Modo edición
+        await actualizarAccion(editandoAccion, nuevaAccion, precioAccion);
+        alert('Acción actualizada correctamente');
+      } else {
+        // Modo creación
+        await crearAccion(nuevaAccion, precioAccion);
+        alert('Acción creada correctamente');
+      }
       setNuevaAccion('');
+      setPrecioAccion(0);
       setEditandoAccion(null);
       setShowModalAccion(false);
       await cargarDatos();
     } catch (error) {
-      console.error('Error al crear acción:', error);
-      alert('Error al crear la acción');
+      console.error('Error al guardar acción:', error);
+      alert(`Error al ${editandoAccion ? 'actualizar' : 'crear'} la acción`);
     } finally {
       setLoadingAccion(false);
     }
   };
 
   const handleEditarAjuste = (ajuste: Ajuste) => {
-    // Funcionalidad de edición removida
+    setEditandoAjuste(ajuste.id_ajuste);
+    setNuevoAjuste(ajuste.nombre_ajuste);
+    setPrecioAjuste(ajuste.precio_ajuste ?? 0);
+    setShowModalAjuste(true);
   };
 
   const handleEliminarAjuste = async (id: number) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este ajuste?')) {
       try {
-        // Aquí iría la función eliminarAjuste del servicio
+        await eliminarAjuste(id);
         alert('Ajuste eliminado correctamente');
         await cargarDatos();
       } catch (error) {
@@ -160,13 +209,16 @@ export default function ConfiguracionAjustes() {
   };
 
   const handleEditarAccion = (accion: Accion) => {
-    // Funcionalidad de edición removida
+    setEditandoAccion(accion.id_accion);
+    setNuevaAccion(accion.nombre_accion);
+    setPrecioAccion(accion.precio_acciones ?? 0);
+    setShowModalAccion(true);
   };
 
   const handleEliminarAccion = async (id: number) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta acción?')) {
       try {
-        // Aquí iría la función eliminarAccion del servicio
+        await eliminarAccion(id);
         alert('Acción eliminada correctamente');
         await cargarDatos();
       } catch (error) {
@@ -174,10 +226,6 @@ export default function ConfiguracionAjustes() {
         alert('Error al eliminar la acción');
       }
     }
-  };
-
-  const handleEditarCombinacion = (comb: AjusteAccion) => {
-    // Funcionalidad de edición removida
   };
 
   const handleEliminar = async (id: number) => {
@@ -195,23 +243,24 @@ export default function ConfiguracionAjustes() {
 
   const resetModal = () => {
     setShowModal(false);
-    setEditandoCombinacion(null);
     setSelectedAjustes([]);
     setSelectedAcciones([]);
     setPrecio(0);
-    setPrecioEditando(0);
+    setPrecioDisplay(formatCOP(0));
   };
 
   const resetModalAjuste = () => {
     setShowModalAjuste(false);
     setEditandoAjuste(null);
     setNuevoAjuste('');
+    setPrecioAjuste(0);
   };
 
   const resetModalAccion = () => {
     setShowModalAccion(false);
     setEditandoAccion(null);
     setNuevaAccion('');
+    setPrecioAccion(0);
   };
 
   const obtenerNombresCombinacion = (combinacion: AjusteAccion) => {
@@ -222,7 +271,7 @@ export default function ConfiguracionAjustes() {
     <div className="configuracion-container">
       <div className="header-section">
         <h1>Constructor de Ajustes</h1>
-        <button className="btn-agregar" onClick={() => { setEditandoCombinacion(null); setSelectedAjustes([]); setSelectedAcciones([]); setPrecio(0); setShowModal(true); }}>
+        <button className="btn-agregar" onClick={() => { setSelectedAjustes([]); setSelectedAcciones([]); setPrecio(0); setShowModal(true); }}>
           + Agregar Combinación
         </button>
       </div>
@@ -251,9 +300,6 @@ export default function ConfiguracionAjustes() {
                   <td>${Number(comb.precio).toFixed(2)}</td>
                   <td className="actions-cell">
                     <div className="actions-group">
-                      <button className="btn-editar" onClick={() => handleEditarCombinacion(comb)} title="Editar">
-                        <FaEdit /> Editar
-                      </button>
                       <button className="btn-eliminar" onClick={() => handleEliminar(comb.id_ajuste_accion)} title="Eliminar">
                         <FaTrash /> Eliminar
                       </button>
@@ -316,7 +362,7 @@ export default function ConfiguracionAjustes() {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h2>{editandoCombinacion ? 'Editar Combinación' : 'Nueva Combinación de Ajuste'}</h2>
+              <h2>Nueva Combinación de Ajuste</h2>
               <button className="btn-close" onClick={resetModal}>×</button>
             </div>
 
@@ -363,12 +409,15 @@ export default function ConfiguracionAjustes() {
                 <label htmlFor="precio">Precio para todas las combinaciones *</label>
                 <input
                   id="precio"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={editandoCombinacion ? precioEditando : precio}
-                  onChange={(e) => editandoCombinacion ? setPrecioEditando(parseFloat(e.target.value)) : setPrecio(parseFloat(e.target.value))}
-                  placeholder="0.00"
+                  type="text"
+                  value={precioDisplay}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    setPrecioDisplay(raw);
+                    setPrecio(parsePrecio(raw));
+                  }}
+                  onBlur={() => setPrecioDisplay(formatCOP(precio))}
+                  placeholder="$ 0,00"
                 />
               </div>
 
@@ -389,7 +438,7 @@ export default function ConfiguracionAjustes() {
                 onClick={handleAgregarCombinacion}
                 disabled={loading}
               >
-                {loading ? 'Procesando...' : (editandoCombinacion ? 'Guardar Cambios' : 'Agregar 1 Combinación')}
+                {loading ? 'Procesando...' : 'Agregar 1 Combinación'}
               </button>
             </div>
           </div>
@@ -414,6 +463,15 @@ export default function ConfiguracionAjustes() {
                 onChange={(e) => setNuevoAjuste(e.target.value)}
                 placeholder="Ej: Color Azul"
                 onKeyPress={(e) => e.key === 'Enter' && handleAgregarAjuste()}
+              />
+              <label htmlFor="precioAjuste">Precio *</label>
+              <input
+                id="precioAjuste"
+                type="number"
+                value={precioAjuste}
+                onChange={(e) => setPrecioAjuste(Number(e.target.value))}
+                placeholder="Ej: 5000"
+                min={0}
               />
             </div>
 
@@ -451,6 +509,15 @@ export default function ConfiguracionAjustes() {
                 onChange={(e) => setNuevaAccion(e.target.value)}
                 placeholder="Ej: Envío Gratis"
                 onKeyPress={(e) => e.key === 'Enter' && handleAgregarAccion()}
+              />
+              <label htmlFor="precioAccion">Precio *</label>
+              <input
+                id="precioAccion"
+                type="number"
+                value={precioAccion}
+                onChange={(e) => setPrecioAccion(Number(e.target.value))}
+                placeholder="Ej: 5000"
+                min={0}
               />
             </div>
 

@@ -139,9 +139,10 @@
   border-radius: 8px;
   max-width: 700px;
   width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* Quitamos el scroll vertical */
+  overflow-y: visible;
+  max-height: none;
 }
 
 .modal-header {
@@ -227,7 +228,7 @@
 }
 
 .precio-section input {
-  width: 100%;
+  width: 97%;
   padding: 10px;
   border: 1px solid #dee2e6;
   border-radius: 5px;
@@ -432,7 +433,33 @@
 }
 
 .modal-small {
-  max-width: 400px;
+  max-width: 500px;
+}
+
+/* Estilos para la edición de combinaciones */
+.edicion-combinacion {
+  padding: 10px 0;
+}
+
+.combinacion-info {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-left: 4px solid #007bff;
+}
+
+.combinacion-info h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.combinacion-info p {
+  margin: 0;
+  color: #666;
+  font-style: italic;
+  line-height: 1.4;
 }
 
 @media (max-width: 768px) {
@@ -448,5 +475,14 @@
   .btn-editar,
   .btn-eliminar {
     width: 100%;
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .modal-small {
+    max-width: 95%;
   }
 }

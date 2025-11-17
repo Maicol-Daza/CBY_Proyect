@@ -875,6 +875,405 @@
   background: #095fcc;
 }
 
+
+.modal-content-modificar {
+     background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+.form-group-modificar{
+ display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content-modificar {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-content-modificar h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.form-group-modificar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-group-modifica {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.forform-group-modifica {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.form-group-modificar label,
+.form-group-modifica label,
+.forform-group-modifica label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.input-disabled {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #f9fafb;
+  color: #6b7280;
+  font-size: 1rem;
+  cursor: not-allowed;
+}
+
+.form-group-modifica input[type="number"] {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group-modifica input[type="number"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.forform-group-modifica textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.forform-group-modifica textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.forform-group-modifica textarea::placeholder {
+  color: #9ca3af;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 0.8rem;
+  margin: 4px 0 0 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.modal-actions button:active {
+  transform: scale(0.98);
+}
+
+.modal-actions button:first-child {
+  background-color: #6b7280;
+  color: white;
+}
+
+.modal-actions button:first-child:hover {
+  background-color: #4b5563;
+}
+
+.modal-actions button:last-child {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.modal-actions button:last-child:hover {
+  background-color: #2563eb;
+}
+
+
+
+/* Modal Prenda - AHORA CON ESTILO DE MODIFICAR PRECIO */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 920px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-content h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+/* Grupos de formulario - estilo modificar precio */
+.modal-content .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+/* Labels - estilo modificar precio */
+.modal-content label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+/* Inputs - estilo modificar precio */
+.modal-content input[type="text"],
+.modal-content input[type="number"],
+.modal-content textarea {
+  padding: 7px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #fff;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-content textarea {
+  font-family: inherit;
+  resize: vertical;
+}
+
+
+.modal-content .modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.modal-content .modal-actions button:active {
+  transform: scale(0.98);
+}
+
+.modal-content .modal-actions button:first-child {
+  background-color: #6b7280;
+  color: white;
+}
+
+.modal-content .modal-actions button:first-child:hover {
+  background-color: #4b5563;
+}
+
+.modal-content .modal-actions button:last-child {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.modal-content .modal-actions button:last-child:hover {
+  background-color: #2563eb;
+}
+
+/* Estados disabled - estilo modificar precio */
+.modal-content .input-disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Mensajes de error - estilo modificar precio */
+.modal-content .error {
+  color: #dc2626;
+  font-size: 0.8rem;
+  margin: 4px 0 0 0;
+}
+
+/* Ajustes específicos para el modal de prendas */
+.modal-content .prenda-info {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 14px;
+  margin-bottom: 18px;
+  align-items: end;
+}
+
+.modal-content .busqueda-arreglos {
+  margin-bottom: 14px;
+}
+
+.modal-content .search-box input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fbfdff;
+}
+
+/* Arreglos disponibles */
+.modal-content .arreglos-disponibles {
+  margin-bottom: 8px;
+}
+
+.modal-content .arreglos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.modal-content .arreglo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fbfdff;
+}
+
+.modal-content .arreglo-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content .arreglo-item.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+/* Arreglos seleccionados */
+.modal-content .arreglos-seleccionados {
+  border-top: 2px solid #3b82f6;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.modal-content .arreglo-seleccionado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: #fbfdff;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .modal-content {
+    width: 96%;
+    padding: 16px;
+  }
+  
+  .modal-content .prenda-info {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 /* Ajustes responsivos scoped */
 @media (max-width: 900px) {
   .prenda-modal-content {
