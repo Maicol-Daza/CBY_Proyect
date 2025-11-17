@@ -100,34 +100,43 @@ class PedidoClienteController {
       // 3️⃣ Guardar prendas y arreglos en detalle_pedido_combo
       if (prendas && prendas.length > 0) {
         for (const prenda of prendas) {
-          // Insertar la prenda principal CON CANTIDAD
-          const [resultPrenda] = await connection.query(
+          // Insertar prenda asociada al pedido (usar id_pedido en la tabla prendas)
+          const [resPrenda] = await connection.query(
             `INSERT INTO prendas (id_pedido, tipo, descripcion, cantidad) VALUES (?, ?, ?, ?)`,
-            [id_pedido, prenda.tipo, prenda.descripcion, prenda.cantidad || 1]
+            [
+              id_pedido,
+              prenda.tipo || null,
+              prenda.descripcion || null,
+              prenda.cantidad || 1
+            ]
           );
-          
-          const id_prenda = resultPrenda.insertId;
+          const id_prenda = resPrenda.insertId;
 
-          // Insertar cada arreglo en detalle_pedido_combo
-          for (const arreglo of prenda.arreglos) {
-            let idAjusteAccion = null;
-            
-            // Solo para combinaciones tenemos id_ajuste_accion
-            if (arreglo.tipo === 'combinacion' && arreglo.id_ajuste_accion) {
-              idAjusteAccion = arreglo.id_ajuste_accion;
-            }
-            
-            // Crear descripción del arreglo
-            const descripcionArreglo = arreglo.tipo === 'combinacion' 
-              ? `${arreglo.nombre_ajuste} ${arreglo.nombre_accion}`
-              : arreglo.tipo === 'ajuste'
-              ? arreglo.nombre_ajuste
-              : arreglo.nombre_accion;
+          if (prenda.arreglos && prenda.arreglos.length > 0) {
+            // Crear array de descripciones con prioridad: descripcion_combinacion -> descripcion -> nombre_ajuste+nombre_accion -> otros
+            const descripciones = prenda.arreglos.map(a => {
+              if (a.descripcion_combinacion) return String(a.descripcion_combinacion).trim();
+              if (a.descripcion) return String(a.descripcion).trim();
+              if (a.nombre_ajuste && a.nombre_accion) return `${String(a.nombre_ajuste).trim()} + ${String(a.nombre_accion).trim()}`;
+              return a.nombre_ajuste ?? a.nombre_accion ?? a.nombre ?? a.tipo ?? "Arreglo";
+            }).filter(Boolean);
+
+            const descripcionConcatenada = descripciones.join(" / ");
+
+            // Sumar precios (prueba varios campos posibles)
+            const precioTotal = prenda.arreglos.reduce((sum, a) => {
+              const p = parseFloat((a.precio ?? a.valor ?? a.monto ?? 0).toString()) || 0;
+              return sum + p;
+            }, 0);
+
+            // Si sólo hay un arreglo con id_ajuste_accion, lo colocamos; si hay varios dejamos null
+            const conId = prenda.arreglos.filter(a => a.id_ajuste_accion);
+            const idAjusteAccion = conId.length === 1 ? conId[0].id_ajuste_accion : null;
 
             await connection.query(
               `INSERT INTO detalle_pedido_combo (id_prenda, id_ajuste_accion, descripcion, precio) 
                VALUES (?, ?, ?, ?)`,
-              [id_prenda, idAjusteAccion, descripcionArreglo, arreglo.precio]
+              [id_prenda, idAjusteAccion, descripcionConcatenada, precioTotal]
             );
           }
         }
@@ -399,11 +408,16 @@ class PedidoClienteController {
               idAjusteAccion = arreglo.id_ajuste_accion;
             }
             
-            const descripcionArreglo = arreglo.tipo === 'combinacion' 
-              ? `${arreglo.nombre_ajuste} ${arreglo.nombre_accion}`
-              : arreglo.tipo === 'ajuste'
-              ? arreglo.nombre_ajuste
-              : arreglo.nombre_accion;
+            let descripcionArreglo = "";
+            if (arreglo && (arreglo.descripcion_combinacion || arreglo.descripcion)) {
+              descripcionArreglo = String(arreglo.descripcion_combinacion ?? arreglo.descripcion).trim();
+            } else if (arreglo && (arreglo.nombre_ajuste || arreglo.nombre_accion)) {
+              descripcionArreglo = `${arreglo.nombre_ajuste ?? ''} ${arreglo.nombre_accion ?? ''}`.trim();
+            } else if (arreglo && arreglo.tipo) {
+              if (arreglo.tipo === 'ajuste' && arreglo.nombre_ajuste) descripcionArreglo = String(arreglo.nombre_ajuste).trim();
+              else if (arreglo.tipo === 'accion' && arreglo.nombre_accion) descripcionArreglo = String(arreglo.nombre_accion).trim();
+            }
+            if (!descripcionArreglo) descripcionArreglo = "Arreglo";
 
             await connection.query(
               `INSERT INTO detalle_pedido_combo (id_prenda, id_ajuste_accion, descripcion, precio) 

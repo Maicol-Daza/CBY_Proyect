@@ -384,17 +384,23 @@ export const HistorialModule = () => {
                                                         <div className="arreglos-container">
                                                             <p className="arreglos-titulo"><strong>Ajustes/Arreglos:</strong></p>
                                                             {prenda.arreglos.map((arreglo: any, idx2: number) => {
-                                                                // Normalizar nombre: primero usar descripcion_combinacion, luego combinación nombre_ajuste + nombre_accion,
-                                                                // luego campos comunes (nombre, descripcion, tipo), finalmente "Sin nombre"
-                                                                const nombreArreglo = (arreglo.descripcion_combinacion && String(arreglo.descripcion_combinacion).trim())
-                                                                    ? String(arreglo.descripcion_combinacion).trim()
-                                                                    : (arreglo.nombre_ajuste && arreglo.nombre_accion)
-                                                                        ? `${String(arreglo.nombre_ajuste).trim()} + ${String(arreglo.nombre_accion).trim()}`
-                                                                        : arreglo.nombre_ajuste
-                                                                            ? String(arreglo.nombre_ajuste).trim()
-                                                                            : arreglo.nombre_accion
-                                                                                ? String(arreglo.nombre_accion).trim()
-                                                                                : arreglo.nombre || arreglo.descripcion || arreglo.tipo || "Sin nombre";
+                                                                // Normalizar nombre: PRIORIDAD ->
+                                                                // 1) descripcion (desde detalle_pedido_combo.descripcion),
+                                                                // 2) descripcion_combinacion,
+                                                                // 3) nombre_ajuste + nombre_accion,
+                                                                // 4) nombre_ajuste / nombre_accion / nombre,
+                                                                // 5) tipo o "Sin nombre"
+                                                                const nombreArreglo = (arreglo.descripcion && String(arreglo.descripcion).trim())
+                                                                    ? String(arreglo.descripcion).trim()
+                                                                    : (arreglo.descripcion_combinacion && String(arreglo.descripcion_combinacion).trim())
+                                                                        ? String(arreglo.descripcion_combinacion).trim()
+                                                                        : (arreglo.nombre_ajuste && arreglo.nombre_accion)
+                                                                            ? `${String(arreglo.nombre_ajuste).trim()} + ${String(arreglo.nombre_accion).trim()}`
+                                                                            : arreglo.nombre_ajuste
+                                                                                ? String(arreglo.nombre_ajuste).trim()
+                                                                                : arreglo.nombre_accion
+                                                                                    ? String(arreglo.nombre_accion).trim()
+                                                                                    : arreglo.nombre || arreglo.tipo || "Sin nombre";
 
                                                                 // Normalizar precio probando múltiples campos que pueden venir desde backend
                                                                 const precioArregloNum = parseFloat(
