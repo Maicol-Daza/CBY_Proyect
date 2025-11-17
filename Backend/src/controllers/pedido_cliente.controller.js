@@ -97,6 +97,18 @@ class PedidoClienteController {
 
       const id_pedido = nuevoPedido.insertId;
 
+      // 2.1️⃣ Si se registró un abono inicial, guardarlo en historial_abonos (misma transacción)
+      const abonoInicial = Number(pedido.abonoInicial || 0);
+      // utilizar campo específico para la observación del abono si se envía: observaciones_abono
+      const observacionAbono = pedido.observaciones_abono ?? pedido.observaciones ?? null;
+      if (abonoInicial > 0) {
+        await connection.query(
+          `INSERT INTO historial_abonos (id_pedido, fecha_abono, abono, observaciones)
+           VALUES (?, NOW(), ?, ?)`,
+          [id_pedido, abonoInicial, observacionAbono]
+        );
+      }
+      
       // 3️⃣ Guardar prendas y arreglos en detalle_pedido_combo
       if (prendas && prendas.length > 0) {
         for (const prenda of prendas) {

@@ -18,6 +18,7 @@ interface Pedido {
   estado: string;
   observaciones: string;
   abonoInicial: number | string;
+  abonoObservaciones?: string; // <-- nuevo campo para observaciones del abono
   totalPedido: number;
   saldoPendiente: number;
 }
@@ -60,6 +61,7 @@ export default function Pedidos() {
     estado: "",
     observaciones: "",
     abonoInicial: "",
+    abonoObservaciones: "",
     totalPedido: 0,
     saldoPendiente: 0,
   });
@@ -492,6 +494,8 @@ export default function Pedidos() {
           pedido: {
             ...pedido,
             totalPedido: precioModificado, // Usar el precio modificado
+            // enviar campo específico para observación del abono
+            observaciones_abono: pedido.abonoObservaciones || null,
             observaciones: motivoModificacion 
               ? `${pedido.observaciones || ''}\nMODIFICACIÓN DE PRECIO: ${motivoModificacion} - Precio original: $${calcularTotalPrendas().toLocaleString()}, Precio final: $${precioModificado.toLocaleString()}`
               : pedido.observaciones
@@ -522,6 +526,7 @@ export default function Pedidos() {
           estado: "",
           observaciones: "",
           abonoInicial: "",
+          abonoObservaciones: "",
           totalPedido: 0,
           saldoPendiente: 0,
         });
@@ -780,6 +785,17 @@ export default function Pedidos() {
             )}
           </div>
 
+          <div className="field">
+            <label>Observaciones del Abono (opcional):</label>
+            <input
+              type="text"
+              name="abonoObservaciones"
+              value={pedido.abonoObservaciones || ""}
+              onChange={handleInputPedido}
+              placeholder="Ej: Pago parcial, recibo #123, etc."
+            />
+          </div>
+          
           {/* Resumen del pedido con opción de modificar precio */}
           <div className="resumen-pedido">
             <div className="precio-header">

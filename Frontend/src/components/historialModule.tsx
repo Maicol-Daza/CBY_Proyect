@@ -17,6 +17,11 @@ export const HistorialModule = () => {
     const [error, setError] = useState<string | null>(null);
     const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any>(null);
     const [cargandoDetalles, setCargandoDetalles] = useState(false);
+    const [abonosPedido, setAbonosPedido] = useState<any[]>([]);
+    const [loadingAbonos, setLoadingAbonos] = useState(false);
+    const [abonosSoloModalOpen, setAbonosSoloModalOpen] = useState(false);
+    const [loadingAbonosSolo, setLoadingAbonosSolo] = useState(false);
+    const [abonosSolo, setAbonosSolo] = useState<any[]>([]);
 
     useEffect(() => {
         cargarPedidos();
@@ -139,6 +144,23 @@ export const HistorialModule = () => {
             }
 
             setPedidoSeleccionado(pedidoNormalizado);
+
+            // Cargar abonos del pedido (para mostrar dentro del detalle)
+            try {
+                setLoadingAbonos(true);
+                const respAb = await fetch(`http://localhost:3000/api/historial_abonos/pedido/${id_pedido}`);
+                if (respAb.ok) {
+                    const dataAb = await respAb.json();
+                    setAbonosPedido(Array.isArray(dataAb) ? dataAb : []);
+                } else {
+                    setAbonosPedido([]);
+                }
+            } catch (e) {
+                console.warn("Error al cargar abonos del pedido:", e);
+                setAbonosPedido([]);
+            } finally {
+                setLoadingAbonos(false);
+            }
         } catch (error) {
             console.error("Error cargando detalles:", error);
             alert("Error al cargar los detalles del pedido");
@@ -149,6 +171,27 @@ export const HistorialModule = () => {
 
     const handleCerrarDetalles = () => {
         setPedidoSeleccionado(null);
+        setAbonosPedido([]);
+    };
+
+    // Nueva función: obtener y mostrar solo los abonos de un pedido en modal separado
+    const verAbonosSolo = async (id_pedido: number) => {
+        try {
+            setLoadingAbonosSolo(true);
+            setAbonosSoloModalOpen(true);
+            const resp = await fetch(`http://localhost:3000/api/historial_abonos/pedido/${id_pedido}`);
+            if (!resp.ok) {
+                setAbonosSolo([]);
+                return;
+            }
+            const data = await resp.json();
+            setAbonosSolo(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Error al cargar abonos (solo):", err);
+            setAbonosSolo([]);
+        } finally {
+            setLoadingAbonosSolo(false);
+        }
     };
 
     const pedidosFiltrados = pedidos.filter(pedido => {
@@ -273,6 +316,14 @@ export const HistorialModule = () => {
                                             >
                                                 <FaEye />
                                             </button>
+                                            {/* Botón separado para ver solo abonos de este pedido */}
+                                            <button
+                                                className="btn-accion"
+                                                title="Ver Abonos"
+                                                onClick={() => verAbonosSolo(pedido.id_pedido)}
+                                            >
+                                                💳 Ver Abonos
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -371,6 +422,9 @@ export const HistorialModule = () => {
                                                             <p className="prenda-nombre">
                                                                 <strong>{prenda.descripcion || prenda.nombre || "Sin descripción"}</strong>
                                                             </p>
+                                                            <p className="prenda-tipo" style={{ margin: 4, color: '#666', fontSize: 13 }}>
+                                                                Tipo: <strong>{prenda.tipo ?? prenda.tipo_prenda ?? prenda.nombre_tipo ?? "-"}</strong>
+                                                            </p>
                                                             <p className="prenda-cantidad">
                                                                 Cantidad: <strong>{prenda.cantidad || 0}</strong>
                                                             </p>
@@ -464,8 +518,80 @@ export const HistorialModule = () => {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* HISTORIAL DE ABONOS DEL PEDIDO */}
+                                <div className="detalle-seccion abonos-seccion">
+                                    <h3>Historial de Abonos</h3>
+                                    {loadingAbonos ? (
+                                        <p>Cargando abonos...</p>
+                                    ) : abonosPedido.length === 0 ? (
+                                        <p style={{ color: "#999", fontStyle: "italic" }}>No hay abonos registrados para este pedido</p>
+                                    ) : (
+                                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th>Monto</th>
+                                                    <th>Observaciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {abonosPedido.map((a: any) => (
+                                                    <tr key={a.id_historial_abono}>
+                                                        <td>{formatearFecha(a.fecha_abono || a.fecha)}</td>
+                                                        <td>{formatCOP(Number(a.abono || 0))}</td>
+                                                        <td>{a.observaciones || "-"}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL ABONOS SOLOS */}
+            {abonosSoloModalOpen && (
+                <div className="modal-overlay" onClick={() => setAbonosSoloModalOpen(false)}>
+                    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Abonos del Pedido</h2>
+                            <button className="btn-cerrar" onClick={() => setAbonosSoloModalOpen(false)}>✕</button>
+                        </div>
+
+                        <div className="modal-body">
+                            {loadingAbonosSolo ? (
+                                <p>Cargando abonos...</p>
+                            ) : abonosSolo.length === 0 ? (
+                                <p>No se encontraron abonos para este pedido.</p>
+                            ) : (
+                                <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                                    <thead>
+                                      <tr>
+                                        <th>Fecha</th>
+                                        <th>Abono</th>
+                                        <th>Observaciones</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {abonosSolo.map((a) => (
+                                        <tr key={a.id_historial_abono}>
+                                          <td>{new Date(a.fecha_abono).toLocaleString()}</td>
+                                          <td>{Number(a.abono).toLocaleString()}</td>
+                                          <td>{a.observaciones || '-'}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                            )}
+                        </div>
+
+                        <div className="modal-footer" style={{display:'flex', justifyContent:'flex-end', gap:12}}>
+                          <button className="btn-cancelar" onClick={() => setAbonosSoloModalOpen(false)}>Cerrar</button>
+                        </div>
                     </div>
                 </div>
             )}

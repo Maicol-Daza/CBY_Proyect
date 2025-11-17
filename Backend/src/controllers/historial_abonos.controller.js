@@ -142,6 +142,36 @@ class HistorialAbonosController {
       res.status(500).json({ error: 'Error al eliminar el abono' });
     }
   }
+
+  // Obtener abonos por cliente (todos los pedidos del cliente)
+  async obtenerAbonosPorCliente(req, res) {
+    const { id } = req.params; // id = id_cliente
+    try {
+      const [abonos] = await db.query(
+        `
+        SELECT 
+          h.id_historial_abono,
+          h.id_pedido,
+          p.id_cliente,
+          p.fecha_pedido,
+          p.total_pedido,
+          h.fecha_abono,
+          h.abono,
+          h.observaciones
+        FROM historial_abonos h
+        JOIN pedido_cliente p ON h.id_pedido = p.id_pedido
+        WHERE p.id_cliente = ?
+        ORDER BY h.fecha_abono DESC
+        `,
+        [id]
+      );
+
+      res.json(abonos);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al obtener los abonos del cliente' });
+    }
+  }
 }
 
 module.exports = HistorialAbonosController;
