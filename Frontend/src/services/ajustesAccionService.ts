@@ -8,6 +8,7 @@ export interface AjusteAccion {
   precio: number;
   nombre_ajuste: string;
   nombre_accion: string;
+  descripcion_combinacion?: string;
 }
 
 export async function obtenerAjustesAccion(): Promise<AjusteAccion[]> {
@@ -24,13 +25,14 @@ export async function obtenerAjustesAccion(): Promise<AjusteAccion[]> {
 export async function crearAjusteAccion(
   id_ajuste: number, 
   id_accion: number, 
-  precio: number
+  precio: number,
+  descripcion_combinacion?: string
 ): Promise<any> {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_ajuste, id_accion, precio }),
+      body: JSON.stringify({ id_ajuste, id_accion, precio, descripcion_combinacion }),
     });
     if (!response.ok) throw new Error('Error al crear combinación');
     return await response.json();
@@ -42,13 +44,14 @@ export async function crearAjusteAccion(
 
 export async function actualizarAjusteAccion(
   id_ajuste_accion: number,
-  precio: number
+  precio: number,
+  descripcion_combinacion?: string
 ): Promise<any> {
   try {
     const response = await fetch(`${API_URL}/${id_ajuste_accion}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ precio }),
+      body: JSON.stringify({ precio, descripcion_combinacion }),
     });
     if (!response.ok) throw new Error('Error al actualizar combinación');
     return await response.json();

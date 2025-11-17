@@ -8,6 +8,7 @@ class AjustesAccionController {
         SELECT 
           aa.id_ajuste_accion,
           aa.precio,
+          aa.descripcion_combinacion,
           a.id_ajuste,
           a.nombre_ajuste,
           ac.id_accion,
@@ -32,6 +33,7 @@ class AjustesAccionController {
         SELECT 
           aa.id_ajuste_accion,
           aa.precio,
+          aa.descripcion_combinacion,
           a.id_ajuste,
           a.nombre_ajuste,
           ac.id_accion,
@@ -57,19 +59,14 @@ class AjustesAccionController {
 
     // Agregar una nueva relación ajuste-acción
     async agregarAjusteAccion(req, res) {
-        const { id_ajuste, id_accion, precio } = req.body;
+        const { id_ajuste, id_accion, precio, descripcion_combinacion } = req.body;
         try {
             await db.query(
-                `INSERT INTO ajustes_accion (id_ajuste, id_accion, precio) VALUES (?, ?, ?)`,
-                [id_ajuste, id_accion, precio]
+                `INSERT INTO ajustes_accion (id_ajuste, id_accion, precio, descripcion_combinacion) VALUES (?, ?, ?, ?)`,
+                [id_ajuste, id_accion, precio, descripcion_combinacion || null]
             );
             res.json({ mensaje: 'Relación ajuste-acción agregada correctamente' });
         } catch (error) {
-            if (error.code === 'ER_DUP_ENTRY') {
-                return res
-                    .status(400)
-                    .json({ error: 'Esta combinación de ajuste y acción ya existe' });
-            }
             console.error(error);
             res.status(500).json({ error: 'Error al agregar la relación ajuste-acción' });
         }
@@ -78,13 +75,13 @@ class AjustesAccionController {
     // Actualizar una relación
     async actualizarAjusteAccion(req, res) {
         const { id } = req.params;
-        const { id_ajuste, id_accion, precio } = req.body;
+        const { id_ajuste, id_accion, precio, descripcion_combinacion } = req.body;
         try {
             await db.query(
                 `UPDATE ajustes_accion 
-         SET id_ajuste = ?, id_accion = ?, precio = ?
+         SET id_ajuste = ?, id_accion = ?, precio = ?, descripcion_combinacion = ?
          WHERE id_ajuste_accion = ?`,
-                [id_ajuste, id_accion, precio, id]
+                [id_ajuste, id_accion, precio, descripcion_combinacion || null, id]
             );
             res.json({ mensaje: 'Relación ajuste-acción actualizada correctamente' });
         } catch (error) {
