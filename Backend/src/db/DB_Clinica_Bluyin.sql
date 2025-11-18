@@ -49,12 +49,14 @@ CREATE TABLE IF NOT EXISTS clientes (
 
 CREATE TABLE IF NOT EXISTS ajustes (
     id_ajuste INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_ajuste VARCHAR(100) UNIQUE
+    nombre_ajuste VARCHAR(100),
+    precio_ajuste DECIMAL(10,2)
 );
 
 CREATE TABLE IF NOT EXISTS acciones (
     id_accion INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_accion VARCHAR(100) UNIQUE
+    nombre_accion VARCHAR(100),
+	precio_acciones DECIMAL(10,2)
 );
 
 CREATE TABLE IF NOT EXISTS ajustes_accion (
@@ -62,9 +64,9 @@ CREATE TABLE IF NOT EXISTS ajustes_accion (
     id_ajuste INT,
     id_accion INT,
     precio DECIMAL(10,2),
+    descripcion_combinacion VARCHAR(255),
     FOREIGN KEY (id_ajuste) REFERENCES ajustes(id_ajuste) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (id_accion) REFERENCES acciones(id_accion) ON DELETE RESTRICT ON UPDATE CASCADE,
-    UNIQUE (id_ajuste, id_accion)
+    FOREIGN KEY (id_accion) REFERENCES acciones(id_accion) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS pedido_cliente (
@@ -119,7 +121,7 @@ CREATE TABLE IF NOT EXISTS detalle_pedido_combo (
 CREATE TABLE IF NOT EXISTS movimientos_caja (
     id_movimiento_caja INT AUTO_INCREMENT PRIMARY KEY,
     id_pedido INT,
-    fecha_movimiento DATE,
+    fecha_movimiento DATETIME DEFAULT CURRENT_TIMESTAMP,
     tipo ENUM('entrada','salida'),
     descripcion TEXT,
     monto DECIMAL(10,2),
@@ -210,13 +212,6 @@ INSERT INTO prendas (tipo, descripcion) VALUES
 ('Chaqueta', 'Chaqueta de mezclilla');
 
 
-select * from clientes;
-select * from codigos;
-select * from detalle_pedido_combo;
-select * from pedido_cliente;
-select * from prendas;
-select * from usuarios;
-
 
 
 -- Insertar roles
@@ -253,3 +248,24 @@ INSERT INTO usuarios (nombre, email, clave, id_rol)
 VALUES 
 ('Empleado', 'empleado@gmail.com', '$2b$10$wLyuMd5mP.D5YekcUa2uSOQIRXvXFyKmpz3go/ryHgHU1ihTtioa6', 2);
 -- La contraseña es: 1
+
+
+
+select * from clientes;
+select * from codigos;
+select * from detalle_pedido_combo;
+select * from pedido_cliente;
+select * from prendas;
+select * from usuarios;
+select * from cajones;
+select * from ajustes_accion;
+select * from ajustes;
+select * from historial_abonos;
+select * from movimientos_caja;
+
+ALTER TABLE movimientos_caja 
+MODIFY COLUMN fecha_movimiento DATETIME DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE ajustes_accion ADD COLUMN descripcion_combinacion VARCHAR(255);
+ALTER TABLE ajustes_accion DROP CONSTRAINT id_ajuste_id_accion_unique;
+ALTER TABLE ajustes_accion DROP INDEX `id_ajuste_id_accion_unique`;
+drop database clinicabluyin

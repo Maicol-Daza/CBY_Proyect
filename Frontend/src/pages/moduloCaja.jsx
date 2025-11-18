@@ -1,8 +1,9 @@
 import LayoutPublic from "../components/layout/LayoutPublic";
+import CajaModule from "../components/cajaModule";
 
 export const ModuloCaja = () => (
     <LayoutPublic>
-        <h1>Caja</h1>
+        <CajaModule />
     </LayoutPublic>
 );
 

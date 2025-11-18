@@ -97,7 +97,7 @@ class PedidoClienteController {
 
       const id_pedido = nuevoPedido.insertId;
 
-      // 2.1️⃣ Si se registró un abono inicial, guardarlo en historial_abonos (misma transacción)
+      // 2.1️⃣ Si se registró un abono inicial, guardarlo en historial_abonos Y en movimientos_caja
       const abonoInicial = Number(pedido.abonoInicial || 0);
       // utilizar campo específico para la observación del abono si se envía: observaciones_abono
       const observacionAbono = pedido.observaciones_abono ?? pedido.observaciones ?? null;
@@ -106,6 +106,13 @@ class PedidoClienteController {
           `INSERT INTO historial_abonos (id_pedido, fecha_abono, abono, observaciones)
            VALUES (?, NOW(), ?, ?)`,
           [id_pedido, abonoInicial, observacionAbono]
+        );
+
+        // 🔥 CREAR MOVIMIENTO EN CAJA - Abono inicial
+        await connection.query(
+          `INSERT INTO movimientos_caja (id_pedido, fecha_movimiento, tipo, descripcion, monto, id_usuario)
+           VALUES (?, NOW(), 'entrada', ?, ?, ?)`,
+          [id_pedido, `Abono inicial - ${observacionAbono || 'Pago parcial'}`, abonoInicial, 1]
         );
       }
       
@@ -521,32 +528,54 @@ class PedidoClienteController {
     else if (estado === "Entregado") estadoBD = "entregado";
     else if (estado === "Cancelado") estadoBD = "cancelado";
 
-    // Si el estado es "entregado", guardar el registro del cajón antes de liberar
+    // Obtener datos del pedido actual
+    const [pedidoActual] = await connection.query(
+      `SELECT id_cliente, total_pedido, abono FROM pedido_cliente WHERE id_pedido = ?`,
+      [id]
+    );
+
+    if (pedidoActual.length === 0) {
+      throw new Error('Pedido no encontrado');
+    }
+
+    const totalPedido = Number(pedidoActual[0].total_pedido);
+    const abonoAnterior = Number(pedidoActual[0].abono);
+
+    // Si el estado es "entregado", guardar registro y crear movimiento
     if (estadoBD === 'entregado') {
       try {
-        // Obtener el cajón actual del pedido
-        const [pedidoActual] = await connection.query(
+        const [pedidoData] = await connection.query(
           `SELECT id_cajon FROM pedido_cliente WHERE id_pedido = ?`,
           [id]
         );
 
-        if (pedidoActual.length > 0 && pedidoActual[0].id_cajon) {
-          // Insertar registro en historial de cajones (si tienes esta tabla)
-          // Si no la tienes, créala o guarda en una tabla de auditoría
+        if (pedidoData.length > 0 && pedidoData[0].id_cajon) {
           await connection.query(
             `INSERT INTO historial_cajon_pedido 
              (id_pedido, id_cajon, fecha_liberacion, estado_anterior)
              VALUES (?, ?, NOW(), 'ocupado')`,
-            [id, pedidoActual[0].id_cajon]
+            [id, pedidoData[0].id_cajon]
           );
         }
       } catch (e) {
         console.warn("⚠️ Aviso al guardar historial de cajón:", e.message);
-        // No fallar la transacción por esto
       }
 
-      // Ahora liberar los códigos y el cajón
+      // Liberar los códigos
       await this.liberarCodigosPedido(id, connection);
+
+      // 🔥 CREAR MOVIMIENTO EN CAJA
+      const montoACobrar = abonoEntrega ? Number(abonoEntrega) : (totalPedido - abonoAnterior);
+      
+      if (montoACobrar > 0) {
+        await connection.query(
+          `INSERT INTO movimientos_caja (id_pedido, fecha_movimiento, tipo, descripcion, monto, id_usuario)
+           VALUES (?, CURRENT_TIMESTAMP, 'entrada', ?, ?, ?)`,
+          [id, `Cobro en entrega - Pedido #${id}`, montoACobrar, 1]
+        );
+
+        console.log(`✅ Movimiento registrado: $${montoACobrar}`);
+      }
     }
 
     // Si se está marcando como entregado y hay un abono adicional
@@ -557,20 +586,13 @@ class PedidoClienteController {
         [id, abonoEntrega, 'Abono en el momento de la entrega']
       );
 
-      const [pedidoActual] = await connection.query(
-        `SELECT abono, saldo FROM pedido_cliente WHERE id_pedido = ?`,
-        [id]
+      const nuevoAbono = abonoAnterior + Number(abonoEntrega);
+      const nuevoSaldo = totalPedido - nuevoAbono;
+      
+      await connection.query(
+        `UPDATE pedido_cliente SET abono = ?, saldo = ? WHERE id_pedido = ?`,
+        [nuevoAbono, Math.max(nuevoSaldo, 0), id]
       );
-
-      if (pedidoActual.length > 0) {
-        const nuevoAbono = Number(pedidoActual[0].abono) + Number(abonoEntrega);
-        const nuevoSaldo = Number(pedidoActual[0].saldo) - Number(abonoEntrega);
-        
-        await connection.query(
-          `UPDATE pedido_cliente SET abono = ?, saldo = ? WHERE id_pedido = ?`,
-          [nuevoAbono, Math.max(nuevoSaldo, 0), id]
-        );
-      }
     }
 
     // Actualizar estado del pedido
@@ -582,7 +604,7 @@ class PedidoClienteController {
     await connection.commit();
     
     return res.json({ 
-      message: "Estado actualizado correctamente",
+      message: "Estado actualizado correctamente y movimiento registrado en caja",
       nuevo_estado: estadoBD,
       id_pedido: id
     });

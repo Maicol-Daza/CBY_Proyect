@@ -24,9 +24,12 @@ app.use('/api/ajustes_accion', require('./routes/ajustes_accion.routes'));
 app.use('/api/pedidos', require('./routes/pedido_cliente.routes'));
 app.use('/api/prendas', require('./routes/prendas.routes'));
 app.use('/api/detalle-pedido-combo', require('./routes/detalle_pedido_combo.routes'));
-app.use('/api/movimientos_caja', require('./routes/movimientos_caja.routes'));
-app.use('/api/historial_abonos', require('./routes/historial_abonos.routes'));
 
+const movimientosCajaRoutes = require('./routes/movimientos_caja.routes');
+// Registrar rutas
+app.use('/api/movimientos_caja', movimientosCajaRoutes);
+
+app.use('/api/historial_abonos', require('./routes/historial_abonos.routes'));
 
 
 module.exports = app;
