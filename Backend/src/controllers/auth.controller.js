@@ -43,7 +43,7 @@ class AuthController {
         mensaje: 'Inicio de sesión exitoso',
         token,
         usuario: {
-          id: usuario.id_usuario,
+          id_usuario: usuario.id_usuario,  // Cambiar de 'id' a 'id_usuario'
           nombre: usuario.nombre,
           email: usuario.email,
           rol: rolDatos[0]?.rol || 'Sin rol',

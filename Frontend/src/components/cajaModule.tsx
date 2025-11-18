@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useAuthContext } from "../context/AuthContext";
 import "../styles/moduloCaja.css";
 import { crearMovimiento, obtenerMovimientos, type Movimiento } from "../services/movimientos_caja";
 import { formatCOP } from "../utils/formatCurrency";
 
 export const CajaModule = () => {
+  const { user } = useAuthContext();
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
   const [ingresoHoy, setIngresoHoy] = useState(0);
   const [egresoHoy, setEgresoHoy] = useState(0);
@@ -72,7 +74,10 @@ export const CajaModule = () => {
 
     try {
       setCargando(true);
-      await crearMovimiento(nuevoMovimiento);
+      await crearMovimiento({
+        ...nuevoMovimiento,
+        id_usuario: user?.id_usuario // Usar el usuario autenticado
+      });
       
       alert("✅ Movimiento registrado correctamente");
       setNuevoMovimiento({

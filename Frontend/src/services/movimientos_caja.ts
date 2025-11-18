@@ -35,8 +35,8 @@ export async function crearMovimiento(movimiento: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...movimiento,
-        fecha_movimiento: new Date().toISOString(),
-        id_usuario: movimiento.id_usuario || 1
+        fecha_movimiento: new Date().toISOString()
+        // Quitar el id_usuario por defecto
       })
     });
     if (!response.ok) throw new Error("Error al crear movimiento");
