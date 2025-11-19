@@ -1,0 +1,276 @@
+/* UsuariosPagina.css - Versión Mejorada */
+
+.usuarios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.usuarios-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.card-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border-radius: 8px;
+    padding: 1.2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: visible;
+}
+
+.card-stat::before {
+    display: none;
+}
+
+.card-stat:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.card-stat-content {
+    flex: 1;
+}
+
+.card-stat-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.card-stat-numero {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    line-height: 1;
+}
+
+.card-stat-icon {
+    font-size: 2.2rem;
+    opacity: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.card-stat-icon.icon-users {
+    color: #60a5fa;
+}
+
+.card-stat-icon.icon-briefcase {
+    color: #f87171;
+}
+
+.card-stat-icon.icon-user {
+    color: #a78bfa;
+}
+
+.card-stat-icon.icon-check {
+    color: #34d399;
+}
+
+.usuarios-tabla-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.usuarios-tabla-titulo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.tabla-contenedor {
+    overflow-x: auto;
+    border-radius: 8px;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.tabla thead {
+    background-color: transparent;
+}
+
+.tabla th {
+    padding: 0.75rem 0.6rem;
+    text-align: left;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: transparent;
+}
+
+.tabla td {
+    padding: 0.9rem 0.6rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.tabla tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.tabla tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.tabla tbody tr:last-child td {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.rol-badge {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.rol-administrador {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: none;
+}
+
+.rol-empleado {
+    background-color: #e0e7ff;
+    color: #4338ca;
+    border: none;
+}
+
+.rol-superadmin {
+    background-color: #f3e8ff;
+    color: #7c3aed;
+    border: none;
+}
+
+.rol-operario {
+    background-color: #ecfdf5;
+    color: #047857;
+    border: none;
+}
+
+.estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.estado-badge.activo {
+    background-color: #f0fdf4;
+    color: #15803d;
+    border: none;
+}
+
+.estado-badge.inactivo {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: none;
+}
+
+.tabla-acciones {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.boton-accion {
+    font-size: 0.95rem;
+    padding: 0.4rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.boton-accion:hover {
+    transform: scale(1.15);
+}
+
+.boton-editar {
+    color: #3b82f6;
+    background-color: transparent;
+}
+
+.boton-editar:hover {
+    color: #1e40af;
+    background-color: #f3f4f6;
+}
+
+.boton-eliminar {
+    color: #ef4444;
+    background-color: transparent;
+}
+
+.boton-eliminar:hover {
+    color: #991b1b;
+    background-color: #f3f4f6;
+}
+
+.tabla-vacia {
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+    padding: 2rem !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .usuarios-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .usuarios-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .usuarios-tabla-section {
+        padding: 1rem;
+    }
+    
+    .tabla th,
+    .tabla td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+

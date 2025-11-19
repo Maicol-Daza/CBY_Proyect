@@ -1,26 +1,39 @@
 import { useAuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { FiLogOut } from "react-icons/fi";
 import { Navbar } from "./Navbar";
 import "./Header.css";
 
 export const Header = () => {
     const { user, logout } = useAuthContext();
     const navigate = useNavigate();
+    const isAdmin = user?.rol === "Administrador";
 
     return (
-        <header className="header">
-        <div className="header-left">
-            <h1 className="header-logo" onClick={() => navigate("/principal")}>
-            Admin Panel
-            </h1>
-            <Navbar /> {/* Solo muestra links si es admin */}
-        </div>
-        <div className="header-right">
-            <span className="header-user">
-            {user?.nombre} ({user?.rol})
-            </span>
-            <button onClick={logout} className="logout-btn">Cerrar sesión</button>
-        </div>
+        <header className={`app-header ${isAdmin ? "admin-header" : "employee-header"}`}>
+            <div className="container">
+                <div className="header-left">
+                    <div className="brand">
+                        <a onClick={() => navigate("/principal")}>
+                            <span>📋</span>
+                            Clínica del Bluyin
+                        </a>
+                    </div>
+                    {isAdmin && <Navbar />}
+                </div>
+                <div className="header-right">
+                    <div className="user-info">
+                        <div className="user-details">
+                            <span className="user-name">{user?.nombre}</span>
+                            <span className="user-role">{user?.rol}</span>
+                        </div>
+                    </div>
+                    <button onClick={logout} className="logout-button">
+                        <FiLogOut />
+                        <span className="label">Salir</span>
+                    </button>
+                </div>
+            </div>
         </header>
     );
 };

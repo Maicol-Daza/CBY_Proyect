@@ -12,11 +12,13 @@ export const Principal = () => {
   return (
     <Layout>
       <div className="principal-dashboard">
-        {/* 👇 Bienvenida dentro del contenido (el header ya está en Layout) */}
-        <h1 className="principal-bienvenida">Bienvenido {user?.nombre}</h1>
-        <p className="principal-rol">Rol: {user?.rol}</p>
+        <div className="principal-header">
+          <div className="principal-welcome">
+            <h1 className="principal-title">Bienvenido, {user?.nombre}</h1>
+            <p className="principal-subtitle">Rol: {user?.rol}</p>
+          </div>
+        </div>
 
-        {/* Cards */}
         <div className="principal-cards">
           <Card
             titulo="Gestión de Usuarios"

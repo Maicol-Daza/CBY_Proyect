@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
+import { FiUsers, FiShield, FiLock, FiLink } from "react-icons/fi";
 import "./Navbar.css";
 
 export const Navbar = () => {
@@ -10,10 +11,34 @@ export const Navbar = () => {
 
     return (
         <nav className="header-nav">
-        <NavLink to="/usuarios" className="nav-link">Usuarios</NavLink>
-        <NavLink to="/roles" className="nav-link">Roles</NavLink>
-        <NavLink to="/permisos" className="nav-link">Permisos</NavLink>
-        <NavLink to="/rol-permisos" className="nav-link">Rol-Permisos</NavLink>
+            <NavLink 
+                to="/usuarios" 
+                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+                <FiUsers className="icon-container" />
+                <span className="label">Usuarios</span>
+            </NavLink>
+            <NavLink 
+                to="/roles" 
+                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+                <FiShield className="icon-container" />
+                <span className="label">Roles</span>
+            </NavLink>
+            <NavLink 
+                to="/permisos" 
+                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+                <FiLock className="icon-container" />
+                <span className="label">Permisos</span>
+            </NavLink>
+            <NavLink 
+                to="/rol-permisos" 
+                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+                <FiLink className="icon-container" />
+                <span className="label">Rol-Permisos</span>
+            </NavLink>
         </nav>
     );
 };

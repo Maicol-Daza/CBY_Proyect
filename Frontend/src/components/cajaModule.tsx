@@ -3,6 +3,32 @@ import { useAuthContext } from "../context/AuthContext";
 import "../styles/moduloCaja.css";
 import { crearMovimiento, obtenerMovimientos, type Movimiento } from "../services/movimientos_caja";
 import { formatCOP } from "../utils/formatCurrency";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
+
+interface ChartData {
+  fecha: string;
+  ingresos: number;
+  egresos: number;
+  neto: number;
+}
+
+const formatearFechaLocal = (fecha: Date): string => {
+  const año = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const día = String(fecha.getDate()).padStart(2, '0');
+  return `${año}-${mes}-${día}`;
+};
 
 export const CajaModule = () => {
   const { user } = useAuthContext();
@@ -11,6 +37,7 @@ export const CajaModule = () => {
   const [egresoHoy, setEgresoHoy] = useState(0);
   const [totalIngresos, setTotalIngresos] = useState(0);
   const [totalAcumulado, setTotalAcumulado] = useState(0);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
 
   // Estado para modal de nuevo movimiento
   const [mostrarModalMovimiento, setMostrarModalMovimiento] = useState(false);
@@ -23,7 +50,7 @@ export const CajaModule = () => {
 
   useEffect(() => {
     cargarMovimientos();
-    const intervalo = setInterval(cargarMovimientos, 30000); // Actualizar cada 30 segundos
+    const intervalo = setInterval(cargarMovimientos, 30000);
     return () => clearInterval(intervalo);
   }, []);
 
@@ -32,13 +59,15 @@ export const CajaModule = () => {
       const datos = await obtenerMovimientos();
       setMovimientos(datos);
       calcularTotales(datos);
+      generarDatosGrafico(datos);
     } catch (error) {
       console.error("Error al cargar movimientos:", error);
     }
   };
 
   const calcularTotales = (datos: Movimiento[]) => {
-    const hoy = new Date().toISOString().split("T")[0];
+    const hoy = new Date();
+    const fechaHoy = formatearFechaLocal(hoy);
     
     let ingHoy = 0;
     let egrHoy = 0;
@@ -46,15 +75,16 @@ export const CajaModule = () => {
     let totEgresos = 0;
 
     datos.forEach((mov) => {
-      const fechaMov = new Date(mov.fecha_movimiento).toISOString().split("T")[0];
+      const fechaMov = new Date(mov.fecha_movimiento);
+      const fechaMovStr = formatearFechaLocal(fechaMov);
       const monto = Number(mov.monto) || 0;
       
       if (mov.tipo === "entrada") {
         totIngresos += monto;
-        if (fechaMov === hoy) ingHoy += monto;
+        if (fechaMovStr === fechaHoy) ingHoy += monto;
       } else if (mov.tipo === "salida") {
         totEgresos += monto;
-        if (fechaMov === hoy) egrHoy += monto;
+        if (fechaMovStr === fechaHoy) egrHoy += monto;
       }
     });
 
@@ -64,6 +94,43 @@ export const CajaModule = () => {
     setEgresoHoy(egrHoy);
     setTotalIngresos(totIngresos);
     setTotalAcumulado(totAcumulado);
+  };
+
+  const generarDatosGrafico = (datos: Movimiento[]) => {
+    // Obtener últimos 7 días
+    const hoy = new Date();
+    const ultimos7Dias: { [key: string]: ChartData } = {};
+
+    for (let i = 6; i >= 0; i--) {
+      const fecha = new Date(hoy);
+      fecha.setDate(fecha.getDate() - i);
+      const fechaStr = formatearFechaLocal(fecha);
+      
+      ultimos7Dias[fechaStr] = {
+        fecha: fechaStr,
+        ingresos: 0,
+        egresos: 0,
+        neto: 0
+      };
+    }
+
+    // Llenar con datos de movimientos
+    datos.forEach((mov) => {
+      const fechaMov = new Date(mov.fecha_movimiento);
+      const fechaMovStr = formatearFechaLocal(fechaMov);
+      const monto = Number(mov.monto) || 0;
+
+      if (ultimos7Dias[fechaMovStr]) {
+        if (mov.tipo === "entrada") {
+          ultimos7Dias[fechaMovStr].ingresos += monto;
+        } else if (mov.tipo === "salida") {
+          ultimos7Dias[fechaMovStr].egresos += monto;
+        }
+        ultimos7Dias[fechaMovStr].neto = ultimos7Dias[fechaMovStr].ingresos - ultimos7Dias[fechaMovStr].egresos;
+      }
+    });
+
+    setChartData(Object.values(ultimos7Dias));
   };
 
   const handleCrearMovimiento = async () => {
@@ -76,7 +143,7 @@ export const CajaModule = () => {
       setCargando(true);
       await crearMovimiento({
         ...nuevoMovimiento,
-        id_usuario: user?.id_usuario // Usar el usuario autenticado
+        id_usuario: user?.id_usuario
       });
       
       alert("✅ Movimiento registrado correctamente");
@@ -87,7 +154,6 @@ export const CajaModule = () => {
       });
       setMostrarModalMovimiento(false);
       
-      // Recargar movimientos
       cargarMovimientos();
     } catch (error) {
       console.error("Error:", error);
@@ -138,12 +204,65 @@ export const CajaModule = () => {
       <div className="charts-section">
         <div className="chart-box">
           <h3>Flujo de Caja (Últimos 7 días)</h3>
-          <p>Gráfico pendiente de implementar</p>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="fecha" 
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  formatter={(value) => [formatCOP(Number(value)), '']}
+                  contentStyle={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}
+                />
+                <Legend />
+                <Bar dataKey="ingresos" fill="#10b981" name="Ingresos" />
+                <Bar dataKey="egresos" fill="#ef4444" name="Egresos" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="no-data">No hay datos disponibles</p>
+          )}
         </div>
 
         <div className="chart-box">
           <h3>Tendencia Neta</h3>
-          <p>Gráfico pendiente de implementar</p>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="fecha" 
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  formatter={(value) => [formatCOP(Number(value)), 'Neto']}
+                  contentStyle={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="neto" 
+                  stroke="#0066cc" 
+                  strokeWidth={2}
+                  dot={{ fill: '#0066cc', r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Neto"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="no-data">No hay datos disponibles</p>
+          )}
         </div>
       </div>
 
