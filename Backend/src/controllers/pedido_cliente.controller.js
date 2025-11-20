@@ -18,7 +18,7 @@ class PedidoClienteController {
     await connection.beginTransaction();
 
     try {
-      // 1️⃣ Validar datos del cliente
+      // 1 Validar datos del cliente
       if (!cliente.nombre || !cliente.cedula || !cliente.telefono || !cliente.direccion || !cliente.email) {
         return res.status(400).json({ 
           message: "Datos del cliente incompletos",
@@ -28,14 +28,14 @@ class PedidoClienteController {
 
       let id_cliente;
 
-      // 2️⃣ Verificar si el cliente existe por cédula
+      // 2 Verificar si el cliente existe por cédula
       const [clienteExistente] = await connection.query(
         'SELECT id_cliente FROM clientes WHERE nuip = ?',
         [cliente.cedula]
       );
 
       if (clienteExistente.length > 0) {
-        // 3️⃣ Si existe, actualizar sus datos
+        // 3 Si existe, actualizar sus datos
         id_cliente = clienteExistente[0].id_cliente;
         await connection.query(
           `UPDATE clientes 
@@ -53,7 +53,7 @@ class PedidoClienteController {
           ]
         );
       } else {
-        // 4️⃣ Si no existe, crear nuevo cliente
+        // 4 Si no existe, crear nuevo cliente
         const [resultadoInsert] = await connection.query(
           `INSERT INTO clientes (nombre, nuip, direccion, telefono, email) 
            VALUES (?, ?, ?, ?, ?)`,
@@ -97,7 +97,7 @@ class PedidoClienteController {
 
       const id_pedido = nuevoPedido.insertId;
 
-      // 2.1️⃣ Si se registró un abono inicial, guardarlo en historial_abonos Y en movimientos_caja
+      // 2.1 Si se registró un abono inicial, guardarlo en historial_abonos Y en movimientos_caja
       const abonoInicial = Number(pedido.abonoInicial || 0);
       // utilizar campo específico para la observación del abono si se envía: observaciones_abono
       const observacionAbono = pedido.observaciones_abono ?? pedido.observaciones ?? null;
@@ -108,7 +108,7 @@ class PedidoClienteController {
           [id_pedido, abonoInicial, observacionAbono]
         );
 
-        // 🔥 CREAR MOVIMIENTO EN CAJA - Abono inicial
+        //  CREAR MOVIMIENTO EN CAJA - Abono inicial
         await connection.query(
           `INSERT INTO movimientos_caja (id_pedido, fecha_movimiento, tipo, descripcion, monto, id_usuario)
            VALUES (?, NOW(), 'entrada', ?, ?, ?)`,
@@ -116,7 +116,7 @@ class PedidoClienteController {
         );
       }
       
-      // 3️⃣ Guardar prendas y arreglos en detalle_pedido_combo
+      // 3 Guardar prendas y arreglos en detalle_pedido_combo
       if (prendas && prendas.length > 0) {
         for (const prenda of prendas) {
           // Insertar prenda asociada al pedido (usar id_pedido en la tabla prendas)
@@ -161,7 +161,7 @@ class PedidoClienteController {
         }
       }
 
-      // 4️⃣ Actualizar códigos seleccionados - marcar como ocupado
+      // 4 Actualizar códigos seleccionados - marcar como ocupado
       if (codigos_seleccionados && codigos_seleccionados.length > 0) {
         for (const id_codigo of codigos_seleccionados) {
           await connection.query(
@@ -170,7 +170,7 @@ class PedidoClienteController {
           );
         }
 
-        // 5️⃣ Verificar si todos los códigos del cajón están ocupados para marcar cajón como ocupado
+        // 5 Verificar si todos los códigos del cajón están ocupados para marcar cajón como ocupado
         const [codigosDelCajon] = await connection.query(
           `SELECT COUNT(*) as total_codigos FROM codigos WHERE id_cajon = ?`,
           [id_cajon]
@@ -512,7 +512,7 @@ class PedidoClienteController {
   const { id } = req.params;
   const { estado, abonoEntrega } = req.body;
 
-  console.log("🔍 Recibido:", { id, estado, abonoEntrega });
+  console.log(" Recibido:", { id, estado, abonoEntrega });
 
   if (!id || !estado) {
     return res.status(400).json({ message: "ID y estado son requeridos" });
@@ -558,13 +558,13 @@ class PedidoClienteController {
           );
         }
       } catch (e) {
-        console.warn("⚠️ Aviso al guardar historial de cajón:", e.message);
+        console.warn(" Aviso al guardar historial de cajón:", e.message);
       }
 
       // Liberar los códigos
       await this.liberarCodigosPedido(id, connection);
 
-      // 🔥 CREAR MOVIMIENTO EN CAJA
+      //  CREAR MOVIMIENTO EN CAJA
       const montoACobrar = abonoEntrega ? Number(abonoEntrega) : (totalPedido - abonoAnterior);
       
       if (montoACobrar > 0) {
@@ -574,7 +574,7 @@ class PedidoClienteController {
           [id, `Cobro en entrega - Pedido #${id}`, montoACobrar, 1]
         );
 
-        console.log(`✅ Movimiento registrado: $${montoACobrar}`);
+        console.log(` Movimiento registrado: $${montoACobrar}`);
       }
     }
 
@@ -611,7 +611,7 @@ class PedidoClienteController {
     
   } catch (error) {
     await connection.rollback();
-    console.error("❌ Error:", error);
+    console.error(" Error:", error);
     return res.status(500).json({ 
       message: "Error al cambiar estado", 
       error: error.message 

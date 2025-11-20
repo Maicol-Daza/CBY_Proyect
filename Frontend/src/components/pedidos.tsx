@@ -558,11 +558,11 @@ export default function Pedidos() {
     setMotivoModificacion("");
   };
 
-  // ✅ Guardar pedido (enviar al backend)
+  //  Guardar pedido (enviar al backend)
   const handleGuardar = async (e: FormEvent) => {
     e.preventDefault();
     if (!validarCampos()) {
-      alert("⚠️ Corrige los errores antes de guardar.");
+      alert(" Completa todos los campos antes de guardar.");
       return;
     }
 
@@ -591,7 +591,7 @@ export default function Pedidos() {
       const data = await respuesta.json();
 
       if (respuesta.ok) {
-        alert("✅ Pedido guardado exitosamente.");
+        alert(" Pedido guardado exitosamente.");
         console.log("Respuesta del servidor:", data);
 
         // Resetear formularios
@@ -622,11 +622,11 @@ export default function Pedidos() {
         // Recargar datos para actualizar estados de cajones y códigos
         cargarDatos();
       } else {
-        alert(`❌ Error: ${data.message || "No se pudo guardar el pedido."}`);
+        alert(` Error: ${data.message || "No se pudo guardar el pedido."}`);
       }
     } catch (error) {
       console.error("Error al guardar pedido:", error);
-      alert("❌ Error al conectar con el servidor.");
+      alert(" Error al conectar con el servidor.");
     } finally {
       setCargando(false);
     }
@@ -652,7 +652,7 @@ export default function Pedidos() {
     }
   }, []);
   
-  // 🎨 Render
+  //  Render
   return (
     <div className="pedidos-page">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>

@@ -148,7 +148,7 @@ export const CajaModule = () => {
         id_usuario: user?.id_usuario
       });
       
-      alert("✅ Movimiento registrado correctamente");
+      alert("Movimiento registrado correctamente");
       setNuevoMovimiento({
         tipo: "entrada",
         descripcion: "",
@@ -159,7 +159,7 @@ export const CajaModule = () => {
       cargarMovimientos();
     } catch (error) {
       console.error("Error:", error);
-      alert("❌ Error al registrar el movimiento");
+      alert(" Error al registrar el movimiento");
     } finally {
       setCargando(false);
     }

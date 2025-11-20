@@ -125,7 +125,7 @@ export const UsuariosPagina = () => {
                                             </td>
                                             <td>
                                                 <span className={`estado-badge ${u.activo ? 'activo' : 'inactivo'}`}>
-                                                    {u.activo ? '🟢 Activo' : '🔴 Inactivo'}
+                                                    {u.activo ? ' Activo' : ' Inactivo'}
                                                 </span>
                                             </td>
                                             <td className="tabla-acciones">
