@@ -3,6 +3,8 @@ import { useAuthContext } from "../context/AuthContext";
 import "../styles/moduloCaja.css";
 import { crearMovimiento, obtenerMovimientos, type Movimiento } from "../services/movimientos_caja";
 import { formatCOP } from "../utils/formatCurrency";
+import { FaArrowTrendUp, FaArrowTrendDown } from "react-icons/fa6";
+import { Icon } from "@iconify/react";
 import {
   BarChart,
   Bar,
@@ -179,25 +181,25 @@ export const CajaModule = () => {
         <div className="card">
           <div className="card-label">Ingresos Hoy</div>
           <div className="card-value income">{formatCOP(ingresoHoy)}</div>
-          <span className="icon">📈</span>
+          <span className="icon"><FaArrowTrendUp /></span>
         </div>
 
         <div className="card">
           <div className="card-label">Egresos Hoy</div>
           <div className="card-value expense">{formatCOP(egresoHoy)}</div>
-          <span className="icon">📉</span>
+          <span className="icon"><FaArrowTrendDown /></span>
         </div>
 
         <div className="card">
           <div className="card-label">Total Ingresos</div>
           <div className="card-value">{formatCOP(totalIngresos)}</div>
-          <span className="icon">💵</span>
+          <span className="icon"><Icon icon="streamline-ultimate:cash-briefcase-bold" width="23px" height="26px" /></span>
         </div>
 
         <div className="card">
           <div className="card-label">Total Acumulado</div>
           <div className="card-value">{formatCOP(totalAcumulado)}</div>
-          <span className="icon">💰</span>
+          <span className="icon"><Icon icon="streamline-ultimate:money-bag-dollar-bold" /></span>
         </div>
       </div>
 
@@ -288,7 +290,7 @@ export const CajaModule = () => {
                   <td>{fecha.toLocaleDateString()}</td>
                   <td>{fecha.toLocaleTimeString()}</td>
                   <td className={`tipo-${mov.tipo}`}>
-                    {mov.tipo === "entrada" ? "📥 Entrada" : "📤 Salida"}
+                    {mov.tipo === "entrada" ? " Entrada" : " Salida"}
                   </td>
                   <td>{mov.descripcion}</td>
                   <td className={`monto-${mov.tipo}`}>
@@ -328,8 +330,8 @@ export const CajaModule = () => {
                   })}
                   className="tipo-select"
                 >
-                  <option value="entrada">📥 Ingreso (Entrada)</option>
-                  <option value="salida">📤 Egreso (Salida)</option>
+                  <option value="entrada">Ingreso (Entrada)</option>
+                  <option value="salida">Egreso (Salida)</option>
                 </select>
               </div>
 
