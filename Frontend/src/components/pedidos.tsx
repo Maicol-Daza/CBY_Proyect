@@ -65,25 +65,57 @@ const CONFIG_CAJONES = [
   { id: 14, nombre: "Cajón 14", rango: "Tintes 308-334" }
 ];
 
+// Clave para localStorage
+const PEDIDO_STORAGE_KEY = "pedido_en_proceso";
+
 export default function Pedidos() {
-  // Estados principales
-  const [pedido, setPedido] = useState<Pedido>({
-    fechaInicio: "",
-    fechaEntrega: "",
-    estado: "",
-    observaciones: "",
-    abonoInicial: "",
-    abonoObservaciones: "",
-    totalPedido: 0,
-    saldoPendiente: 0,
+  // Estados principales - cargando desde localStorage si existe
+  const [pedido, setPedido] = useState<Pedido>(() => {
+    const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
+    if (guardado) {
+      const datos = JSON.parse(guardado);
+      return datos.pedido || {
+        fechaInicio: "",
+        fechaEntrega: "",
+        estado: "",
+        observaciones: "",
+        abonoInicial: "",
+        abonoObservaciones: "",
+        totalPedido: 0,
+        saldoPendiente: 0,
+      };
+    }
+    return {
+      fechaInicio: "",
+      fechaEntrega: "",
+      estado: "",
+      observaciones: "",
+      abonoInicial: "",
+      abonoObservaciones: "",
+      totalPedido: 0,
+      saldoPendiente: 0,
+    };
   });
 
-  const [cliente, setCliente] = useState<Cliente>({
-    nombre: "",
-    cedula: "",
-    telefono: "",
-    direccion: "",
-    email: "",
+  const [cliente, setCliente] = useState<Cliente>(() => {
+    const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
+    if (guardado) {
+      const datos = JSON.parse(guardado);
+      return datos.cliente || {
+        nombre: "",
+        cedula: "",
+        telefono: "",
+        direccion: "",
+        email: "",
+      };
+    }
+    return {
+      nombre: "",
+      cedula: "",
+      telefono: "",
+      direccion: "",
+      email: "",
+    };
   });
 
   // Estados para entrega de pedidos
@@ -102,12 +134,33 @@ export default function Pedidos() {
   const [cajones, setCajones] = useState<Cajon[]>([]);
   const [codigos, setCodigos] = useState<Codigo[]>([]);
   const [codigosFiltrados, setCodigosFiltrados] = useState<Codigo[]>([]);
-  const [cajonSeleccionado, setCajonSeleccionado] = useState<number | null>(null);
-  const [codigosSeleccionados, setCodigosSeleccionados] = useState<number[]>([]);
+  const [cajonSeleccionado, setCajonSeleccionado] = useState<number | null>(() => {
+    const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
+    if (guardado) {
+      const datos = JSON.parse(guardado);
+      return datos.cajonSeleccionado || null;
+    }
+    return null;
+  });
+  const [codigosSeleccionados, setCodigosSeleccionados] = useState<number[]>(() => {
+    const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
+    if (guardado) {
+      const datos = JSON.parse(guardado);
+      return datos.codigosSeleccionados || [];
+    }
+    return [];
+  });
   
   // Estados para prendas
   const [mostrarModalPrenda, setMostrarModalPrenda] = useState(false);
-  const [prendasTemporales, setPrendasTemporales] = useState<Prenda[]>([]);
+  const [prendasTemporales, setPrendasTemporales] = useState<Prenda[]>(() => {
+    const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
+    if (guardado) {
+      const datos = JSON.parse(guardado);
+      return datos.prendasTemporales || [];
+    }
+    return [];
+  });
   const [prendaEditando, setPrendaEditando] = useState<number | null>(null);
   
   // Estados para ajustes y combinaciones
@@ -124,7 +177,14 @@ export default function Pedidos() {
 
   // Estado para modificar precio final
   const [mostrarModificarPrecio, setMostrarModificarPrecio] = useState(false);
-  const [precioModificado, setPrecioModificado] = useState(0);
+  const [precioModificado, setPrecioModificado] = useState(() => {
+    const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
+    if (guardado) {
+      const datos = JSON.parse(guardado);
+      return datos.precioModificado || 0;
+    }
+    return 0;
+  });
   const [motivoModificacion, setMotivoModificacion] = useState("");
 
   // Estados para foto del pedido (preview + archivo)
@@ -151,6 +211,19 @@ export default function Pedidos() {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  // Guardar en localStorage cada vez que cambien los datos importantes
+  useEffect(() => {
+    const datosParaGuardar = {
+      pedido,
+      cliente,
+      cajonSeleccionado,
+      codigosSeleccionados,
+      prendasTemporales,
+      precioModificado
+    };
+    localStorage.setItem(PEDIDO_STORAGE_KEY, JSON.stringify(datosParaGuardar));
+  }, [pedido, cliente, cajonSeleccionado, codigosSeleccionados, prendasTemporales, precioModificado]);
 
   // Cargar lista de clientes para la mini búsqueda (opcional)
   useEffect(() => {
@@ -277,7 +350,11 @@ export default function Pedidos() {
       totalPedido: totalPrendas,
       saldoPendiente: totalPrendas - Number(prev.abonoInicial || 0)
     }));
-    setPrecioModificado(totalPrendas); // Inicializar el precio modificado
+    
+    // Solo inicializar el precio modificado si no hay un valor guardado
+    if (precioModificado === 0) {
+      setPrecioModificado(totalPrendas);
+    }
   }, [prendasTemporales]);
 
   //  Validar campos antes de enviar
@@ -594,7 +671,7 @@ export default function Pedidos() {
         alert(" Pedido guardado exitosamente.");
         console.log("Respuesta del servidor:", data);
 
-        // Resetear formularios
+        // Resetear formularios y limpiar localStorage
         setCliente({
           nombre: "",
           cedula: "",
@@ -619,6 +696,9 @@ export default function Pedidos() {
         setMotivoModificacion("");
         setErrores({});
         
+        // Limpiar localStorage después de guardar exitosamente
+        localStorage.removeItem(PEDIDO_STORAGE_KEY);
+        
         // Recargar datos para actualizar estados de cajones y códigos
         cargarDatos();
       } else {
@@ -629,6 +709,39 @@ export default function Pedidos() {
       alert(" Error al conectar con el servidor.");
     } finally {
       setCargando(false);
+    }
+  };
+
+  // Agregar esta función después de handleGuardar
+  const handleLimpiarTodo = () => {
+    if (window.confirm("¿Estás seguro de que deseas limpiar todo el formulario? Esta acción no se puede deshacer.")) {
+      setCliente({
+        nombre: "",
+        cedula: "",
+        telefono: "",
+        direccion: "",
+        email: "",
+      });
+      setPedido({
+        fechaInicio: "",
+        fechaEntrega: "",
+        estado: "",
+        observaciones: "",
+        abonoInicial: "",
+        abonoObservaciones: "",
+        totalPedido: 0,
+        saldoPendiente: 0,
+      });
+      setCajonSeleccionado(null);
+      setCodigosSeleccionados([]);
+      setPrendasTemporales([]);
+      setPrecioModificado(0);
+      setMotivoModificacion("");
+      setErrores({});
+      setImagenFile(null);
+      setImagenPreview(null);
+      localStorage.removeItem(PEDIDO_STORAGE_KEY);
+      alert("✓ Formulario limpiado correctamente");
     }
   };
 
@@ -919,14 +1032,24 @@ export default function Pedidos() {
             <p><strong>Saldo pendiente:</strong> {formatCOP(Number(pedido.saldoPendiente || 0))}</p>
           </div>
 
-          <button
-            className="btn-primary"
-            style={{ marginTop: 10 }}
-            onClick={handleGuardar}
-            disabled={cargando}
-          >
-            {cargando ? "Guardando..." : "Guardar Pedido"}
-          </button>
+          <div style={{ display: "flex", gap: "10px", marginTop: 10 }}>
+            <button
+              className="btn-primary"
+              onClick={handleGuardar}
+              disabled={cargando}
+              style={{ flex: 1 }}
+            >
+              {cargando ? "Guardando..." : "Guardar Pedido"}
+            </button>
+            
+            <button
+              className="btn-cancelar"
+              onClick={handleLimpiarTodo}
+              style={{ flex: 1 }}
+            >
+              Limpiar Todo
+            </button>
+          </div>
         </div>
 
         {/* Cajones y Códigos */}
