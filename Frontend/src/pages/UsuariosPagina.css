@@ -1,5 +1,77 @@
-/* UsuariosPagina.css - Versión Mejorada */
+/* UsuariosPagina.css - Versión Completa y Unificada */
 
+/* Contenedor principal */
+.pagina-contenedor {
+    padding: 1.5rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    min-height: calc(100vh - 80px);
+}
+
+/* ========== PESTAÑAS DE NAVEGACIÓN ========== */
+.pestanas-container {
+    display: flex;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.25rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pestana {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.pestana.activa {
+    background-color: white;
+    color: #1f2937;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pestana:hover:not(.activa) {
+    background-color: rgba(255, 255, 255, 0.5);
+    color: #374151;
+}
+
+/* ========== ENCABEZADOS Y TÍTULOS ========== */
+.pagina-titulo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+}
+
+/* ========== BOTONES PRINCIPALES ========== */
+.pagina-boton {
+    background-color: #0881b5;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.pagina-boton:hover {
+    background-color: #2599cb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== ESTILOS ESPECÍFICOS PARA USUARIOS ========== */
 .usuarios-header {
     display: flex;
     justify-content: space-between;
@@ -26,10 +98,6 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: visible;
-}
-
-.card-stat::before {
-    display: none;
 }
 
 .card-stat:hover {
@@ -99,9 +167,14 @@
     border-bottom: none;
 }
 
+/* ========== ESTILOS UNIFICADOS PARA TABLAS ========== */
 .tabla-contenedor {
     overflow-x: auto;
     border-radius: 8px;
+    background: white;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
 }
 
 .tabla {
@@ -145,6 +218,7 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
+/* ========== BADGES PARA ROLES Y ESTADOS ========== */
 .rol-badge {
     display: inline-block;
     padding: 0.3rem 0.7rem;
@@ -201,6 +275,7 @@
     border: none;
 }
 
+/* ========== ACCIONES DE TABLA ========== */
 .tabla-acciones {
     display: flex;
     gap: 0.75rem;
@@ -250,7 +325,11 @@
     padding: 2rem !important;
 }
 
-/* Responsive */
+.ocultar-columna {
+    display: none;
+}
+
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .usuarios-header {
         flex-direction: column;
@@ -263,7 +342,8 @@
         gap: 1rem;
     }
     
-    .usuarios-tabla-section {
+    .usuarios-tabla-section,
+    .tabla-contenedor {
         padding: 1rem;
     }
     
@@ -271,6 +351,18 @@
     .tabla td {
         padding: 0.75rem 0.5rem;
     }
+    
+    .pestanas-container {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .pestana {
+        flex: none;
+    }
+    
+    .tabla-acciones {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
 }
-
-

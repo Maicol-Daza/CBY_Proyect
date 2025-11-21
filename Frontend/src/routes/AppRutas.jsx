@@ -6,6 +6,7 @@ import { UsuariosPagina } from "../pages/UsuariosPagina";
 import { RolesPagina } from "../pages/RolesPagina";
 import { PermisosPagina } from "../pages/PermisosPagina";
 import { RolPermisoPagina } from "../pages/RolPermisoPagina";
+import { ControlAdministrador } from "../pages/ControlAdministrador";
 import { Bienvenido } from "../pages/Bienvenido";
 import Inicio from "../pages/Inicio";
 import Clientes from "../pages/Clientes";
@@ -65,6 +66,14 @@ export const AppRutas = () => (
             element={
                 <PrivateRoute allowedRoles={["Administrador"]}>
                     <RolPermisoPagina />
+                </PrivateRoute>
+            }
+        />
+        <Route
+            path="/control-administrador"
+            element={
+                <PrivateRoute allowedRoles={["Administrador"]}>
+                    <ControlAdministrador />
                 </PrivateRoute>
             }
         />

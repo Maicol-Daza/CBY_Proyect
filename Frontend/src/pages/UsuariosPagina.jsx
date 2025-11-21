@@ -1,26 +1,51 @@
 import { useState, useEffect } from "react";
 import { ModalUsuario } from "../components/ui/ModalUsuario";
 import { leerUsuarios, eliminarUsuario, actualizarUsuario, crearUsuario } from "../services/usuarioService";
-import { leerRoles } from "../services/rolService";
+import { leerRoles, crearRol, actualizarRol, eliminarRol } from "../services/rolService";
+import { leerPermisos, crearPermiso, actualizarPermiso, eliminarPermiso } from "../services/permisoService";
+import { leerRolPermisos, crearRolPermiso, eliminarRolPermiso, leerPermisosDeRol } from "../services/rolPermisoService";
+import { ModalRol } from "../components/ui/ModalRol";
+import { ModalPermiso } from "../components/ui/ModalPermiso";
+import { ModalRolPermiso } from "../components/ui/ModalRolPermiso";
 import { Layout } from "../components/layout/Layout";
 import { FaUsers, FaBriefcase, FaUser, FaCheckCircle, FaPen, FaTrash } from "react-icons/fa";
 import "./Pagina.css";
-import "../components/ui/ModalUsuario.css"
+import "../components/ui/ModalUsuario.css";
 import "./UsuariosPagina.css";
 
 export const UsuariosPagina = () => {
+    // Estados para Usuarios
     const [usuarios, setUsuarios] = useState([]);
-    const [roles, setRoles] = useState([]);
     const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
-    const [openModal, setOpenModal] = useState(false);
+    const [openModalUsuario, setOpenModalUsuario] = useState(false);
+
+    // Estados para Roles
+    const [roles, setRoles] = useState([]);
+    const [rolSeleccionado, setRolSeleccionado] = useState(null);
+    const [openModalRol, setOpenModalRol] = useState(false);
+
+    // Estados para Permisos
+    const [permisos, setPermisos] = useState([]);
+    const [permisoSeleccionado, setPermisoSeleccionado] = useState(null);
+    const [openModalPermiso, setOpenModalPermiso] = useState(false);
+
+    // Estados para Rol-Permiso
+    const [rolPermisos, setRolPermisos] = useState([]);
+    const [relacionSeleccionada, setRelacionSeleccionada] = useState(null);
+    const [openModalRolPermiso, setOpenModalRolPermiso] = useState(false);
+
+    // Estado para control de pestañas
+    const [pestanaActiva, setPestanaActiva] = useState("usuarios");
 
     useEffect(() => {
         fetchUsuarios();
         fetchRoles();
+        fetchPermisos();
+        fetchRolPermisos();
     }, []);
 
+    // Funciones para Usuarios
     const fetchUsuarios = async () => setUsuarios(await leerUsuarios());
-    const fetchRoles = async () => setRoles(await leerRoles());
 
     const handleSaveUsuario = async (usuarioData) => {
         if (usuarioSeleccionado) {
@@ -29,8 +54,60 @@ export const UsuariosPagina = () => {
             await crearUsuario(usuarioData);
         }
         await fetchUsuarios();
-        setOpenModal(false);
+        setOpenModalUsuario(false);
         setUsuarioSeleccionado(null);
+    };
+
+    // Funciones para Roles
+    const fetchRoles = async () => setRoles(await leerRoles());
+
+    const handleSaveRol = async (rolData) => {
+        if (rolSeleccionado) {
+            await actualizarRol(rolData.id_rol, rolData);
+        } else {
+            await crearRol(rolData);
+        }
+        await fetchRoles();
+        setOpenModalRol(false);
+        setRolSeleccionado(null);
+    };
+
+    // Funciones para Permisos
+    const fetchPermisos = async () => setPermisos(await leerPermisos());
+
+    const handleSavePermiso = async (permisoData) => {
+        if (permisoSeleccionado) {
+            await actualizarPermiso(permisoData.id_permiso, permisoData);
+        } else {
+            await crearPermiso(permisoData);
+        }
+        await fetchPermisos();
+        setOpenModalPermiso(false);
+        setPermisoSeleccionado(null);
+    };
+
+    // Funciones para Rol-Permiso
+    const fetchRolPermisos = async () => setRolPermisos(await leerRolPermisos());
+
+    const handleSaveRolPermiso = async ({ id_rol, permisos: permisosSeleccionados }) => {
+        for (const permisoId of permisosSeleccionados) {
+            await crearRolPermiso(id_rol, permisoId);
+        }
+        await fetchRolPermisos();
+        setOpenModalRolPermiso(false);
+        setRelacionSeleccionada(null);
+    };
+
+    const handleEditRolPermiso = async (relacion) => {
+        const roleId = relacion.id_rol;
+        const permisosDeRol = await leerPermisosDeRol(roleId);
+        const permisoIds = [...new Set(permisosDeRol.map((p) => Number(p.id_permiso)))];
+
+        setRelacionSeleccionada({
+            id_rol: Number(roleId),
+            permisosSeleccionados: permisoIds,
+        });
+        setOpenModalRolPermiso(true);
     };
 
     // Cálculos de estadísticas
@@ -42,134 +119,366 @@ export const UsuariosPagina = () => {
     return (
         <Layout>
             <div className="pagina-contenedor">
-                <div className="usuarios-header">
-                    <h2 className="pagina-titulo">Gestión de Usuarios</h2>
+                {/* Pestañas de navegación */}
+                <div className="pestanas-container">
                     <button
-                        className="pagina-boton"
-                        onClick={() => {
-                            setUsuarioSeleccionado(null);
-                            setOpenModal(true);
-                        }}
+                        className={`pestana ${pestanaActiva === "usuarios" ? "activa" : ""}`}
+                        onClick={() => setPestanaActiva("usuarios")}
                     >
-                        + Nuevo Usuario
+                        Usuarios
+                    </button>
+                    <button
+                        className={`pestana ${pestanaActiva === "roles" ? "activa" : ""}`}
+                        onClick={() => setPestanaActiva("roles")}
+                    >
+                        Roles
+                    </button>
+                    <button
+                        className={`pestana ${pestanaActiva === "permisos" ? "activa" : ""}`}
+                        onClick={() => setPestanaActiva("permisos")}
+                    >
+                        Permisos
+                    </button>
+                    <button
+                        className={`pestana ${pestanaActiva === "rolpermisos" ? "activa" : ""}`}
+                        onClick={() => setPestanaActiva("rolpermisos")}
+                    >
+                        Rol-Permiso
                     </button>
                 </div>
 
-                {/* Cards de estadísticas */}
-                <div className="usuarios-cards">
-                    <div className="card-stat">
-                        <div className="card-stat-content">
-                            <p className="card-stat-label">Total Usuarios</p>
-                            <h3 className="card-stat-numero">{totalUsuarios}</h3>
+                {/* ========== PESTAÑA USUARIOS ========== */}
+                {pestanaActiva === "usuarios" && (
+                    <>
+                        <div className="usuarios-header">
+                            <h2 className="pagina-titulo">Gestión de Usuarios</h2>
+                            <button
+                                className="pagina-boton"
+                                onClick={() => {
+                                    setUsuarioSeleccionado(null);
+                                    setOpenModalUsuario(true);
+                                }}
+                            >
+                                + Nuevo Usuario
+                            </button>
                         </div>
-                        <div className="card-stat-icon icon-users">
-                            <FaUsers />
-                        </div>
-                    </div>
 
-                    <div className="card-stat">
-                        <div className="card-stat-content">
-                            <p className="card-stat-label">Administradores</p>
-                            <h3 className="card-stat-numero">{administradores}</h3>
-                        </div>
-                        <div className="card-stat-icon icon-briefcase">
-                            <FaBriefcase />
-                        </div>
-                    </div>
+                        {/* Cards de estadísticas */}
+                        <div className="usuarios-cards">
+                            <div className="card-stat">
+                                <div className="card-stat-content">
+                                    <p className="card-stat-label">Total Usuarios</p>
+                                    <h3 className="card-stat-numero">{totalUsuarios}</h3>
+                                </div>
+                                <div className="card-stat-icon icon-users">
+                                    <FaUsers />
+                                </div>
+                            </div>
 
-                    <div className="card-stat">
-                        <div className="card-stat-content">
-                            <p className="card-stat-label">Empleados</p>
-                            <h3 className="card-stat-numero">{empleados}</h3>
-                        </div>
-                        <div className="card-stat-icon icon-user">
-                            <FaUser />
-                        </div>
-                    </div>
+                            <div className="card-stat">
+                                <div className="card-stat-content">
+                                    <p className="card-stat-label">Administradores</p>
+                                    <h3 className="card-stat-numero">{administradores}</h3>
+                                </div>
+                                <div className="card-stat-icon icon-briefcase">
+                                    <FaBriefcase />
+                                </div>
+                            </div>
 
-                    <div className="card-stat">
-                        <div className="card-stat-content">
-                            <p className="card-stat-label">Usuarios Activos</p>
-                            <h3 className="card-stat-numero">{usuariosActivos}</h3>
-                        </div>
-                        <div className="card-stat-icon icon-check">
-                            <FaCheckCircle />
-                        </div>
-                    </div>
-                </div>
+                            <div className="card-stat">
+                                <div className="card-stat-content">
+                                    <p className="card-stat-label">Empleados</p>
+                                    <h3 className="card-stat-numero">{empleados}</h3>
+                                </div>
+                                <div className="card-stat-icon icon-user">
+                                    <FaUser />
+                                </div>
+                            </div>
 
-                {/* Tabla de usuarios */}
-                <div className="usuarios-tabla-section">
-                    <h3 className="usuarios-tabla-titulo">Lista de Usuarios</h3>
-                    <div className="tabla-contenedor">
-                        <table className="tabla">
-                            <thead>
-                                <tr>
-                                    <th>Usuario</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {usuarios.length > 0 ? (
-                                    usuarios.map((u) => (
-                                        <tr key={u.id_usuario}>
-                                            <td>{u.nombre}</td>
-                                            <td>{u.email}</td>
-                                            <td>
-                                                <span className={`rol-badge rol-${u.rol.toLowerCase()}`}>
-                                                    {u.rol}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span className={`estado-badge ${u.activo ? 'activo' : 'inactivo'}`}>
-                                                    {u.activo ? ' Activo' : ' Inactivo'}
-                                                </span>
-                                            </td>
+                            <div className="card-stat">
+                                <div className="card-stat-content">
+                                    <p className="card-stat-label">Usuarios Activos</p>
+                                    <h3 className="card-stat-numero">{usuariosActivos}</h3>
+                                </div>
+                                <div className="card-stat-icon icon-check">
+                                    <FaCheckCircle />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tabla de usuarios */}
+                        <div className="usuarios-tabla-section">
+                            <h3 className="usuarios-tabla-titulo">Lista de Usuarios</h3>
+                            <div className="tabla-contenedor">
+                                <table className="tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Usuario</th>
+                                            <th>Email</th>
+                                            <th>Rol</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {usuarios.length > 0 ? (
+                                            usuarios.map((u) => (
+                                                <tr key={u.id_usuario}>
+                                                    <td>{u.nombre}</td>
+                                                    <td>{u.email}</td>
+                                                    <td>
+                                                        <span className={`rol-badge rol-${u.rol.toLowerCase()}`}>
+                                                            {u.rol}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`estado-badge ${u.activo ? 'activo' : 'inactivo'}`}>
+                                                            {u.activo ? ' Activo' : ' Inactivo'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="tabla-acciones">
+                                                        <button
+                                                            onClick={() => {
+                                                                setUsuarioSeleccionado(u);
+                                                                setOpenModalUsuario(true);
+                                                            }}
+                                                            className="boton-accion boton-editar"
+                                                            title="Editar usuario"
+                                                        >
+                                                            <FaPen />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => eliminarUsuario(u.id_usuario).then(fetchUsuarios)}
+                                                            className="boton-accion boton-eliminar"
+                                                            title="Eliminar usuario"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="5" className="tabla-vacia">
+                                                    No hay usuarios registrados
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {/* ========== PESTAÑA ROLES ========== */}
+                {pestanaActiva === "roles" && (
+                    <>
+                        <h2 className="pagina-titulo">Gestión de Roles</h2>
+
+                        <button
+                            className="pagina-boton"
+                            onClick={() => {
+                                setRolSeleccionado(null);
+                                setOpenModalRol(true);
+                            }}
+                        >
+                            Crear Rol
+                        </button>
+
+                        <div className="tabla-contenedor">
+                            <table className="tabla">
+                                <thead>
+                                    <tr>
+                                        <th className="ocultar-columna">ID</th>
+                                        <th>Nombre</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {roles.map((r) => (
+                                        <tr key={r.id_rol}>
+                                            <td className="ocultar-columna">{r.id_rol}</td>
+                                            <td>{r.nombre}</td>
                                             <td className="tabla-acciones">
                                                 <button
                                                     onClick={() => {
-                                                        setUsuarioSeleccionado(u);
-                                                        setOpenModal(true);
+                                                        setRolSeleccionado(r);
+                                                        setOpenModalRol(true);
                                                     }}
                                                     className="boton-accion boton-editar"
-                                                    title="Editar usuario"
                                                 >
-                                                    <FaPen />
+                                                    Editar
                                                 </button>
                                                 <button
-                                                    onClick={() => eliminarUsuario(u.id_usuario).then(fetchUsuarios)}
+                                                    onClick={() => eliminarRol(r.id_rol).then(fetchRoles)}
                                                     className="boton-accion boton-eliminar"
-                                                    title="Eliminar usuario"
                                                 >
-                                                    <FaTrash />
+                                                    Eliminar
                                                 </button>
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="5" className="tabla-vacia">
-                                            No hay usuarios registrados
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
 
-                {openModal && (
+                {/* ========== PESTAÑA PERMISOS ========== */}
+                {pestanaActiva === "permisos" && (
+                    <>
+                        <h2 className="pagina-titulo">Gestión de Permisos</h2>
+
+                        <button
+                            className="pagina-boton"
+                            onClick={() => {
+                                setPermisoSeleccionado(null);
+                                setOpenModalPermiso(true);
+                            }}
+                        >
+                            Crear Permiso
+                        </button>
+
+                        <div className="tabla-contenedor">
+                            <table className="tabla">
+                                <thead>
+                                    <tr>
+                                        <th className="ocultar-columna">ID</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {permisos.map((p) => (
+                                        <tr key={p.id_permiso}>
+                                            <td className="ocultar-columna">{p.id_permiso}</td>
+                                            <td>{p.nombre}</td>
+                                            <td>{p.descripcion}</td>
+                                            <td className="tabla-acciones">
+                                                <button
+                                                    onClick={() => {
+                                                        setPermisoSeleccionado(p);
+                                                        setOpenModalPermiso(true);
+                                                    }}
+                                                    className="boton-accion boton-editar"
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    onClick={() => eliminarPermiso(p.id_permiso).then(fetchPermisos)}
+                                                    className="boton-accion boton-eliminar"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
+
+                {/* ========== PESTAÑA ROL-PERMISO ========== */}
+                {pestanaActiva === "rolpermisos" && (
+                    <>
+                        <h2 className="pagina-titulo">Asignación Rol - Permiso</h2>
+
+                        <button
+                            className="pagina-boton"
+                            onClick={() => {
+                                setRelacionSeleccionada(null);
+                                setOpenModalRolPermiso(true);
+                            }}
+                        >
+                            Asignar Permiso
+                        </button>
+
+                        <div className="tabla-contenedor">
+                            <table className="tabla">
+                                <thead>
+                                    <tr>
+                                        <th className="ocultar-columna">ID</th>
+                                        <th>Rol</th>
+                                        <th>Permiso</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rolPermisos.map((rp) => (
+                                        <tr key={rp.id_rol_permiso}>
+                                            <td className="ocultar-columna">{rp.id_rol_permiso}</td>
+                                            <td>{rp.rol}</td>
+                                            <td>{rp.permiso}</td>
+                                            <td className="tabla-acciones">
+                                                <button
+                                                    onClick={() => handleEditRolPermiso(rp)}
+                                                    className="boton-accion boton-editar"
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    onClick={() => eliminarRolPermiso(rp.id_rol_permiso).then(fetchRolPermisos)}
+                                                    className="boton-accion boton-eliminar"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
+
+                {/* Modales */}
+                {openModalUsuario && (
                     <ModalUsuario
                         onClose={() => {
-                            setOpenModal(false);
+                            setOpenModalUsuario(false);
                             setUsuarioSeleccionado(null);
                         }}
                         onSave={handleSaveUsuario}
                         usuarioSeleccionado={usuarioSeleccionado}
                         roles={roles}
+                    />
+                )}
+
+                {openModalRol && (
+                    <ModalRol
+                        onClose={() => {
+                            setOpenModalRol(false);
+                            setRolSeleccionado(null);
+                        }}
+                        onSave={handleSaveRol}
+                        rolSeleccionado={rolSeleccionado}
+                    />
+                )}
+
+                {openModalPermiso && (
+                    <ModalPermiso
+                        onClose={() => {
+                            setOpenModalPermiso(false);
+                            setPermisoSeleccionado(null);
+                        }}
+                        onSave={handleSavePermiso}
+                        permisoSeleccionado={permisoSeleccionado}
+                    />
+                )}
+
+                {openModalRolPermiso && (
+                    <ModalRolPermiso
+                        onClose={() => {
+                            setOpenModalRolPermiso(false);
+                            setRelacionSeleccionada(null);
+                        }}
+                        onSave={handleSaveRolPermiso}
+                        roles={roles}
+                        permisos={permisos}
+                        relacionSeleccionada={relacionSeleccionada}
                     />
                 )}
             </div>

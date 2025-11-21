@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
-import { FiUsers, FiShield, FiLock, FiLink } from "react-icons/fi";
+import { FiUsers, FiShield, FiLock, FiLink, FiMonitor } from "react-icons/fi";
 import "./Navbar.css";
 
 export const Navbar = () => {
@@ -38,6 +38,13 @@ export const Navbar = () => {
             >
                 <FiLink className="icon-container" />
                 <span className="label">Rol-Permisos</span>
+            </NavLink>
+            <NavLink 
+                to="/control-administrador" 
+                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            >
+                <FiMonitor className="icon-container" />
+                <span className="label">Control Administrador</span>
             </NavLink>
         </nav>
     );

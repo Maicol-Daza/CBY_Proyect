@@ -40,6 +40,11 @@ export const Principal = () => {
             descripcion="Asigna permisos a cada rol."
             onClick={() => navigate("/rol-permisos")}
           />
+          <Card
+            titulo="Control Administrador"
+            descripcion="Monitorea y controla todas las actividades del sistema."
+            onClick={() => navigate("/control-administrador")}
+          />
         </div>
       </div>
     </Layout>
