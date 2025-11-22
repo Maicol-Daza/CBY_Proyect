@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/configuracionAjustes.css';
+import '../styles/inputMoneda.css';
 import { 
   obtenerAjustes, 
   Ajuste, 
@@ -17,6 +18,7 @@ import {
 import { obtenerAjustesAccion, crearAjusteAccion, eliminarAjusteAccion, AjusteAccion } from '../services/ajustesAccionService';
 import { FaEdit, FaTrash, } from 'react-icons/fa';
 import { formatCOP } from '../utils/formatCurrency';
+import { InputMoneda } from './InputMoneda';
 
 export default function ConfiguracionAjustes() {
   const [ajustes, setAjustes] = useState<Ajuste[]>([]);
@@ -407,17 +409,10 @@ export default function ConfiguracionAjustes() {
 
               <div className="precio-section">
                 <label htmlFor="precio">Precio para todas las combinaciones *</label>
-                <input
-                  id="precio"
-                  type="text"
-                  value={precioDisplay}
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    setPrecioDisplay(raw);
-                    setPrecio(parsePrecio(raw));
-                  }}
-                  onBlur={() => setPrecioDisplay(formatCOP(precio))}
-                  placeholder="$ 0,00"
+                <InputMoneda
+                  value={precio}
+                  onChange={(valor) => setPrecio(valor)}
+                  placeholder="Ingrese el precio"
                 />
               </div>
 
@@ -465,13 +460,10 @@ export default function ConfiguracionAjustes() {
                 onKeyPress={(e) => e.key === 'Enter' && handleAgregarAjuste()}
               />
               <label htmlFor="precioAjuste">Precio *</label>
-              <input
-                id="precioAjuste"
-                type="number"
+              <InputMoneda
                 value={precioAjuste}
-                onChange={(e) => setPrecioAjuste(Number(e.target.value))}
-                placeholder="Ej: 5000"
-                min={0}
+                onChange={(valor) => setPrecioAjuste(valor)}
+                placeholder="Ingrese el precio del ajuste"
               />
             </div>
 
@@ -511,13 +503,10 @@ export default function ConfiguracionAjustes() {
                 onKeyPress={(e) => e.key === 'Enter' && handleAgregarAccion()}
               />
               <label htmlFor="precioAccion">Precio *</label>
-              <input
-                id="precioAccion"
-                type="number"
+              <InputMoneda
                 value={precioAccion}
-                onChange={(e) => setPrecioAccion(Number(e.target.value))}
-                placeholder="Ej: 5000"
-                min={0}
+                onChange={(valor) => setPrecioAccion(valor)}
+                placeholder="Ingrese el precio de la acción"
               />
             </div>
 

@@ -1,5 +1,6 @@
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import "../styles/pedidos.css";
+import "../styles/inputMoneda.css";
 import { obtenerCajones, type Cajon } from "../services/cajonesService";
 import { obtenerCodigos, type Codigo } from "../services/codigosService";
 import { obtenerAjustes, type Ajuste } from "../services/ajustesService";
@@ -10,6 +11,7 @@ import { type Prenda, type ArregloSeleccionado } from "../services/prendasServic
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { obtenerClientes, type Cliente as ClienteService } from "../services/clientesService";
 import { formatCOP } from '../utils/formatCurrency';
+import { InputMoneda } from "./InputMoneda";
 
 // Interfaces (manteniendo las existentes)
 interface Pedido {
@@ -118,12 +120,12 @@ export default function Pedidos() {
     };
   });
 
-  // Estados para entrega de pedidos
+  // Estados para entrega de pedidos - CORRECCIÓN
   const [mostrarModalEntrega, setMostrarModalEntrega] = useState(false);
   const [pedidosLista, setPedidosLista] = useState<PedidoEntrega[]>([]);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoEntrega | null>(null);
   const [busquedaPedido, setBusquedaPedido] = useState("");
-  const [abonoEntrega, setAbonoEntrega] = useState(0);
+  const [abonoEntrega, setAbonoEntrega] = useState<number>(0); // Cambiar a number
   const [cargandoEntrega, setCargandoEntrega] = useState(false);
 
   // Mini búsqueda de clientes dentro del formulario
@@ -293,7 +295,7 @@ export default function Pedidos() {
     }
   };
 
-  // Función para manejar la entrega del pedido
+  // Función para manejar la entrega del pedido - CORRECCIÓN
   const handleEntregarPedido = async () => {
     if (!pedidoSeleccionado) return;
 
@@ -305,15 +307,15 @@ export default function Pedidos() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           estado: "Entregado",
-          abonoEntrega: abonoEntrega > 0 ? abonoEntrega : null
+          abonoEntrega: abonoEntrega > 0 ? abonoEntrega : 0
         }),
       });
 
       if (response.ok) {
-        alert(" Pedido marcado como entregado exitosamente");
+        alert("✓ Pedido marcado como entregado exitosamente");
         setMostrarModalEntrega(false);
         setPedidoSeleccionado(null);
-        setAbonoEntrega(0);
+        setAbonoEntrega(0); // Reset a 0
         setBusquedaPedido("");
         
         // Recargar la lista de pedidos
@@ -981,12 +983,16 @@ export default function Pedidos() {
 
           <div className="field">
             <label>Abono Inicial (Opcional):</label>
-            <input
-              type="number"
-              name="abonoInicial"
-              value={pedido.abonoInicial}
-              onChange={handleInputPedido}
-              placeholder="0"
+            <InputMoneda
+              value={Number(pedido.abonoInicial || 0)}
+              onChange={(valor) => {
+                setPedido(prev => ({
+                  ...prev,
+                  abonoInicial: valor,
+                  saldoPendiente: precioModificado - valor
+                }));
+              }}
+              placeholder="Ingrese el abono"
             />
             {errores.abonoInicial && (
               <p className="error">{errores.abonoInicial}</p>
@@ -1206,7 +1212,7 @@ export default function Pedidos() {
       {mostrarModalEntrega && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "800px" }}>
-            <h2> Entrega de Pedidos</h2>
+            <h2>📦 Entrega de Pedidos</h2>
             
             {/* Barra de búsqueda */}
             <div className="field">
@@ -1236,7 +1242,8 @@ export default function Pedidos() {
                     className={`pedido-item ${pedidoSeleccionado?.id_pedido === pedido.id_pedido ? 'selected' : ''}`}
                     onClick={() => {
                       setPedidoSeleccionado(pedido);
-                      setAbonoEntrega(pedido.saldo);
+                      // Establecer el saldo como abono inicial (convertir a número)
+                      setAbonoEntrega(Number(pedido.saldo) || 0);
                     }}
                     style={{
                       padding: "15px",
@@ -1255,7 +1262,7 @@ export default function Pedidos() {
                           Cédula: {pedido.cliente_cedula} | Pedido #: {pedido.id_pedido}
                         </div>
                         <div style={{ fontSize: "0.9rem", color: "#666" }}>
-                          Total: {formatCOP(pedido.total_pedido)} | Abonado: {formatCOP(pedido.abono)} | Saldo: {formatCOP(pedido.saldo)}
+                          Total: {formatCOP(Number(pedido.total_pedido))} | Abonado: {formatCOP(Number(pedido.abono))} | Saldo: {formatCOP(Number(pedido.saldo))}
                         </div>
                       </div>
                       <div style={{ textAlign: "right" }}>
@@ -1263,7 +1270,7 @@ export default function Pedidos() {
                           padding: "4px 8px", 
                           borderRadius: "4px", 
                           backgroundColor: "#3b82f6",
-                          color: "#fff8f8",
+                          color: "#fff",
                           fontSize: "0.8rem",
                           fontWeight: "bold"
                         }}>
@@ -1292,18 +1299,14 @@ export default function Pedidos() {
                 <h3>Información de Entrega</h3>
                 
                 <div className="field">
-                  <label> Ingrese el abono en este momento (Saldo Pendiente):</label>
-                  <input
-                    type="number"
+                  <label>Ingrese el abono en este momento (Saldo Pendiente):</label>
+                  <InputMoneda
                     value={abonoEntrega}
-                    onChange={(e) => setAbonoEntrega(Number(e.target.value))}
-                    min="0"
-                    max={pedidoSeleccionado.saldo}
-                    placeholder="0"
-                    style={{ width: "100%", fontSize: "1.1rem", padding: "10px" }}
+                    onChange={(valor) => setAbonoEntrega(Number(valor))}
+                    placeholder="Ingrese el abono"
                   />
-                  <small style={{ color: "#666", marginTop: "5px" }}>
-                     Saldo pendiente total: <strong>{formatCOP(pedidoSeleccionado.saldo)}</strong>
+                  <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
+                    💰 Saldo pendiente total: <strong>{formatCOP(Number(pedidoSeleccionado.saldo))}</strong>
                   </small>
                 </div>
 
@@ -1317,26 +1320,26 @@ export default function Pedidos() {
                   borderRadius: "6px"
                 }}>
                   <div>
-                    <strong> Cliente:</strong> {pedidoSeleccionado.cliente_nombre}
+                    <strong>👤 Cliente:</strong> {pedidoSeleccionado.cliente_nombre}
                   </div>
                   <div>
-                    <strong> Cédula:</strong> {pedidoSeleccionado.cliente_cedula}
+                    <strong>🆔 Cédula:</strong> {pedidoSeleccionado.cliente_cedula}
                   </div>
                   <div>
-                    <strong> Total Pedido:</strong> {formatCOP(pedidoSeleccionado.total_pedido)}
+                    <strong>💵 Total Pedido:</strong> {formatCOP(Number(pedidoSeleccionado.total_pedido))}
                   </div>
                   <div>
-                    <strong> Abonado:</strong> {formatCOP(pedidoSeleccionado.abono)}
+                    <strong>✓ Abonado:</strong> {formatCOP(Number(pedidoSeleccionado.abono))}
                   </div>
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <strong> Saldo Pendiente:</strong> {formatCOP(pedidoSeleccionado.saldo)}
+                    <strong>⚠️ Saldo Pendiente:</strong> {formatCOP(Number(pedidoSeleccionado.saldo))}
                   </div>
                 </div>
               </div>
             )}
 
             {/* Botones de acción */}
-            <div className="modal-actions" style={{ marginTop: "20px" }}>
+            <div className="modal-actions" style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
               <button 
                 type="button" 
                 className="btn-cancelar"
@@ -1346,6 +1349,7 @@ export default function Pedidos() {
                   setAbonoEntrega(0);
                   setBusquedaPedido("");
                 }}
+                style={{ flex: 1 }}
               >
                 Cancelar
               </button>
@@ -1356,11 +1360,12 @@ export default function Pedidos() {
                 onClick={handleEntregarPedido}
                 disabled={!pedidoSeleccionado || cargandoEntrega}
                 style={{ 
+                  flex: 1,
                   backgroundColor: "#3b82f6",
                   opacity: !pedidoSeleccionado ? 0.6 : 1
                 }}
               >
-                {cargandoEntrega ? "Procesando..." : " Entregar Pedido"}
+                {cargandoEntrega ? "⏳ Procesando..." : "✓ Entregar Pedido"}
               </button>
             </div>
           </div>

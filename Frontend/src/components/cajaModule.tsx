@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import "../styles/moduloCaja.css";
+import "../styles/inputMoneda.css";
 import { crearMovimiento, obtenerMovimientos, type Movimiento } from "../services/movimientos_caja";
 import { formatCOP } from "../utils/formatCurrency";
 import { FaArrowTrendUp, FaArrowTrendDown } from "react-icons/fa6";
@@ -17,6 +18,7 @@ import {
   Legend,
   ResponsiveContainer
 } from "recharts";
+import { InputMoneda } from "./InputMoneda";
 
 interface ChartData {
   fecha: string;
@@ -337,20 +339,14 @@ export const CajaModule = () => {
 
               <div className="field">
                 <label>Monto *</label>
-                <div className="input-monto">
-                  <span className="currency">$</span>
-                  <input 
-                    type="number"
-                    value={nuevoMovimiento.monto}
-                    onChange={(e) => setNuevoMovimiento({
-                      ...nuevoMovimiento,
-                      monto: Number(e.target.value)
-                    })}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
+                <InputMoneda
+                  value={nuevoMovimiento.monto}
+                  onChange={(monto) => setNuevoMovimiento({
+                    ...nuevoMovimiento,
+                    monto
+                  })}
+                  placeholder="Ingrese el monto"
+                />
               </div>
 
               <div className="field">
