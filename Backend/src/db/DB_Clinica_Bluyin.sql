@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 CREATE TABLE IF NOT EXISTS clientes (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100),
-    nuip VARCHAR(30),
+    nuip VARCHAR(30) unique,
     direccion VARCHAR(255),
     telefono VARCHAR(20),
     email VARCHAR(150)
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS pedido_cliente (
     saldo DECIMAL(10,2) DEFAULT 0,
     observaciones VARCHAR(500),
     garantia varchar(500),
-    estado ENUM('en_proceso','listo','entregado') DEFAULT 'en_proceso',
+    estado ENUM('en_proceso','entregado') DEFAULT 'en_proceso',
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
@@ -159,7 +159,7 @@ WITH RECURSIVE seq AS (
   SELECT n + 1 FROM seq WHERE n < 400
 )
 SELECT LPAD(n, 3, '0'),
-       CEIL(n / 25)  -- cada 25 códigos cambia de cajón
+       CEIL(n / 26)  -- cada 25 códigos cambia de cajón
 FROM seq;
 
 

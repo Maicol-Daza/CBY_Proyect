@@ -113,8 +113,8 @@
 /* ========== CARDS DE ESTADÍSTICAS ========== */
 .estadisticas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
@@ -124,7 +124,7 @@
   align-items: center;
   background: white;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem;
   border: 1px solid #e5e7eb;
   transition: all 0.3s ease;
 }
@@ -139,14 +139,14 @@
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: #6b7280;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.3rem 0;
   font-weight: 500;
 }
 
 .stat-numero {
-  font-size: 2.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
@@ -154,14 +154,14 @@
 }
 
 .stat-detalle {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: #9ca3af;
-  margin: 0.5rem 0 0 0;
+  margin: 0.3rem 0 0 0;
 }
 
 .stat-icon {
-  font-size: 3rem;
-  margin-left: 1.5rem;
+  font-size: 2.5rem;
+  margin-left: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;

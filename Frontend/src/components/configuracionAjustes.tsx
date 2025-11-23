@@ -299,7 +299,7 @@ export default function ConfiguracionAjustes() {
               {combinaciones.map((comb) => (
                 <tr key={comb.id_ajuste_accion}>
                   <td>{obtenerNombresCombinacion(comb)}</td>
-                  <td>${Number(comb.precio).toFixed(2)}</td>
+                  <td>{formatCOP(Number(comb.precio))}</td>
                   <td className="actions-cell">
                     <div className="actions-group">
                       <button className="btn-eliminar" onClick={() => handleEliminar(comb.id_ajuste_accion)} title="Eliminar">
@@ -327,6 +327,7 @@ export default function ConfiguracionAjustes() {
               <div key={ajuste.id_ajuste} className="item-badge-container">
                 <div className="item-badge">
                   {ajuste.nombre_ajuste}
+                  <span className="item-price">{formatCOP(ajuste.precio_ajuste ?? 0)}</span>
                 </div>
                 <div className="item-actions">
                   <button className="btn-item-edit" onClick={() => handleEditarAjuste(ajuste)} title="Editar"> <FaEdit /></button>
@@ -348,6 +349,7 @@ export default function ConfiguracionAjustes() {
               <div key={accion.id_accion} className="item-badge-container">
                 <div className="item-badge">
                   {accion.nombre_accion}
+                  <span className="item-price">{formatCOP(accion.precio_acciones ?? 0)}</span>
                 </div>
                 <div className="item-actions">
                   <button className="btn-item-edit" onClick={() => handleEditarAccion(accion)} title="Editar"> <FaEdit /></button>

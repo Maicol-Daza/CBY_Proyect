@@ -59,7 +59,8 @@ export const ControlAdministrador = () => {
 
       // Calcular balance total de movimientos
       const balanceTotal = movimientosData.reduce((acc, mov) => {
-        return mov.tipo === 'entrada' ? acc + mov.monto : acc - mov.monto;
+        const monto = parseFloat(mov.monto) || 0;
+        return mov.tipo === 'entrada' ? acc + monto : acc - monto;
       }, 0);
 
       setEstadisticas({

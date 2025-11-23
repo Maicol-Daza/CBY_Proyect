@@ -462,6 +462,14 @@
   line-height: 1.4;
 }
 
+.item-price {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
 @media (max-width: 768px) {
   .selectors-container {
     grid-template-columns: 1fr;

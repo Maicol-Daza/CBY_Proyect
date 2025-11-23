@@ -5,13 +5,17 @@ import { obtenerCodigos } from "../services/codigosService";
 import { obtenerCajones } from "../services/cajonesService";
 import { FaEdit } from 'react-icons/fa';
 import { formatCOP } from '../utils/formatCurrency';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 export const HistorialModule = () => {
     const [pedidos, setPedidos] = useState<any[]>([]);
     const [filtros, setFiltros] = useState({
         busqueda: "",
         estado: "todos",
-        fecha: ""
+        fechaInicio: "",
+        fechaFin: ""
     });
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -194,6 +198,149 @@ export const HistorialModule = () => {
         }
     };
 
+    const exportarPDF = () => {
+        try {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+
+            // Titulo
+            doc.setFontSize(16);
+            doc.text("Historial de Pedidos", 14, 15);
+
+            // Fecha de generacion
+            doc.setFontSize(10);
+            doc.text(`Generado: ${new Date().toLocaleDateString('es-CO')}`, 14, 25);
+
+            // Informacion de filtros
+            doc.setFontSize(9);
+            let filtrosTexto = "Filtros aplicados: ";
+            const filtrosAplicados = [];
+            if (filtros.busqueda) filtrosAplicados.push(`Busqueda: ${filtros.busqueda}`);
+            if (filtros.estado !== "todos") filtrosAplicados.push(`Estado: ${filtros.estado}`);
+            if (filtros.fechaInicio) filtrosAplicados.push(`Desde: ${filtros.fechaInicio}`);
+            if (filtros.fechaFin) filtrosAplicados.push(`Hasta: ${filtros.fechaFin}`);
+
+            if (filtrosAplicados.length > 0) {
+                filtrosTexto += filtrosAplicados.join(" | ");
+            } else {
+                filtrosTexto += "Ninguno (todos los registros)";
+            }
+            doc.text(filtrosTexto, 14, 32);
+
+            // Tabla de datos - CORREGIR CALCULOS
+            const datosTabla = pedidosFiltrados.map(pedido => {
+                const total = parseFloat((pedido.total_pedido ?? pedido.totalPedido ?? 0).toString());
+                const saldo = parseFloat((pedido.saldo ?? pedido.saldoPendiente ?? 0).toString());
+                
+                return [
+                    pedido.id_pedido || "-",
+                    pedido.cliente_nombre || "-",
+                    formatearFecha(pedido.fecha_pedido),
+                    formatearFecha(pedido.fecha_entrega),
+                    pedido.estado === "en_proceso" ? "En proceso" :
+                    pedido.estado === "listo" ? "Finalizado" :
+                    pedido.estado === "entregado" ? "Entregado" : pedido.estado || "En proceso",
+                    `$${total.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                    `$${saldo.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                ];
+            });
+
+            autoTable(doc, {
+                head: [['Codigo', 'Cliente', 'Fecha Pedido', 'Fecha Entrega', 'Estado', 'Total', 'Saldo']],
+                body: datosTabla,
+                startY: 38,
+                margin: { left: 14, right: 14 },
+                styles: {
+                    font: 'helvetica',
+                    fontSize: 9,
+                    cellPadding: 5,
+                    halign: 'right'
+                },
+                columnStyles: {
+                    0: { halign: 'left' },
+                    1: { halign: 'left' },
+                    2: { halign: 'center' },
+                    3: { halign: 'center' },
+                    4: { halign: 'center' },
+                    5: { halign: 'right' },
+                    6: { halign: 'right' }
+                },
+                headStyles: {
+                    fillColor: [25, 118, 210],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                }
+            });
+
+            // Resumen al pie - CALCULOS CORRECTOS
+            const finalY = (doc as any).lastAutoTable.finalY + 10;
+            doc.setFontSize(10);
+            doc.text(`Total de registros: ${pedidosFiltrados.length}`, 14, finalY);
+
+            const totalMontos = pedidosFiltrados.reduce((sum, p) => {
+                return sum + parseFloat((p.total_pedido ?? p.totalPedido ?? 0).toString());
+            }, 0);
+            
+            const totalSaldos = pedidosFiltrados.reduce((sum, p) => {
+                return sum + parseFloat((p.saldo ?? p.saldoPendiente ?? 0).toString());
+            }, 0);
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Total en pedidos: $${totalMontos.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, finalY + 7);
+            doc.text(`Total saldo pendiente: $${totalSaldos.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, finalY + 14);
+
+            doc.save(`Historial_Pedidos_${new Date().toISOString().split('T')[0]}.pdf`);
+        } catch (err) {
+            console.error("Error al exportar PDF:", err);
+            alert("Error al exportar a PDF");
+        }
+    };
+
+    const exportarExcel = () => {
+        try {
+            const datosExportar = pedidosFiltrados.map(pedido => {
+                const total = parseFloat((pedido.total_pedido ?? pedido.totalPedido ?? 0).toString());
+                const saldo = parseFloat((pedido.saldo ?? pedido.saldoPendiente ?? 0).toString());
+                
+                return {
+                    'Código': pedido.id_pedido,
+                    'Cliente': pedido.cliente_nombre,
+                    'Fecha Pedido': formatearFecha(pedido.fecha_pedido),
+                    'Fecha Entrega': formatearFecha(pedido.fecha_entrega),
+                    'Estado': pedido.estado === "en_proceso" ? "En proceso" :
+                             pedido.estado === "listo" ? "Finalizado" :
+                             pedido.estado === "entregado" ? "Entregado" : pedido.estado,
+                    'Total': total,
+                    'Saldo Pendiente': saldo
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(datosExportar);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
+
+            ws['!cols'] = [
+                { wch: 12 },
+                { wch: 20 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 15 }
+            ];
+
+            XLSX.writeFile(wb, `Historial_Pedidos_${new Date().toISOString().split('T')[0]}.xlsx`);
+        } catch (err) {
+            console.error("Error al exportar Excel:", err);
+            alert("Error al exportar a Excel");
+        }
+    };
+
     const pedidosFiltrados = pedidos.filter(pedido => {
         const cumpleBusqueda =
             pedido.id_pedido?.toString().includes(filtros.busqueda.toLowerCase()) ||
@@ -202,8 +349,21 @@ export const HistorialModule = () => {
         const cumpleEstado =
             filtros.estado === "todos" || pedido.estado === filtros.estado;
 
-        const cumpleFecha =
-            filtros.fecha === "" || pedido.fecha_pedido?.split("T")[0] === filtros.fecha;
+        // Mejorar filtro de fecha: verifica fecha_pedido Y fecha_entrega
+        let cumpleFecha = true;
+        if (filtros.fechaInicio || filtros.fechaFin) {
+            const fechaPedido = pedido.fecha_pedido?.split("T")[0];
+            const fechaEntrega = pedido.fecha_entrega?.split("T")[0];
+            
+            if (filtros.fechaInicio && filtros.fechaFin) {
+                cumpleFecha = (fechaPedido >= filtros.fechaInicio && fechaPedido <= filtros.fechaFin) ||
+                             (fechaEntrega >= filtros.fechaInicio && fechaEntrega <= filtros.fechaFin);
+            } else if (filtros.fechaInicio) {
+                cumpleFecha = fechaPedido >= filtros.fechaInicio || fechaEntrega >= filtros.fechaInicio;
+            } else if (filtros.fechaFin) {
+                cumpleFecha = fechaPedido <= filtros.fechaFin || fechaEntrega <= filtros.fechaFin;
+            }
+        }
 
         return cumpleBusqueda && cumpleEstado && cumpleFecha;
     });
@@ -213,15 +373,16 @@ export const HistorialModule = () => {
             <div className="historial-header">
                 <h1>Historial de Pedidos</h1>
                 <div className="export-buttons">
-                    <button className="btn-export btn-excel" type="button">
+                    <button className="btn-export btn-excel" type="button" onClick={exportarExcel}>
                         <FaDownload /> Excel
                     </button>
-                    <button className="btn-export btn-pdf" type="button">
+                    <button className="btn-export btn-pdf" type="button" onClick={exportarPDF}>
                         <FaDownload /> PDF
                     </button>
                 </div>
             </div>
 
+            {/* Actualizar sección de filtros */}
             <div className="filtros-section">
                 <h3 className="filtros-title">Filtros de Búsqueda</h3>
 
@@ -248,17 +409,27 @@ export const HistorialModule = () => {
                         >
                             <option value="todos">Todos los estados</option>
                             <option value="en_proceso">En proceso</option>
-                            <option value="listo">Finalizado</option>
                             <option value="entregado">Entregado</option>
                         </select>
                     </div>
 
                     <div className="filtro-group">
-                        <label>Fecha</label>
+                        <label>Fecha desde</label>
                         <input
                             type="date"
-                            name="fecha"
-                            value={filtros.fecha}
+                            name="fechaInicio"
+                            value={filtros.fechaInicio}
+                            onChange={handleFiltroChange}
+                            className="input-filtro"
+                        />
+                    </div>
+
+                    <div className="filtro-group">
+                        <label>Fecha hasta</label>
+                        <input
+                            type="date"
+                            name="fechaFin"
+                            value={filtros.fechaFin}
                             onChange={handleFiltroChange}
                             className="input-filtro"
                         />
@@ -434,9 +605,9 @@ export const HistorialModule = () => {
                                                                 Cantidad: <strong>{prenda.cantidad || 0}</strong>
                                                             </p>
                                                         </div>
-                                                        <p className="prenda-precio">
+                                                        {/* <p className="prenda-precio">
                                                             ${parseFloat(prenda.precio_unitario || prenda.precio || 0).toLocaleString("es-CO")}
-                                                        </p>
+                                                        </p> */}
                                                     </div>
 
                                                     {prenda.arreglos && Array.isArray(prenda.arreglos) && prenda.arreglos.length > 0 ? (

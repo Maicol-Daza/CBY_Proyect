@@ -79,7 +79,7 @@ export default function Pedidos() {
       return datos.pedido || {
         fechaInicio: "",
         fechaEntrega: "",
-        estado: "",
+        estado: "En proceso",  // ✅ Cambiar aquí
         observaciones: "",
         abonoInicial: "",
         abonoObservaciones: "",
@@ -90,7 +90,7 @@ export default function Pedidos() {
     return {
       fechaInicio: "",
       fechaEntrega: "",
-      estado: "",
+      estado: "En proceso",  // ✅ Cambiar aquí
       observaciones: "",
       abonoInicial: "",
       abonoObservaciones: "",
@@ -295,9 +295,26 @@ export default function Pedidos() {
     }
   };
 
+  // Agregar este estado para almacenar el error de entrega
+  const [errorEntrega, setErrorEntrega] = useState<string>("");
+
   // Función para manejar la entrega del pedido - CORRECCIÓN
   const handleEntregarPedido = async () => {
     if (!pedidoSeleccionado) return;
+
+    // Limpiar error anterior
+    setErrorEntrega("");
+
+    // ✅ NUEVA VALIDACIÓN: Verificar que el abono cubra el saldo pendiente
+    const saldoPendiente = Number(pedidoSeleccionado.saldo);
+    const abonoIngresado = Number(abonoEntrega);
+
+    if (abonoIngresado < saldoPendiente) {
+      setErrorEntrega(
+        `El abono ingresado (${formatCOP(abonoIngresado)}) es menor al saldo pendiente (${formatCOP(saldoPendiente)}). Debe ingresar el monto completo para entregar el pedido.`
+      );
+      return;
+    }
 
     // OBTENER usuario del localStorage
     const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
@@ -314,7 +331,7 @@ export default function Pedidos() {
         body: JSON.stringify({ 
           estado: "Entregado",
           abonoEntrega: abonoEntrega > 0 ? abonoEntrega : 0,
-          id_usuario: idUsuario  // Usar esto
+          id_usuario: idUsuario
         }),
       });
 
@@ -322,18 +339,19 @@ export default function Pedidos() {
         alert("✓ Pedido marcado como entregado exitosamente");
         setMostrarModalEntrega(false);
         setPedidoSeleccionado(null);
-        setAbonoEntrega(0); // Reset a 0
+        setAbonoEntrega(0);
         setBusquedaPedido("");
+        setErrorEntrega(""); // Limpiar error
         
         // Recargar la lista de pedidos
         cargarPedidosParaEntrega();
       } else {
         const error = await response.json();
-        alert(`❌ Error: ${error.message || "No se pudo entregar el pedido"}`);
+        setErrorEntrega(error.message || "No se pudo entregar el pedido");
       }
     } catch (error) {
       console.error("Error al entregar pedido:", error);
-      alert("❌ Error al conectar con el servidor");
+      setErrorEntrega("Error al conectar con el servidor");
     } finally {
       setCargandoEntrega(false);
     }
@@ -354,19 +372,32 @@ export default function Pedidos() {
   // Actualizar el total del pedido cuando cambian las prendas
   useEffect(() => {
     const totalPrendas = calcularTotalPrendas();
+    const nuevoTotal = totalPrendas;
+    
     setPedido(prev => ({
       ...prev,
-      totalPedido: totalPrendas,
-      saldoPendiente: totalPrendas - Number(prev.abonoInicial || 0)
+      totalPedido: nuevoTotal,
+      saldoPendiente: nuevoTotal - Number(prev.abonoInicial || 0)
     }));
-    
-    // Solo inicializar el precio modificado si no hay un valor guardado
-    if (precioModificado === 0) {
-      setPrecioModificado(totalPrendas);
-    }
   }, [prendasTemporales]);
 
-  //  Validar campos antes de enviar
+  // Agregar esta función de validación de fechas
+  const validarFechas = (): string => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const fechaInicio = pedido.fechaInicio ? new Date(pedido.fechaInicio) : null;
+    const fechaEntrega = pedido.fechaEntrega ? new Date(pedido.fechaEntrega) : null;
+
+    // ✅ Solo validar que fecha de entrega no sea anterior a fecha de inicio
+    if (fechaInicio && fechaEntrega && fechaEntrega < fechaInicio) {
+      return "La fecha de entrega no puede ser anterior a la fecha de inicio.";
+    }
+
+    return "";
+  };
+
+  // Reemplazar la función validarCampos - VERSIÓN RELAJADA
   const validarCampos = (): boolean => {
     const nuevosErrores: Errores = {};
 
@@ -400,6 +431,7 @@ export default function Pedidos() {
       nuevosErrores.email = "Debe tener un formato válido (ej: usuario@gmail.com).";
     }
 
+    // ✅ VALIDACIONES DE FECHA RELAJADAS
     if (!pedido.fechaInicio) {
       nuevosErrores.fechaInicio = "Debe seleccionar una fecha de inicio.";
     }
@@ -408,8 +440,22 @@ export default function Pedidos() {
       nuevosErrores.fechaEntrega = "Debe seleccionar una fecha de entrega.";
     }
 
-    if (!pedido.estado) {
-      nuevosErrores.estado = "Debe seleccionar un estado.";
+    // ✅ Solo validar que entrega NO sea antes que inicio
+    if (pedido.fechaInicio && pedido.fechaEntrega) {
+      const errorFechas = validarFechas();
+      if (errorFechas) {
+        nuevosErrores.fechas = errorFechas;
+      }
+    }
+
+    // ✅ NUEVA VALIDACIÓN: El abono no puede ser mayor al total
+    if (pedido.abonoInicial !== "" && Number(pedido.abonoInicial) > 0) {
+      const abonoNum = Number(pedido.abonoInicial);
+      const totalNum = precioModificado;
+      
+      if (abonoNum > totalNum) {
+        nuevosErrores.abonoInicial = `El abono (${formatCOP(abonoNum)}) no puede ser mayor al total del pedido (${formatCOP(totalNum)}).`;
+      }
     }
 
     // EL ABONO NO ES OBLIGATORIO - solo validar que no sea negativo
@@ -460,20 +506,29 @@ export default function Pedidos() {
   const handleBusquedaCliente = (e: ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setBusquedaCliente(val);
+    
     if (!val.trim()) {
-      setSugerenciasClientes([]);
+      // Si está vacío, mostrar los 5 clientes más recientes
+      const clientesRecientes = clientesLista.slice(0, 5);
+      setSugerenciasClientes(clientesRecientes);
       return;
     }
+    
     const term = val.toLowerCase();
-    const filtradas = clientesLista.filter(c => {
-      return (
-        String(c.nombre || "").toLowerCase().includes(term) ||
-        String(c.nuip || "").toLowerCase().includes(term) ||
-        String(c.telefono || "").toLowerCase().includes(term) ||
-        String(c.email || "").toLowerCase().includes(term)
-      );
-    }).slice(0, 6);
+    const filtradas = clientesLista
+      .filter(c => 
+        c.nombre?.toLowerCase().includes(term) || 
+        c.nuip?.includes(term)
+      )
+      .slice(0, 5); // Limitar a 5 resultados
+  
     setSugerenciasClientes(filtradas);
+  };
+
+  // AGREGAR ESTA FUNCIÓN: Mostrar 5 clientes al hacer clic
+  const handleFocusCliente = () => {
+    const clientesRecientes = clientesLista.slice(0, 5);
+    setSugerenciasClientes(clientesRecientes);
   };
 
   // Usar cliente seleccionado para rellenar el formulario de pedido
@@ -618,7 +673,7 @@ export default function Pedidos() {
     const baseClass = "cajon";
     const seleccionado = cajonSeleccionado === cajon.id_cajon ? "selected" : "";
     
-    // Solo aplicar clases de estado para styling, no para deshabilitar
+    // Solo aplicar clases de estado para styling
     if (cajon.estado === "ocupado") {
       return `${baseClass} ocupado ${seleccionado}`;
     } else if (cajon.estado === "reservado") {
@@ -644,11 +699,21 @@ export default function Pedidos() {
     setMotivoModificacion("");
   };
 
+  // Agregar esta función cerca de handleAplicarModificacionPrecio
+  const aplicarDescuentoAutomatico = (porcentaje: number) => {
+    const totalCalculado = calcularTotalPrendas();
+    const descuento = totalCalculado * (porcentaje / 100);
+    const nuevoPrecio = totalCalculado - descuento;
+    
+    setPrecioModificado(nuevoPrecio);
+    setMotivoModificacion(`Descuento automático del ${porcentaje}%`);
+  };
+
   //  Guardar pedido (enviar al backend)
   const handleGuardar = async (e: FormEvent) => {
     e.preventDefault();
     if (!validarCampos()) {
-      alert(" Completa todos los campos antes de guardar.");
+      alert("⚠ Completa todos los campos antes de guardar.");
       return;
     }
 
@@ -668,7 +733,7 @@ export default function Pedidos() {
           pedido: {
             ...pedido,
             totalPedido: precioModificado,
-            observaciones_abono: pedido.abonoObservaciones || null,  // ✅ Enviar observación del abono
+            observaciones_abono: pedido.abonoObservaciones || null,
             observaciones: motivoModificacion 
               ? `${pedido.observaciones || ''}\nMODIFICACIÓN DE PRECIO: ${motivoModificacion} - Precio original: $${calcularTotalPrendas().toLocaleString()}, Precio final: $${precioModificado.toLocaleString()}`
               : pedido.observaciones
@@ -676,56 +741,58 @@ export default function Pedidos() {
         id_cajon: cajonSeleccionado,
         codigos_seleccionados: codigosSeleccionados,
         prendas: prendasTemporales,
-        id_usuario: idUsuario  // Agregar aquí
-        }),
+        id_usuario: idUsuario
+      }),
+    });
+
+    const data = await respuesta.json();
+
+    if (respuesta.ok) {
+      alert("✓ Pedido guardado exitosamente.");
+      console.log("Respuesta del servidor:", data);
+
+      // Resetear formularios y limpiar localStorage
+      setCliente({
+        nombre: "",
+        cedula: "",
+        telefono: "",
+        direccion: "",
+        email: "",
       });
-
-      const data = await respuesta.json();
-
-      if (respuesta.ok) {
-        alert(" Pedido guardado exitosamente.");
-        console.log("Respuesta del servidor:", data);
-
-        // Resetear formularios y limpiar localStorage
-        setCliente({
-          nombre: "",
-          cedula: "",
-          telefono: "",
-          direccion: "",
-          email: "",
-        });
-        setPedido({
-          fechaInicio: "",
-          fechaEntrega: "",
-          estado: "",
-          observaciones: "",
-          abonoInicial: "",
-          abonoObservaciones: "",
-          totalPedido: 0,
-          saldoPendiente: 0,
-        });
-        setCajonSeleccionado(null);
-        setCodigosSeleccionados([]);
-        setPrendasTemporales([]);
-        setPrecioModificado(0);
-        setMotivoModificacion("");
-        setErrores({});
-        
-        // Limpiar localStorage después de guardar exitosamente
-        localStorage.removeItem(PEDIDO_STORAGE_KEY);
-        
-        // Recargar datos para actualizar estados de cajones y códigos
-        cargarDatos();
-      } else {
-        alert(` Error: ${data.message || "No se pudo guardar el pedido."}`);
-      }
-    } catch (error) {
-      console.error("Error al guardar pedido:", error);
-      alert(" Error al conectar con el servidor.");
-    } finally {
-      setCargando(false);
+      setPedido({
+        fechaInicio: "",
+        fechaEntrega: "",
+        estado: "En proceso",
+        observaciones: "",
+        abonoInicial: "",
+        abonoObservaciones: "",
+        totalPedido: 0,
+        saldoPendiente: 0,
+      });
+      setCajonSeleccionado(null);
+      setCodigosSeleccionados([]);
+      setPrendasTemporales([]);
+      setPrecioModificado(0); // ✅ Aquí se resetea correctamente
+      setMotivoModificacion(""); // ✅ Limpiar motivo también
+      setErrores({});
+      setImagenFile(null);
+      setImagenPreview(null);
+      
+      // Limpiar localStorage después de guardar exitosamente
+      localStorage.removeItem(PEDIDO_STORAGE_KEY);
+      
+      // Recargar datos para actualizar estados de cajones y códigos
+      cargarDatos();
+    } else {
+      alert(`❌ Error: ${data.message || "No se pudo guardar el pedido."}`);
     }
-  };
+  } catch (error) {
+    console.error("Error al guardar pedido:", error);
+    alert("❌ Error al conectar con el servidor.");
+  } finally {
+    setCargando(false);
+  }
+};
 
   // Agregar esta función después de handleGuardar
   const handleLimpiarTodo = () => {
@@ -780,6 +847,20 @@ export default function Pedidos() {
     }
   }, []);
   
+  // AGREGAR ESTA FUNCIÓN: Cerrar sugerencias al hacer clic fuera
+  useEffect(() => {
+    const handleClickFuera = (e: MouseEvent) => {
+      const elemento = document.querySelector('.cliente-mini-search');
+      if (elemento && !elemento.contains(e.target as Node)) {
+        setSugerenciasClientes([]);
+        setBusquedaCliente("");
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickFuera);
+    return () => document.removeEventListener('mousedown', handleClickFuera);
+  }, []);
+
   //  Render
   return (
     <div className="pedidos-page">
@@ -811,6 +892,7 @@ export default function Pedidos() {
                 placeholder="Buscar cliente rápido..."
                 value={busquedaCliente}
                 onChange={handleBusquedaCliente}
+                onFocus={handleFocusCliente} // AGREGAR onFocus
                 className="input-mini-busqueda"
               />
               {sugerenciasClientes.length > 0 && (
@@ -885,10 +967,10 @@ export default function Pedidos() {
               name="estado"
               value={pedido.estado}
               onChange={handleInputPedido}
+              disabled
+              className="input-disabled"  // ✅ Agregar esta clase
             >
-              <option value="">Seleccione una opción</option>
               <option value="En proceso">En proceso</option>
-              {/* <option value="Finalizado">Finalizado</option> */}
             </select>
             {errores.estado && <p className="error">{errores.estado}</p>}
           </div>
@@ -1031,22 +1113,15 @@ export default function Pedidos() {
                 type="button"
                 className="btn-modificar-precio"
                 onClick={() => setMostrarModificarPrecio(true)}
+                
+                style={{ opacity: 0.5, cursor: "not-allowed" }}
               >
                 <FaEdit /> Modificar
               </button>
             </div>
             
             <p><strong>Total calculado:</strong> {formatCOP(calcularTotalPrendas())}</p>
-            <p><strong>Total final:</strong> {formatCOP(precioModificado)}</p>
-            {precioModificado !== calcularTotalPrendas() && (
-              <p className="diferencia-precio">
-                <strong>Diferencia:</strong> 
-                <span className={precioModificado < calcularTotalPrendas() ? "rebaja" : "aumento"}>
-                  {precioModificado < calcularTotalPrendas() ? " -" : " +"}
-                  {formatCOP(Math.abs(precioModificado - calcularTotalPrendas()))}
-                </span>
-              </p>
-            )}
+            <p><strong>Total final:</strong> {formatCOP(calcularTotalPrendas())}</p>
             <p><strong>Abono inicial:</strong> {formatCOP(Number(pedido.abonoInicial || 0))}</p>
             <p><strong>Saldo pendiente:</strong> {formatCOP(Number(pedido.saldoPendiente || 0))}</p>
           </div>
@@ -1084,19 +1159,22 @@ export default function Pedidos() {
               <div className="cajones-grid">
                 {cajones.map((cajon) => {
                   const infoCajon = getInfoCajon(cajon.id_cajon);
+                  const estaOcupado = cajon.estado === "ocupado"; // ✅ Nuevo
+                  
                   return (
                     <div 
                       key={cajon.id_cajon}
                       className={getClaseCajon(cajon)}
-                      onClick={() => handleSeleccionarCajon(cajon.id_cajon)}
+                      onClick={() => !estaOcupado && handleSeleccionarCajon(cajon.id_cajon)} // ✅ Cambio
+                      style={{
+                        opacity: estaOcupado ? 0.5 : 1, // ✅ Nuevo - transparencia
+                        cursor: estaOcupado ? "not-allowed" : "pointer", // ✅ Nuevo
+                        pointerEvents: estaOcupado ? "none" : "auto" // ✅ Nuevo - deshabilitado
+                      }}
                     >
                       <div className="cajon-nombre">{infoCajon.nombre}</div>
                       <div className="cajon-rango">{infoCajon.rango}</div>
-                      {cajon.estado && (
-                        <div className={`estado-cajon ${cajon.estado}`}>
-                          {cajon.estado}
-                        </div>
-                      )}
+                      {/* ❌ Eliminar el div estado-cajon */}
                     </div>
                   );
                 })}
@@ -1119,16 +1197,17 @@ export default function Pedidos() {
                   {codigosFiltrados.map((codigo) => (
                     <label 
                       key={codigo.id_codigo} 
-                      className={`codigo-item ${codigo.estado === "ocupado" ? "codigo-ocupado" : ""}`}
+                      className={`codigo-item ${codigo.estado === "ocupado" ? "codigo-ocupado-disabled" : ""}`}
                     >
                       <input
                         type="checkbox"
                         checked={codigosSeleccionados.includes(codigo.id_codigo)}
                         onChange={() => handleSeleccionarCodigo(codigo.id_codigo)}
+                        disabled={codigo.estado === "ocupado"}
+                        className={codigo.estado === "ocupado" ? "input-disabled" : ""} // ✅ Agregar clase
                       />
                       <span className={`codigo-numero ${codigo.estado === "ocupado" ? "ocupado" : ""}`}>
                         {codigo.codigo_numero}
-                        {codigo.estado === "ocupado" && " (Ocupado)"}
                       </span>
                     </label>
                   ))}
@@ -1156,70 +1235,6 @@ export default function Pedidos() {
         combinaciones={combinaciones}
         prendaEditando={prendaEditando !== null ? prendasTemporales[prendaEditando] : null}
       />
-
-      {/* Modal para modificar precio */}
-      {mostrarModificarPrecio && (
-        <div className="modal-overlay">
-          <div className="modal-content-modificar">
-            <h2>Modificar Precio Final</h2>
-            
-            <div className="form-group-modificar">
-              <label>Total Calculado:</label>
-              <input
-                type="text"
-                value={`$${calcularTotalPrendas().toLocaleString()}`}
-                disabled
-                className="input-disabled"
-              />
-            </div>
-
-            <div className="form-group-modifica">
-              <label>Nuevo Precio Final *</label>
-              <input
-                type="number"
-                value={precioModificado}
-                onChange={(e) => setPrecioModificado(Number(e.target.value))}
-                min="0"
-                step="0.01"
-              />
-              {errores.precioModificado && (
-                <p className="error">{errores.precioModificado}</p>
-              )}
-            </div>
-
-            <div className="forform-group-modifica">
-              <label>Motivo de la modificación (opcional)</label>
-              <textarea
-                value={motivoModificacion}
-                onChange={(e) => setMotivoModificacion(e.target.value)}
-                placeholder="Ej: Descuento por cliente frecuente, promoción especial, etc."
-                rows={3}
-              />
-            </div>
-
-            <div className="modal-actions">
-              <button 
-                type="button" 
-                className="btn-cancelar"
-                onClick={() => {
-                  setMostrarModificarPrecio(false);
-                  setPrecioModificado(calcularTotalPrendas());
-                  setMotivoModificacion("");
-                }}
-              >
-                Cancelar
-              </button>
-              <button 
-                type="button" 
-                className="btn-primary"
-                onClick={handleAplicarModificacionPrecio}
-              >
-                Aplicar Cambio
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modal de Entrega de Pedidos */}
       {mostrarModalEntrega && (
@@ -1311,11 +1326,28 @@ export default function Pedidos() {
               }}>
                 <h3>Información de Entrega</h3>
                 
+                {/* ✅ AGREGAR ESTE BLOQUE PARA MOSTRAR EL ERROR */}
+                {errorEntrega && (
+                  <p className="error" style={{ 
+                    padding: "10px", 
+                    backgroundColor: "#fee",
+                    borderLeft: "4px solid #f66",
+                    marginBottom: "15px",
+                    borderRadius: "4px",
+                    color: "#c33"
+                  }}>
+                    ⚠️ {errorEntrega}
+                  </p>
+                )}
+                
                 <div className="field">
                   <label>Ingrese el abono en este momento (Saldo Pendiente):</label>
                   <InputMoneda
                     value={abonoEntrega}
-                    onChange={(valor) => setAbonoEntrega(Number(valor))}
+                    onChange={(valor) => {
+                      setAbonoEntrega(Number(valor));
+                      setErrorEntrega(""); // Limpiar error al escribir
+                    }}
                     placeholder="Ingrese el abono"
                   />
                   <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
@@ -1379,6 +1411,100 @@ export default function Pedidos() {
                 }}
               >
                 {cargandoEntrega ? "⏳ Procesando..." : "✓ Entregar Pedido"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de modificar precio final */}
+      {mostrarModificarPrecio && (
+        <div className="modal-overlay">
+          <div className="modal-content-modificar">
+            <h2>Modificar Precio Final</h2>
+            
+            <div className="form-group-modificar">
+              <label>Total Calculado:</label>
+              <input
+                type="text"
+                value={formatCOP(calcularTotalPrendas())}
+                disabled
+                className="input-disabled"
+              />
+            </div>
+
+            {/* ✅ NUEVOS BOTONES DE DESCUENTO AUTOMÁTICO */}
+            <div className="descuentos-rapidos">
+              <label>Descuentos Rápidos:</label>
+              <div className="botones-descuento">
+                <button 
+                  type="button"
+                  className="btn-descuento"
+                  onClick={() => aplicarDescuentoAutomatico(5)}
+                >
+                  -5%
+                </button>
+                <button 
+                  type="button"
+                  className="btn-descuento"
+                  onClick={() => aplicarDescuentoAutomatico(10)}
+                >
+                  -10%
+                </button>
+                <button 
+                  type="button"
+                  className="btn-descuento"
+                  onClick={() => aplicarDescuentoAutomatico(15)}
+                >
+                  -15%
+                </button>
+                <button 
+                  type="button"
+                  className="btn-descuento"
+                  onClick={() => aplicarDescuentoAutomatico(20)}
+                >
+                  -20%
+                </button>
+              </div>
+            </div>
+
+            <div className="form-group-modifica">
+              <label>Nuevo Precio Final *</label>
+              <input
+                type="number"
+                value={precioModificado}
+                onChange={(e) => setPrecioModificado(Number(e.target.value))}
+                placeholder="Ingrese el nuevo precio"
+              />
+            </div>
+
+            <div className="forform-group-modifica">
+              <label>Motivo de la modificación (opcional)</label>
+              <textarea
+                value={motivoModificacion}
+                onChange={(e) => setMotivoModificacion(e.target.value)}
+                placeholder="Ej: Descuento por cliente frecuente, promoción especial, etc."
+              />
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                type="button"
+                className="btn-cancelar"
+                onClick={() => {
+                  setMostrarModificarPrecio(false);
+                  setPrecioModificado(calcularTotalPrendas());
+                  setMotivoModificacion("");
+                }}
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button"
+                className="btn-primary"
+                onClick={handleAplicarModificacionPrecio}
+              >
+                Aplicar Cambio
               </button>
             </div>
           </div>
