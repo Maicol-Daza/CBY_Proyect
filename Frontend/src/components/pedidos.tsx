@@ -299,6 +299,12 @@ export default function Pedidos() {
   const handleEntregarPedido = async () => {
     if (!pedidoSeleccionado) return;
 
+    // OBTENER usuario del localStorage
+    const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
+    const idUsuario = usuarioGuardado?.id_usuario || 1;
+
+    console.log("Entregando pedido con usuario:", idUsuario);
+
     try {
       setCargandoEntrega(true);
       
@@ -307,7 +313,8 @@ export default function Pedidos() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           estado: "Entregado",
-          abonoEntrega: abonoEntrega > 0 ? abonoEntrega : 0
+          abonoEntrega: abonoEntrega > 0 ? abonoEntrega : 0,
+          id_usuario: idUsuario  // Usar esto
         }),
       });
 
@@ -645,6 +652,12 @@ export default function Pedidos() {
       return;
     }
 
+    // OBTENER usuario del localStorage
+    const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
+    const idUsuario = usuarioGuardado?.id_usuario || 1;
+
+    console.log("Guardando pedido con usuario:", idUsuario);
+
     try {
       setCargando(true);
       const respuesta = await fetch("http://localhost:3000/api/pedidos", {
@@ -663,7 +676,8 @@ export default function Pedidos() {
           },
           id_cajon: cajonSeleccionado,
           codigos_seleccionados: codigosSeleccionados,
-          prendas: prendasTemporales
+          prendas: prendasTemporales,
+          id_usuario: idUsuario  // Agregar aquí
         }),
       });
 

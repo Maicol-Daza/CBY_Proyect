@@ -54,22 +54,24 @@ export async function crearPedido(cliente: Cliente, pedido: Pedido) {
   }
 }
 
-export async function crearPedidoCompleto(pedidoData: PedidoCompleto) {
+export async function crearPedidoCompleto(pedidoData: PedidoCompleto & { id_usuario?: number }) {
   try {
-    const response = await fetch(API_URL, {
+    console.log("Enviando al backend:", pedidoData); // DEBUG
+    
+    const response = await fetch(`${API_URL}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(pedidoData),
+      body: JSON.stringify(pedidoData)  // Enviar todo incluyendo id_usuario
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "Error al guardar el pedido");
+      throw new Error(error.message || "Error al crear pedido");
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error en crearPedidoCompleto:", error);
+    console.error("Error:", error);
     throw error;
   }
 }

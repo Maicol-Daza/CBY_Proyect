@@ -7,11 +7,14 @@ class PedidoClienteController {
       pedido,
       id_cajon,
       codigos_seleccionados,
-      prendas
+      prendas,
+      id_usuario  // RECIBIR del frontend
     } = req.body;
 
+    console.log("Backend recibió id_usuario:", id_usuario); // DEBUG
+
     if (!cliente || !pedido) {
-      return res.status(400).json({ message: "Datos incompletos." });
+      return res.status(400).json({ error: "Faltan datos del cliente o pedido" });
     }
 
     const connection = await db.getConnection();
@@ -105,14 +108,17 @@ class PedidoClienteController {
         await connection.query(
           `INSERT INTO historial_abonos (id_pedido, fecha_abono, abono, observaciones)
            VALUES (?, NOW(), ?, ?)`,
-          [id_pedido, abonoInicial, observacionAbono]
+          [id_pedido, abonoInicial, "Pago parcial"]
         );
 
-        //  CREAR MOVIMIENTO EN CAJA - Abono inicial
+        // USAR id_usuario del request
+        const usuarioMovimiento = id_usuario || 1;
+        console.log("Registrando abono con usuario:", usuarioMovimiento); // DEBUG
+        
         await connection.query(
           `INSERT INTO movimientos_caja (id_pedido, fecha_movimiento, tipo, descripcion, monto, id_usuario)
            VALUES (?, NOW(), 'entrada', ?, ?, ?)`,
-          [id_pedido, `Abono inicial - ${observacionAbono || 'Pago parcial'}`, abonoInicial, 1]
+          [id_pedido, `Abono inicial - Pago parcial`, abonoInicial, usuarioMovimiento]
         );
       }
       
@@ -510,12 +516,12 @@ class PedidoClienteController {
   }
   async cambiarEstado(req, res) {
   const { id } = req.params;
-  const { estado, abonoEntrega } = req.body;
+  const { estado, abonoEntrega, id_usuario } = req.body;  // AGREGAR id_usuario
 
-  console.log(" Recibido:", { id, estado, abonoEntrega });
+  console.log("Datos Recibido:", { id, estado, abonoEntrega, id_usuario });
 
   if (!id || !estado) {
-    return res.status(400).json({ message: "ID y estado son requeridos" });
+    return res.status(400).json({ error: "ID y estado son requeridos" });
   }
 
   const connection = await db.getConnection();
@@ -568,13 +574,16 @@ class PedidoClienteController {
       const montoACobrar = abonoEntrega ? Number(abonoEntrega) : (totalPedido - abonoAnterior);
       
       if (montoACobrar > 0) {
+        // USAR id_usuario del request
+        const usuarioMovimiento = id_usuario || 1;
+        
         await connection.query(
           `INSERT INTO movimientos_caja (id_pedido, fecha_movimiento, tipo, descripcion, monto, id_usuario)
            VALUES (?, CURRENT_TIMESTAMP, 'entrada', ?, ?, ?)`,
-          [id, `Cobro en entrega - Pedido #${id}`, montoACobrar, 1]
+          [id, `Cobro en entrega - Pedido #${id}`, montoACobrar, usuarioMovimiento]
         );
 
-        console.log(` Movimiento registrado: $${montoACobrar}`);
+        console.log(`✅ Movimiento registrado por usuario ${usuarioMovimiento}: $${montoACobrar}`);
       }
     }
 

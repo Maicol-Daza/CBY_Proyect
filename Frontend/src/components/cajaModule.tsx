@@ -143,11 +143,17 @@ export const CajaModule = () => {
       return;
     }
 
+    // OBTENER usuario del localStorage directamente
+    const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
+    const idUsuario = usuarioGuardado?.id_usuario || 1;
+
+    console.log("Usuario enviando movimiento:", idUsuario, usuarioGuardado); // DEBUG
+
     try {
       setCargando(true);
       await crearMovimiento({
         ...nuevoMovimiento,
-        id_usuario: user?.id_usuario
+        id_usuario: idUsuario  // Usar esto en lugar de user?.id_usuario
       });
       
       alert("Movimiento registrado correctamente");
@@ -157,11 +163,10 @@ export const CajaModule = () => {
         monto: 0
       });
       setMostrarModalMovimiento(false);
-      
       cargarMovimientos();
     } catch (error) {
       console.error("Error:", error);
-      alert(" Error al registrar el movimiento");
+      alert("Error al registrar el movimiento");
     } finally {
       setCargando(false);
     }
