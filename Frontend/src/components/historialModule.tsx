@@ -525,7 +525,7 @@ export const HistorialModule = () => {
                                 </div>
 
                                 {/* HISTORIAL DE ABONOS DEL PEDIDO */}
-                                <div className="detalle-seccion abonos-seccion">
+                                {/* <div className="detalle-seccion abonos-seccion">
                                     <h3>Historial de Abonos</h3>
                                     {loadingAbonos ? (
                                         <p>Cargando abonos...</p>
@@ -551,55 +551,66 @@ export const HistorialModule = () => {
                                             </tbody>
                                         </table>
                                     )}
-                                </div>
+                                </div> */}
                             </div>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* MODAL ABONOS SOLOS */}
-            {abonosSoloModalOpen && (
-                <div className="modal-overlay" onClick={() => setAbonosSoloModalOpen(false)}>
-                    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Abonos del Pedido</h2>
-                            <button className="btn-cerrar" onClick={() => setAbonosSoloModalOpen(false)}>✕</button>
-                        </div>
+{/* MODAL ABONOS SOLOS */}
+{abonosSoloModalOpen && (
+    <div className="modal-overlay" onClick={() => setAbonosSoloModalOpen(false)}>
+        <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+                <h2>Abonos del Pedido</h2>
+                <button className="btn-cerrar" onClick={() => setAbonosSoloModalOpen(false)}>✕</button>
+            </div>
 
-                        <div className="modal-body">
-                            {loadingAbonosSolo ? (
-                                <p>Cargando abonos...</p>
-                            ) : abonosSolo.length === 0 ? (
-                                <p>No se encontraron abonos para este pedido.</p>
-                            ) : (
-                                <table style={{width: '100%', borderCollapse: 'collapse'}}>
-                                    <thead>
-                                      <tr>
-                                        <th>Fecha</th>
-                                        <th>Abono</th>
-                                        <th>Observaciones</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {abonosSolo.map((a) => (
-                                        <tr key={a.id_historial_abono}>
-                                          <td>{new Date(a.fecha_abono).toLocaleString()}</td>
-                                          <td>{Number(a.abono).toLocaleString()}</td>
-                                          <td>{a.observaciones || '-'}</td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                            )}
-                        </div>
-
-                        <div className="modal-footer" style={{display:'flex', justifyContent:'flex-end', gap:12}}>
-                          <button className="btn-cancelar" onClick={() => setAbonosSoloModalOpen(false)}>Cerrar</button>
-                        </div>
+            <div className="modal-body">
+                {loadingAbonosSolo ? (
+                    <p className="cargando">Cargando abonos...</p>
+                ) : abonosSolo.length === 0 ? (
+                    <div className="sin-abonos">
+                        <div className="icono">💳</div>
+                        <p>No se encontraron abonos para este pedido.</p>
                     </div>
-                </div>
-            )}
+                ) : (
+                    <table className="tabla-abonos">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Monto</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {abonosSolo.map((a) => (
+                                <tr key={a.id_historial_abono}>
+                                    <td>{new Date(a.fecha_abono).toLocaleDateString('es-CO', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}</td>
+                                    <td>{formatCOP(Number(a.abono || 0))}</td>
+                                    <td>{a.observaciones || '-'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+
+            <div className="modal-footer">
+                <button className="btn-cancelar" onClick={() => setAbonosSoloModalOpen(false)}>
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+)}
         </div>
     );
 };

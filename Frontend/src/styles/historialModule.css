@@ -565,6 +565,411 @@
   border: 1px solid #e0e0e0;
 }
 
+/* MODAL SOLO ABONOS - SIMPLIFICADO */
+.compact-modal {
+  max-width: 700px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
+  background: #f9f9f9;
+  border-radius: 0 0 8px 8px;
+}
+
+.btn-cancelar {
+  padding: 10px 20px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+  background: #5a6268;
+  box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+
+/* RESUMEN FINANCIERO - MEJORADO */
+.resumen-financiero {
+  background-color: #f0f7ff;
+  border-left-color: #1976d2;
+}
+
+.resumen-items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.resumen-item {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.resumen-item.highlight {
+  background: linear-gradient(135deg, #fff3cd 0%, #fffde7 100%);
+  border: 2px solid #ffc107;
+}
+
+.resumen-item label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.resumen-item p {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1976d2;
+  margin: 0;
+}
+
+.resumen-item.highlight p {
+  color: #d32f2f;
+}
+
+/* O si prefieres mantener la estructura de line-item que veo en tu código, aquí está la versión mejorada: */
+.line-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 8px;
+}
+
+.line-item:last-child {
+  margin-bottom: 0;
+}
+
+.line-item span {
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.line-item strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1976d2;
+}
+
+.line-item.highlight {
+  background: linear-gradient(135deg, #fff3cd 0%, #fffde7 100%);
+  border: 2px solid #ffc107;
+}
+
+.line-item.highlight strong {
+  color: #d32f2f;
+}
+
+
+/* MODAL SOLO ABONOS - MEJORADO */
+.compact-modal {
+  max-width: 800px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
+  background: #f9f9f9;
+  border-radius: 0 0 8px 8px;
+}
+
+.btn-cancelar {
+  padding: 10px 20px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+  background: #5a6268;
+  box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+/* TABLA DE ABONOS MEJORADA */
+.tabla-abonos {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-abonos thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.tabla-abonos th {
+  padding: 14px 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #5a67d8;
+}
+
+.tabla-abonos tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.tabla-abonos tbody tr:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-abonos td {
+  padding: 14px 12px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tabla-abonos td:first-child {
+  font-weight: 500;
+  color: #555;
+}
+
+.tabla-abonos td:nth-child(2) {
+  font-weight: 700;
+  color: #21a366;
+  text-align: right;
+}
+
+.tabla-abonos td:nth-child(3) {
+  color: #666;
+  font-style: italic;
+}
+
+/* ESTADOS DE ABONOS */
+.abono-pendiente {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.abono-pagado {
+  color: #21a366;
+  font-weight: 600;
+}
+
+/* RESUMEN DE ABONOS */
+.resumen-abonos {
+  background: #f0f7ff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #1976d2;
+}
+
+.resumen-abonos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.resumen-abono-item {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.resumen-abono-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.resumen-abono-item.highlight {
+  background: linear-gradient(135deg, #fff3cd 0%, #fffde7 100%);
+  border: 2px solid #ffc107;
+}
+
+.resumen-abono-item label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.resumen-abono-item p {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1976d2;
+  margin: 0;
+}
+
+.resumen-abono-item.highlight p {
+  color: #d32f2f;
+}
+
+/* MENSAJES PARA ABONOS */
+.sin-abonos {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.sin-abonos p {
+  font-size: 16px;
+  margin: 0 0 10px 0;
+}
+
+.sin-abonos .icono {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+/* RESPONSIVE PARA TABLA DE ABONOS */
+@media (max-width: 768px) {
+  .compact-modal {
+    max-width: 95%;
+    margin: 10px;
+  }
+  
+  .tabla-abonos {
+    font-size: 12px;
+  }
+  
+  .tabla-abonos th,
+  .tabla-abonos td {
+    padding: 10px 8px;
+  }
+  
+  .resumen-abonos-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .btn-cancelar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabla-abonos {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  .tabla-abonos th,
+  .tabla-abonos td {
+    white-space: nowrap;
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+  
+  .resumen-abono-item p {
+    font-size: 16px;
+  }
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .resumen-items {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .resumen-items {
+    grid-template-columns: 1fr;
+  }
+  
+  .line-item {
+    padding: 10px;
+  }
+  
+  .line-item span {
+    font-size: 13px;
+  }
+  
+  .line-item strong {
+    font-size: 14px;
+  }
+}
+
+
+/* RESPONSIVE PARA TABLA DE ABONOS */
+@media (max-width: 768px) {
+  .compact-modal {
+    max-width: 95%;
+    margin: 10px;
+  }
+  
+  .tabla-abonos {
+    font-size: 12px;
+  }
+  
+  .tabla-abonos th,
+  .tabla-abonos td {
+    padding: 12px 8px;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .btn-cancelar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabla-abonos {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  .tabla-abonos th,
+  .tabla-abonos td {
+    white-space: nowrap;
+    padding: 10px 6px;
+    font-size: 11px;
+  }
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .info-container {

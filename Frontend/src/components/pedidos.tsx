@@ -667,17 +667,16 @@ export default function Pedidos() {
           cliente, 
           pedido: {
             ...pedido,
-            totalPedido: precioModificado, // Usar el precio modificado
-            // enviar campo específico para observación del abono
-            observaciones_abono: pedido.abonoObservaciones || null,
+            totalPedido: precioModificado,
+            observaciones_abono: pedido.abonoObservaciones || null,  // ✅ Enviar observación del abono
             observaciones: motivoModificacion 
               ? `${pedido.observaciones || ''}\nMODIFICACIÓN DE PRECIO: ${motivoModificacion} - Precio original: $${calcularTotalPrendas().toLocaleString()}, Precio final: $${precioModificado.toLocaleString()}`
               : pedido.observaciones
-          },
-          id_cajon: cajonSeleccionado,
-          codigos_seleccionados: codigosSeleccionados,
-          prendas: prendasTemporales,
-          id_usuario: idUsuario  // Agregar aquí
+        },
+        id_cajon: cajonSeleccionado,
+        codigos_seleccionados: codigosSeleccionados,
+        prendas: prendasTemporales,
+        id_usuario: idUsuario  // Agregar aquí
         }),
       });
 
