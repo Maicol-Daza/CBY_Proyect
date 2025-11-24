@@ -1113,8 +1113,7 @@ export default function Pedidos() {
                 type="button"
                 className="btn-modificar-precio"
                 onClick={() => setMostrarModificarPrecio(true)}
-                
-                style={{ opacity: 0.5, cursor: "not-allowed" }}
+             
               >
                 <FaEdit /> Modificar
               </button>

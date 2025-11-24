@@ -445,7 +445,7 @@ export default function ConfiguracionAjustes() {
       {/* Modal Nuevo Ajuste */}
       {showModalAjuste && (
         <div className="modal-overlay">
-          <div className="modal-content modal-small">
+          <div className="modal-content-ajustes modal-small">
             <div className="modal-header">
               <h2>{editandoAjuste ? 'Editar Ajuste' : 'Crear Nuevo Ajuste'}</h2>
               <button className="btn-close" onClick={resetModalAjuste}>×</button>
