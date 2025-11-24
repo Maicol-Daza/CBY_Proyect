@@ -96,7 +96,9 @@ export const ControlAdministrador = () => {
   const formatearMoneda = (monto) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: 'COP'
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(monto);
   };
 
@@ -265,7 +267,7 @@ export const ControlAdministrador = () => {
           <div className="pestana-contenido">
             <h3>Gestión Avanzada de Usuarios</h3>
             {usuarios.length > 0 ? (
-              <div className="tabla-contenedor">
+              <div className="tabla-contenedor-admin">
                 <table className="tabla-admin">
                   <thead>
                     <tr>

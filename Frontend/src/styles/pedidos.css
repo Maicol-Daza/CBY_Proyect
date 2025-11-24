@@ -1456,3 +1456,50 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ✅ SELECTOR DE DESCUENTOS MEJORADO */
+.descuentos-selector {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e6edf3;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.descuentos-selector:hover {
+  border-color: #3b82f6;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.1);
+}
+
+.descuentos-selector:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Estilos de las opciones dentro del select */
+.descuentos-selector option {
+  padding: 10px;
+  background: #fff;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.descuentos-selector option:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.descuentos-selector option:checked {
+  background: #3b82f6;
+  color: #fff;
+}

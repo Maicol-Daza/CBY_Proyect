@@ -1050,7 +1050,7 @@ export default function Pedidos() {
                 {/* Total del pedido */}
                 <div className="total-pedido">
                   <h3>Total Calculado: {formatCOP(calcularTotalPrendas())}</h3>
-                  <h3>Total Final: {formatCOP(precioModificado)}</h3>
+                  <h3>Total Final: {formatCOP(calcularTotalPrendas())}</h3>
                 </div>
               </div>
             )}
@@ -1433,49 +1433,44 @@ export default function Pedidos() {
               />
             </div>
 
-            {/* ✅ NUEVOS BOTONES DE DESCUENTO AUTOMÁTICO */}
-            <div className="descuentos-rapidos">
+            {/* ✅ SELECTOR DE DESCUENTOS MEJORADO */}
+            <div className="form-group-modificar">
               <label>Descuentos Rápidos:</label>
-              <div className="botones-descuento">
-                <button 
-                  type="button"
-                  className="btn-descuento"
-                  onClick={() => aplicarDescuentoAutomatico(5)}
-                >
-                  -5%
-                </button>
-                <button 
-                  type="button"
-                  className="btn-descuento"
-                  onClick={() => aplicarDescuentoAutomatico(10)}
-                >
-                  -10%
-                </button>
-                <button 
-                  type="button"
-                  className="btn-descuento"
-                  onClick={() => aplicarDescuentoAutomatico(15)}
-                >
-                  -15%
-                </button>
-                <button 
-                  type="button"
-                  className="btn-descuento"
-                  onClick={() => aplicarDescuentoAutomatico(20)}
-                >
-                  -20%
-                </button>
-              </div>
+              <select
+                onChange={(e) => {
+                  const porcentaje = Number(e.target.value);
+                  if (porcentaje > 0) {
+                    aplicarDescuentoAutomatico(porcentaje);
+                  }
+                }}
+                defaultValue="0"
+                className="descuentos-selector"
+              >
+                <option value="0">Seleccionar descuento...</option>
+                <option value="5">-5%</option>
+                <option value="10">-10%</option>
+                <option value="15">-15%</option>
+                <option value="20">-20%</option>
+                <option value="25">-25%</option>
+                <option value="30">-30%</option>
+                <option value="35">-35%</option>
+                <option value="40">-40%</option>
+                <option value="45">-45%</option>
+                <option value="50">-50%</option>
+              </select>
             </div>
 
             <div className="form-group-modifica">
               <label>Nuevo Precio Final *</label>
-              <input
-                type="number"
-                value={precioModificado}
-                onChange={(e) => setPrecioModificado(Number(e.target.value))}
-                placeholder="Ingrese el nuevo precio"
-              />
+              <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                <div style={{ flex: 1 }}>
+                  <InputMoneda
+                    value={precioModificado}
+                    onChange={(valor) => setPrecioModificado(Number(valor))}
+                    placeholder="$ 0,00"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="forform-group-modifica">

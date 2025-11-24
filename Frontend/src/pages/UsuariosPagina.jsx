@@ -9,6 +9,7 @@ import { ModalPermiso } from "../components/ui/ModalPermiso";
 import { ModalRolPermiso } from "../components/ui/ModalRolPermiso";
 import { Layout } from "../components/layout/Layout";
 import { FaUsers, FaBriefcase, FaUser, FaCheckCircle, FaPen, FaTrash } from "react-icons/fa";
+import { FaShieldAlt, FaLock, FaKey } from "react-icons/fa";
 import "./Pagina.css";
 import "../components/ui/ModalUsuario.css";
 import "./UsuariosPagina.css";
@@ -151,7 +152,7 @@ export const UsuariosPagina = () => {
                 {pestanaActiva === "usuarios" && (
                     <>
                         <div className="usuarios-header">
-                            <h2 className="pagina-titulo">Gestión de Usuarios</h2>
+                            <h2 className="pagina-titulo">Lista de Usuarios</h2>
                             <button
                                 className="pagina-boton"
                                 onClick={() => {
@@ -159,7 +160,7 @@ export const UsuariosPagina = () => {
                                     setOpenModalUsuario(true);
                                 }}
                             >
-                                + Nuevo Usuario
+                                + Agregar Usuario
                             </button>
                         </div>
 
@@ -213,11 +214,11 @@ export const UsuariosPagina = () => {
                                 <table className="tabla">
                                     <thead>
                                         <tr>
-                                            <th>Usuario</th>
-                                            <th>Email</th>
-                                            <th>Rol</th>
-                                            <th>Estado</th>
-                                            <th>Acciones</th>
+                                            <th>USUARIO</th>
+                                            <th>EMAIL</th>
+                                            <th>ROL</th>
+                                            <th>ESTADO</th>
+                                            <th>ACCIONES</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -227,13 +228,13 @@ export const UsuariosPagina = () => {
                                                     <td>{u.nombre}</td>
                                                     <td>{u.email}</td>
                                                     <td>
-                                                        <span className={`rol-badge rol-${u.rol.toLowerCase()}`}>
-                                                            {u.rol}
+                                                        <span className={`rol-badge rol-${u.rol ? u.rol.toLowerCase() : 'empleado'}`}>
+                                                            {u.rol || 'Empleado'}
                                                         </span>
                                                     </td>
                                                     <td>
                                                         <span className={`estado-badge ${u.activo ? 'activo' : 'inactivo'}`}>
-                                                            {u.activo ? ' Activo' : ' Inactivo'}
+                                                            {u.activo ? 'Activo' : 'Inactivo'}
                                                         </span>
                                                     </td>
                                                     <td className="tabla-acciones">
@@ -274,51 +275,60 @@ export const UsuariosPagina = () => {
                 {/* ========== PESTAÑA ROLES ========== */}
                 {pestanaActiva === "roles" && (
                     <>
-                        <h2 className="pagina-titulo">Gestión de Roles</h2>
-
-                        <button
-                            className="pagina-boton"
-                            onClick={() => {
-                                setRolSeleccionado(null);
-                                setOpenModalRol(true);
-                            }}
-                        >
-                            Crear Rol
-                        </button>
+                        <div className="usuarios-header">
+                            <h2 className="pagina-titulo">Gestión de Roles</h2>
+                            <button
+                                className="pagina-boton"
+                                onClick={() => {
+                                    setRolSeleccionado(null);
+                                    setOpenModalRol(true);
+                                }}
+                            >
+                                + Crear Rol
+                            </button>
+                        </div>
 
                         <div className="tabla-contenedor">
                             <table className="tabla">
                                 <thead>
                                     <tr>
-                                        <th className="ocultar-columna">ID</th>
                                         <th>Nombre</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {roles.map((r) => (
-                                        <tr key={r.id_rol}>
-                                            <td className="ocultar-columna">{r.id_rol}</td>
-                                            <td>{r.nombre}</td>
-                                            <td className="tabla-acciones">
-                                                <button
-                                                    onClick={() => {
-                                                        setRolSeleccionado(r);
-                                                        setOpenModalRol(true);
-                                                    }}
-                                                    className="boton-accion boton-editar"
-                                                >
-                                                    Editar
-                                                </button>
-                                                <button
-                                                    onClick={() => eliminarRol(r.id_rol).then(fetchRoles)}
-                                                    className="boton-accion boton-eliminar"
-                                                >
-                                                    Eliminar
-                                                </button>
+                                    {roles.length > 0 ? (
+                                        roles.map((r) => (
+                                            <tr key={r.id_rol}>
+                                                <td>{r.nombre}</td>
+                                                <td className="tabla-acciones">
+                                                    <button
+                                                        onClick={() => {
+                                                            setRolSeleccionado(r);
+                                                            setOpenModalRol(true);
+                                                        }}
+                                                        className="boton-accion boton-editar"
+                                                        title="Editar rol"
+                                                    >
+                                                        <FaPen />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => eliminarRol(r.id_rol).then(fetchRoles)}
+                                                        className="boton-accion boton-eliminar"
+                                                        title="Eliminar rol"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="2" className="tabla-vacia">
+                                                No hay roles registrados
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -328,53 +338,62 @@ export const UsuariosPagina = () => {
                 {/* ========== PESTAÑA PERMISOS ========== */}
                 {pestanaActiva === "permisos" && (
                     <>
-                        <h2 className="pagina-titulo">Gestión de Permisos</h2>
-
-                        <button
-                            className="pagina-boton"
-                            onClick={() => {
-                                setPermisoSeleccionado(null);
-                                setOpenModalPermiso(true);
-                            }}
-                        >
-                            Crear Permiso
-                        </button>
+                        <div className="usuarios-header">
+                            <h2 className="pagina-titulo">Gestión de Permisos</h2>
+                            <button
+                                className="pagina-boton"
+                                onClick={() => {
+                                    setPermisoSeleccionado(null);
+                                    setOpenModalPermiso(true);
+                                }}
+                            >
+                                + Crear Permiso
+                            </button>
+                        </div>
 
                         <div className="tabla-contenedor">
                             <table className="tabla">
                                 <thead>
                                     <tr>
-                                        <th className="ocultar-columna">ID</th>
                                         <th>Nombre</th>
                                         <th>Descripción</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {permisos.map((p) => (
-                                        <tr key={p.id_permiso}>
-                                            <td className="ocultar-columna">{p.id_permiso}</td>
-                                            <td>{p.nombre}</td>
-                                            <td>{p.descripcion}</td>
-                                            <td className="tabla-acciones">
-                                                <button
-                                                    onClick={() => {
-                                                        setPermisoSeleccionado(p);
-                                                        setOpenModalPermiso(true);
-                                                    }}
-                                                    className="boton-accion boton-editar"
-                                                >
-                                                    Editar
-                                                </button>
-                                                <button
-                                                    onClick={() => eliminarPermiso(p.id_permiso).then(fetchPermisos)}
-                                                    className="boton-accion boton-eliminar"
-                                                >
-                                                    Eliminar
-                                                </button>
+                                    {permisos.length > 0 ? (
+                                        permisos.map((p) => (
+                                            <tr key={p.id_permiso}>
+                                                <td>{p.nombre}</td>
+                                                <td>{p.descripcion}</td>
+                                                <td className="tabla-acciones">
+                                                    <button
+                                                        onClick={() => {
+                                                            setPermisoSeleccionado(p);
+                                                            setOpenModalPermiso(true);
+                                                        }}
+                                                        className="boton-accion boton-editar"
+                                                        title="Editar permiso"
+                                                    >
+                                                        <FaPen />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => eliminarPermiso(p.id_permiso).then(fetchPermisos)}
+                                                        className="boton-accion boton-eliminar"
+                                                        title="Eliminar permiso"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3" className="tabla-vacia">
+                                                No hay permisos registrados
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -384,50 +403,63 @@ export const UsuariosPagina = () => {
                 {/* ========== PESTAÑA ROL-PERMISO ========== */}
                 {pestanaActiva === "rolpermisos" && (
                     <>
-                        <h2 className="pagina-titulo">Asignación Rol - Permiso</h2>
-
-                        <button
-                            className="pagina-boton"
-                            onClick={() => {
-                                setRelacionSeleccionada(null);
-                                setOpenModalRolPermiso(true);
-                            }}
-                        >
-                            Asignar Permiso
-                        </button>
+                        <div className="usuarios-header">
+                            <h2 className="pagina-titulo">Asignación Rol - Permiso</h2>
+                            <button
+                                className="pagina-boton"
+                                onClick={() => {
+                                    setRelacionSeleccionada(null);
+                                    setOpenModalRolPermiso(true);
+                                }}
+                            >
+                                + Asignar Permiso
+                            </button>
+                        </div>
 
                         <div className="tabla-contenedor">
                             <table className="tabla">
                                 <thead>
                                     <tr>
-                                        <th className="ocultar-columna">ID</th>
                                         <th>Rol</th>
                                         <th>Permiso</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rolPermisos.map((rp) => (
-                                        <tr key={rp.id_rol_permiso}>
-                                            <td className="ocultar-columna">{rp.id_rol_permiso}</td>
-                                            <td>{rp.rol}</td>
-                                            <td>{rp.permiso}</td>
-                                            <td className="tabla-acciones">
-                                                <button
-                                                    onClick={() => handleEditRolPermiso(rp)}
-                                                    className="boton-accion boton-editar"
-                                                >
-                                                    Editar
-                                                </button>
-                                                <button
-                                                    onClick={() => eliminarRolPermiso(rp.id_rol_permiso).then(fetchRolPermisos)}
-                                                    className="boton-accion boton-eliminar"
-                                                >
-                                                    Eliminar
-                                                </button>
+                                    {rolPermisos.length > 0 ? (
+                                        rolPermisos.map((rp) => (
+                                            <tr key={rp.id_rol_permiso}>
+                                                <td>
+                                                    <span className={`rol-badge rol-${rp.rol ? rp.rol.toLowerCase() : 'empleado'}`}>
+                                                        {rp.rol || 'Empleado'}
+                                                    </span>
+                                                </td>
+                                                <td>{rp.permiso}</td>
+                                                <td className="tabla-acciones">
+                                                    <button
+                                                        onClick={() => handleEditRolPermiso(rp)}
+                                                        className="boton-accion boton-editar"
+                                                        title="Editar asignación"
+                                                    >
+                                                        <FaPen />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => eliminarRolPermiso(rp.id_rol_permiso).then(fetchRolPermisos)}
+                                                        className="boton-accion boton-eliminar"
+                                                        title="Eliminar asignación"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3" className="tabla-vacia">
+                                                No hay asignaciones registradas
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
