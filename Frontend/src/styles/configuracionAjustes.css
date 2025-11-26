@@ -170,7 +170,7 @@
   color: #333;
 }
 
-.modal-body {
+.modal-body-ajustes {
   padding: 20px;
 }
 
@@ -181,7 +181,7 @@
   margin-bottom: 20px;
 }
 
-.selector-group h3 {
+.selector-group-ajustes h3 {
   margin-top: 0;
   color: #333;
   font-size: 16px;
@@ -778,7 +778,7 @@
     padding: 5px;
   }
   
-  .modal-content {
+  .modal-content-ajustes {
     max-width: 100%;
     border-radius: 6px;
   }

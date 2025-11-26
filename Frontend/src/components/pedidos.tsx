@@ -7,6 +7,7 @@ import { obtenerAjustes, type Ajuste } from "../services/ajustesService";
 import { obtenerAcciones, type Accion } from "../services/accionesService";
 import { obtenerAjustesAccion, type AjusteAccion } from "../services/ajustesAccionService";
 import ModalPrenda from "../components/ModalPrenda";
+import validators from '../utils/validators';
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { obtenerClientes, type Cliente as ClienteService } from "../services/clientesService";
@@ -305,13 +306,22 @@ export default function Pedidos() {
     // Limpiar error anterior
     setErrorEntrega("");
 
-    // ✅ NUEVA VALIDACIÓN: Verificar que el abono cubra el saldo pendiente
+    // ✅ VALIDACIÓN: Verificar que el abono no exceda el saldo pendiente
     const saldoPendiente = Number(pedidoSeleccionado.saldo);
     const abonoIngresado = Number(abonoEntrega);
 
-    if (abonoIngresado < saldoPendiente) {
+    // No permitir abono negativo
+    if (abonoIngresado < 0) {
       setErrorEntrega(
-        `El abono ingresado (${formatCOP(abonoIngresado)}) es menor al saldo pendiente (${formatCOP(saldoPendiente)}). Debe ingresar el monto completo para entregar el pedido.`
+        `El abono no puede ser negativo.`
+      );
+      return;
+    }
+
+    // No permitir abono mayor al saldo pendiente
+    if (abonoIngresado > saldoPendiente) {
+      setErrorEntrega(
+        `❌ El abono ingresado (${formatCOP(abonoIngresado)}) no puede ser mayor al saldo pendiente (${formatCOP(saldoPendiente)}). Ingrese un monto igual o menor.`
       );
       return;
     }
@@ -373,12 +383,16 @@ export default function Pedidos() {
   useEffect(() => {
     const totalPrendas = calcularTotalPrendas();
     const nuevoTotal = totalPrendas;
-    
-    setPedido(prev => ({
-      ...prev,
-      totalPedido: nuevoTotal,
-      saldoPendiente: nuevoTotal - Number(prev.abonoInicial || 0)
-    }));
+
+    setPedido(prev => {
+      // Si hay un precio modificado activo, conservarlo como total final
+      const totalFinal = (precioModificado && precioModificado > 0) ? precioModificado : nuevoTotal;
+      return {
+        ...prev,
+        totalPedido: totalFinal,
+        saldoPendiente: totalFinal - Number(prev.abonoInicial || 0)
+      };
+    });
   }, [prendasTemporales]);
 
   // Agregar esta función de validación de fechas
@@ -397,100 +411,76 @@ export default function Pedidos() {
     return "";
   };
 
-  // Reemplazar la función validarCampos - VERSIÓN RELAJADA
+  // Reemplazar la función validarCampos - VERSIÓN ESTRICTA (lista blanca)
   const validarCampos = (): boolean => {
     const nuevosErrores: Errores = {};
 
+    // Nombre (obligatorio)
     if (!cliente.nombre.trim()) {
-      nuevosErrores.nombre = "El nombre es obligatorio.";
-    } else if (!/^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$/.test(cliente.nombre)) {
-      nuevosErrores.nombre = "El nombre solo puede contener letras.";
+      nuevosErrores.nombre = 'El nombre es obligatorio.';
+    } else if (!validators.isValidName(cliente.nombre)) {
+      nuevosErrores.nombre = validators.ERR.nombre;
     }
 
+    // Cédula (obligatorio)
     if (!cliente.cedula.trim()) {
-      nuevosErrores.cedula = "La cédula es obligatoria.";
-    } else if (cliente.cedula.length > 20) {
-      nuevosErrores.cedula = "Máximo 20 caracteres.";
+      nuevosErrores.cedula = 'La cédula es obligatoria.';
+    } else if (!validators.isValidCedula(cliente.cedula)) {
+      nuevosErrores.cedula = validators.ERR.cedula;
     }
 
+    // Teléfono (obligatorio) - 10 dígitos (Colombia)
     if (!cliente.telefono.trim()) {
-      nuevosErrores.telefono = "El teléfono es obligatorio.";
-    } else if (!/^\d+$/.test(cliente.telefono)) {
-      nuevosErrores.telefono = "Solo se permiten números.";
-    } else if (cliente.telefono.length > 20) {
-      nuevosErrores.telefono = "Máximo 20 caracteres.";
+      nuevosErrores.telefono = 'El teléfono es obligatorio.';
+    } else if (!validators.isValidTelefono(cliente.telefono, 10)) {
+      nuevosErrores.telefono = validators.ERR.telefono;
     }
 
-    if (!cliente.direccion.trim()) {
-      nuevosErrores.direccion = "La dirección es obligatoria.";
+    // Dirección (opcional)
+    if (cliente.direccion && !validators.isValidDireccion(cliente.direccion)) {
+      nuevosErrores.direccion = validators.ERR.direccion;
     }
 
-    if (!cliente.email.trim()) {
-      nuevosErrores.email = "El correo es obligatorio.";
-    } else if (!/^[^\s@]+@[^\s@]+\.(com|co)$/.test(cliente.email)) {
-      nuevosErrores.email = "Debe tener un formato válido (ej: usuario@gmail.com).";
+    // Email (opcional)
+    if (cliente.email && !validators.isValidEmail(cliente.email)) {
+      nuevosErrores.email = validators.ERR.email;
     }
 
-    // ✅ VALIDACIONES DE FECHA RELAJADAS
+    // Validaciones de fechas
     if (!pedido.fechaInicio) {
-      nuevosErrores.fechaInicio = "Debe seleccionar una fecha de inicio.";
+      nuevosErrores.fechaInicio = 'Debe seleccionar una fecha de inicio.';
     }
 
     if (!pedido.fechaEntrega) {
-      nuevosErrores.fechaEntrega = "Debe seleccionar una fecha de entrega.";
+      nuevosErrores.fechaEntrega = 'Debe seleccionar una fecha de entrega.';
     }
 
-    // ✅ Solo validar que entrega NO sea antes que inicio
     if (pedido.fechaInicio && pedido.fechaEntrega) {
       const errorFechas = validarFechas();
-      if (errorFechas) {
-        nuevosErrores.fechas = errorFechas;
-      }
+      if (errorFechas) nuevosErrores.fechas = errorFechas;
     }
 
-    // ✅ NUEVA VALIDACIÓN: El abono no puede ser mayor al total
-    if (pedido.abonoInicial !== "" && Number(pedido.abonoInicial) > 0) {
-      const abonoNum = Number(pedido.abonoInicial);
-      const totalNum = precioModificado;
-      
-      if (abonoNum > totalNum) {
-        nuevosErrores.abonoInicial = `El abono (${formatCOP(abonoNum)}) no puede ser mayor al total del pedido (${formatCOP(totalNum)}).`;
-      }
-    }
+    // Nota: se removieron validaciones estrictas sobre el abono (permitir manejo flexible desde backend)
 
-    // EL ABONO NO ES OBLIGATORIO - solo validar que no sea negativo
-    if (pedido.abonoInicial !== "" && Number(pedido.abonoInicial) < 0) {
-      nuevosErrores.abonoInicial = "El abono no puede ser negativo.";
-    }
+    // Cajón y códigos
+    if (cajonSeleccionado === null) nuevosErrores.cajon = 'Debe seleccionar un cajón.';
+    if (codigosSeleccionados.length === 0) nuevosErrores.codigos = 'Debe seleccionar al menos un código.';
 
-    // Validar selección de cajón
-    if (cajonSeleccionado === null) {
-      nuevosErrores.cajon = "Debe seleccionar un cajón.";
-    }
-
-    // Validar selección de códigos
-    if (codigosSeleccionados.length === 0) {
-      nuevosErrores.codigos = "Debe seleccionar al menos un código.";
-    }
-
-    // Validar que no se seleccionen códigos ocupados
     const codigosOcupadosSeleccionados = codigosSeleccionados.filter(id => {
       const codigo = codigos.find(c => c.id_codigo === id);
       return codigo?.estado === 'ocupado';
     });
+    if (codigosOcupadosSeleccionados.length > 0) nuevosErrores.codigos = 'No puede seleccionar códigos que están ocupados.';
 
-    if (codigosOcupadosSeleccionados.length > 0) {
-      nuevosErrores.codigos = "No puede seleccionar códigos que están ocupados.";
-    }
+    if (prendasTemporales.length === 0) nuevosErrores.prendas = 'Debe agregar al menos una prenda.';
+    if (precioModificado < 0) nuevosErrores.precioModificado = 'El precio no puede ser negativo.';
 
-    // Validar que haya al menos una prenda
-    if (prendasTemporales.length === 0) {
-      nuevosErrores.prendas = "Debe agregar al menos una prenda.";
-    }
-
-    // Validar que el precio modificado no sea negativo
-    if (precioModificado < 0) {
-      nuevosErrores.precioModificado = "El precio no puede ser negativo.";
+    // ✅ VALIDACIÓN: El abono no debe ser mayor al total
+    const totalActual = (precioModificado && precioModificado > 0) ? precioModificado : calcularTotalPrendas();
+    const abonoActual = Number(pedido.abonoInicial || 0);
+    
+    if (abonoActual > totalActual) {
+      nuevosErrores.abonoInicial = `El abono (${formatCOP(abonoActual)}) no puede ser mayor al total del pedido (${formatCOP(totalActual)}).`;
     }
 
     setErrores(nuevosErrores);
@@ -499,7 +489,26 @@ export default function Pedidos() {
 
   // Manejo de inputs cliente
   const handleInputCliente = (e: ChangeEvent<HTMLInputElement>) => {
-    setCliente({ ...cliente, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let sanitized = value;
+    if (name === 'nombre') sanitized = value.replace(/[^A-Za-z ]/g, '');
+    if (name === 'cedula') sanitized = value.replace(/[^0-9.]/g, '');
+    if (name === 'telefono') sanitized = value.replace(/[^0-9]/g, '');
+    if (name === 'direccion') sanitized = value.replace(/[^A-Za-z0-9 #\-]/g, '');
+    if (name === 'email') sanitized = value.replace(/[^A-Za-z0-9@._\-]/g, '');
+
+    setCliente({ ...cliente, [name]: sanitized });
+
+    // Limpiar error de ese campo si ahora es válido
+    setErrores(prev => {
+      const copy = { ...prev };
+      if (name === 'nombre' && validators.isValidName(sanitized)) delete copy.nombre;
+      if (name === 'cedula' && validators.isValidCedula(sanitized)) delete copy.cedula;
+      if (name === 'telefono' && validators.isValidTelefono(sanitized, 10)) delete copy.telefono;
+      if (name === 'email' && (sanitized === '' || validators.isValidEmail(sanitized))) delete copy.email;
+      if (name === 'direccion' && (sanitized === '' || validators.isValidDireccion(sanitized))) delete copy.direccion;
+      return copy;
+    });
   };
 
   // Mini búsqueda: filtrar sugerencias en vivo
@@ -707,7 +716,15 @@ export default function Pedidos() {
     
     setPrecioModificado(nuevoPrecio);
     setMotivoModificacion(`Descuento automático del ${porcentaje}%`);
+
+    // Aplicar inmediatamente al pedido y recalcular saldo según abono actual
+    setPedido(prev => ({
+      ...prev,
+      totalPedido: nuevoPrecio,
+      saldoPendiente: nuevoPrecio - Number(prev.abonoInicial || 0)
+    }));
   };
+
 
   //  Guardar pedido (enviar al backend)
   const handleGuardar = async (e: FormEvent) => {
@@ -725,6 +742,12 @@ export default function Pedidos() {
 
     try {
       setCargando(true);
+
+      // Determinar el total final que se guardará: usar precioModificado solo si es válido (>0)
+      const totalFinal = (precioModificado && precioModificado > 0)
+        ? precioModificado
+        : (pedido.totalPedido || calcularTotalPrendas());
+
       const respuesta = await fetch("http://localhost:3000/api/pedidos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -732,10 +755,10 @@ export default function Pedidos() {
           cliente, 
           pedido: {
             ...pedido,
-            totalPedido: precioModificado,
+            totalPedido: totalFinal,
             observaciones_abono: pedido.abonoObservaciones || null,
             observaciones: motivoModificacion 
-              ? `${pedido.observaciones || ''}\nMODIFICACIÓN DE PRECIO: ${motivoModificacion} - Precio original: $${calcularTotalPrendas().toLocaleString()}, Precio final: $${precioModificado.toLocaleString()}`
+              ? `${pedido.observaciones || ''}\nMODIFICACIÓN DE PRECIO: ${motivoModificacion} - Precio original: $${calcularTotalPrendas().toLocaleString()}, Precio final: $${totalFinal.toLocaleString()}`
               : pedido.observaciones
         },
         id_cajon: cajonSeleccionado,
@@ -1050,7 +1073,7 @@ export default function Pedidos() {
                 {/* Total del pedido */}
                 <div className="total-pedido">
                   <h3>Total Calculado: {formatCOP(calcularTotalPrendas())}</h3>
-                  <h3>Total Final: {formatCOP(calcularTotalPrendas())}</h3>
+                  <h3>Total Final: {formatCOP(precioModificado && precioModificado > 0 ? precioModificado : calcularTotalPrendas())}</h3>
                 </div>
               </div>
             )}
@@ -1081,11 +1104,16 @@ export default function Pedidos() {
             <InputMoneda
               value={Number(pedido.abonoInicial || 0)}
               onChange={(valor) => {
-                setPedido(prev => ({
-                  ...prev,
-                  abonoInicial: valor,
-                  saldoPendiente: precioModificado - valor
-                }));
+                setPedido(prev => {
+                  const totalActual = (precioModificado && precioModificado > 0)
+                    ? precioModificado
+                    : (prev.totalPedido || calcularTotalPrendas());
+                  return ({
+                    ...prev,
+                    abonoInicial: valor,
+                    saldoPendiente: totalActual - Number(valor || 0)
+                  });
+                });
               }}
               placeholder="Ingrese el abono"
             />
@@ -1120,7 +1148,7 @@ export default function Pedidos() {
             </div>
             
             <p><strong>Total calculado:</strong> {formatCOP(calcularTotalPrendas())}</p>
-            <p><strong>Total final:</strong> {formatCOP(calcularTotalPrendas())}</p>
+            <p><strong>Total final:</strong> {formatCOP(precioModificado && precioModificado > 0 ? precioModificado : calcularTotalPrendas())}</p>
             <p><strong>Abono inicial:</strong> {formatCOP(Number(pedido.abonoInicial || 0))}</p>
             <p><strong>Saldo pendiente:</strong> {formatCOP(Number(pedido.saldoPendiente || 0))}</p>
           </div>

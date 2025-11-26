@@ -790,7 +790,7 @@
 }
 
 .prenda-modal-content .resumen-precios {
-  border-top: 1px solid #e6eef7;
+  border-top: 1px soliprenda-modal-contentd #e6eef7;
   padding-top: 12px;
 }
 
@@ -1083,6 +1083,23 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   padding: 24px;
   animation: modal-appear 0.3s ease-out;
+}
+
+
+
+.modal-content-prenda {
+  background: white;
+  border-radius: 8px;
+  max-width: 450px;
+  width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+  /* Eliminar scroll vertical */
+  overflow-y: visible;
+  max-height: none;
+  
 }
 
 @keyframes modal-appear {
@@ -1502,4 +1519,16 @@
 .descuentos-selector option:checked {
   background: #3b82f6;
   color: #fff;
+}
+
+/* Ajuste específico para el campo teléfono: ancho estándar en escritorio y 100% en móvil */
+.pedido-form input[name="telefono"] {
+  width: 240px; /* ancho estándar en escritorio */
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .pedido-form input[name="telefono"] {
+    width: 100%;
+  }
 }

@@ -330,7 +330,7 @@ export default function ModalPrenda({
 
   return (
     <div className="modal-overlay prenda-modal-overlay">
-      <div className="modal-content prenda-modal-content">
+      <div className="modal-content-prenda prenda-modal-content modal-content">
          <h2>{prendaEditando ? "Editar Prenda" : "Nueva Prenda"}</h2>
 
         {/* Información básica de la prenda */}

@@ -370,9 +370,9 @@ export default function ConfiguracionAjustes() {
               <button className="btn-close" onClick={resetModal}>×</button>
             </div>
 
-            <div className="modal-body">
+            <div className="modal-body-ajustes">
               <div className="selectors-container">
-                <div className="selector-group">
+                <div className="selector-group-ajustes">
                   <h3>Ajustes ({selectedAjustes.length} seleccionados)</h3>
                   <div className="checkboxes-list">
                     {ajustes.map((ajuste) => (
@@ -390,7 +390,7 @@ export default function ConfiguracionAjustes() {
                   </div>
                 </div>
 
-                <div className="selector-group">
+                <div className="selector-group-ajustes">
                   <h3>Acciones ({selectedAcciones.length} seleccionadas)</h3>
                   <div className="checkboxes-list">
                     {acciones.map((accion) => (

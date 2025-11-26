@@ -17,15 +17,33 @@ class PedidoClienteController {
       return res.status(400).json({ error: "Faltan datos del cliente o pedido" });
     }
 
+    // ✅ VALIDACIÓN: El abono inicial no debe ser mayor al total
+    const totalPedidoNum = Number(pedido.totalPedido || 0);
+    const abonoInicialNum = Number(pedido.abonoInicial || 0);
+
+    if (abonoInicialNum < 0) {
+      return res.status(400).json({ 
+        message: "Validación fallida",
+        detalles: "El abono no puede ser negativo"
+      });
+    }
+
+    if (abonoInicialNum > totalPedidoNum) {
+      return res.status(400).json({ 
+        message: "Validación fallida",
+        detalles: `El abono inicial ($${abonoInicialNum.toLocaleString()}) no puede ser mayor al total del pedido ($${totalPedidoNum.toLocaleString()})`
+      });
+    }
+
     const connection = await db.getConnection();
     await connection.beginTransaction();
 
     try {
-      // 1 Validar datos del cliente
-      if (!cliente.nombre || !cliente.cedula || !cliente.telefono || !cliente.direccion || !cliente.email) {
+      // 1 Validar datos del cliente (direccion y email son opcionales)
+      if (!cliente.nombre || !cliente.cedula || !cliente.telefono) {
         return res.status(400).json({ 
           message: "Datos del cliente incompletos",
-          detalles: "Todos los campos del cliente son obligatorios"
+          detalles: "Los campos 'nombre', 'cedula' y 'telefono' son obligatorios"
         });
       }
 
@@ -548,8 +566,26 @@ class PedidoClienteController {
     const abonoAnterior = Number(pedidoActual[0].abono);
     const saldoAnterior = Number(pedidoActual[0].saldo);
 
-    // Si el estado es "entregado", guardar registro y crear movimiento
+    // Si el estado es "entregado", validar abono y guardar registro
     if (estadoBD === 'entregado') {
+      // ✅ VALIDACIÓN: No permitir abono mayor al saldo pendiente
+      const abonoEntregaNum = abonoEntrega ? Number(abonoEntrega) : 0;
+      
+      if (abonoEntregaNum < 0) {
+        await connection.rollback();
+        return res.status(400).json({ 
+          error: "Validación fallida",
+          message: "El abono no puede ser negativo." 
+        });
+      }
+
+      if (abonoEntregaNum > saldoAnterior) {
+        await connection.rollback();
+        return res.status(400).json({ 
+          error: "Validación fallida",
+          message: `El abono ingresado ($${abonoEntregaNum.toLocaleString()}) no puede ser mayor al saldo pendiente ($${saldoAnterior.toLocaleString()}).` 
+        });
+      }
       try {
         const [pedidoData] = await connection.query(
           `SELECT id_cajon FROM pedido_cliente WHERE id_pedido = ?`,

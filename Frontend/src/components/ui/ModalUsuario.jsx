@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import validators from "../../utils/validators";
 
 export const ModalUsuario = ({ onClose, onSave, usuarioSeleccionado, roles }) => {
     const [nombre, setNombre] = useState("");
     const [email, setEmail] = useState("");
     const [clave, setClave] = useState("");
     const [idRol, setIdRol] = useState("");
+    const [errores, setErrores] = useState({});
 
     useEffect(() => {
         if (usuarioSeleccionado) {
@@ -22,6 +24,21 @@ export const ModalUsuario = ({ onClose, onSave, usuarioSeleccionado, roles }) =>
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validaciones cliente-side
+        const nuevosErrores = {};
+        if (!nombre || !validators.isValidName(nombre)) nuevosErrores.nombre = validators.ERR.nombre;
+        if (!email || !validators.isValidEmail(email)) nuevosErrores.email = validators.ERR.email;
+        if (!usuarioSeleccionado) {
+            // creación: clave obligatoria
+            if (!clave || clave.trim().length < 6) nuevosErrores.clave = 'La clave debe tener al menos 6 caracteres.';
+        } else {
+            // edición: clave opcional, validar si fue proporcionada
+            if (clave && clave.trim() !== '' && clave.trim().length < 6) nuevosErrores.clave = 'La clave debe tener al menos 6 caracteres.';
+        }
+
+        setErrores(nuevosErrores);
+        if (Object.keys(nuevosErrores).length > 0) return;
 
         const data = {
             ...usuarioSeleccionado,
@@ -52,6 +69,7 @@ export const ModalUsuario = ({ onClose, onSave, usuarioSeleccionado, roles }) =>
                         placeholder="Nombre"
                         required
                     />
+                    {errores.nombre && <p className="error" style={{ color: '#e63946', marginTop: 6 }}>{errores.nombre}</p>}
 
                     <input
                         className="modal-entrada"
@@ -61,6 +79,7 @@ export const ModalUsuario = ({ onClose, onSave, usuarioSeleccionado, roles }) =>
                         type="email"
                         required
                     />
+                    {errores.email && <p className="error" style={{ color: '#e63946', marginTop: 6 }}>{errores.email}</p>}
 
                     <input
                         className="modal-entrada"
@@ -74,6 +93,7 @@ export const ModalUsuario = ({ onClose, onSave, usuarioSeleccionado, roles }) =>
                         type="password"
                         required={!usuarioSeleccionado}
                     />
+                    {errores.clave && <p className="error" style={{ color: '#e63946', marginTop: 6 }}>{errores.clave}</p>}
 
                     <select
                         className="modal-select"

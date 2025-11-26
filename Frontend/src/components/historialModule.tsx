@@ -478,7 +478,7 @@ export const HistorialModule = () => {
                                         <td className={parseFloat(pedido.saldo || 0) > 0 ? "monto pendiente" : "monto pagado"}>
                                             {formatCOP(pedido.saldo ?? pedido.saldoPendiente ?? 0)}
                                         </td>
-                                        <td className="acciones">
+                                        <td className="acciones-historial">
                                             <button
                                                 className="btn-accion-ver"
                                                 title="Ver detalles"
@@ -489,7 +489,7 @@ export const HistorialModule = () => {
                                             </button>
                                             {/* Botón separado para ver solo abonos de este pedido */}
                                             <button
-                                                className="btn-accion"
+                                                className="btn-accion-abono"
                                                 title="Ver Abonos"
                                                 onClick={() => verAbonosSolo(pedido.id_pedido)}
                                             >
@@ -509,7 +509,7 @@ export const HistorialModule = () => {
             {/* MODAL DETALLES DEL PEDIDO */}
             {pedidoSeleccionado && (
                 <div className="modal-overlay" onClick={handleCerrarDetalles}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content-detalle" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>Detalle del Pedido - {pedidoSeleccionado.id_pedido}</h2>
                             <button className="btn-cerrar" onClick={handleCerrarDetalles} type="button">

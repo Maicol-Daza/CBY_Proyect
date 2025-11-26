@@ -6,6 +6,9 @@ import { crearMovimiento, obtenerMovimientos, type Movimiento } from "../service
 import { formatCOP } from "../utils/formatCurrency";
 import { FaArrowTrendUp, FaArrowTrendDown } from "react-icons/fa6";
 import { Icon } from "@iconify/react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import {
   BarChart,
   Bar,
@@ -52,11 +55,50 @@ export const CajaModule = () => {
   });
   const [cargando, setCargando] = useState(false);
 
+  // Totales filtrados según rango de fechas
+  const [ingresoFiltrado, setIngresoFiltrado] = useState(0);
+  const [egresoFiltrado, setEgresoFiltrado] = useState(0);
+  const [acumuladoFiltrado, setAcumuladoFiltrado] = useState(0);
+
+  // Estado para filtro de fechas
+  const [fechaInicio, setFechaInicio] = useState(() => {
+    const hace7Dias = new Date();
+    hace7Dias.setDate(hace7Dias.getDate() - 7);
+    return formatearFechaLocal(hace7Dias);
+  });
+  const [fechaFin, setFechaFin] = useState(formatearFechaLocal(new Date()));
+  const [movimientosFiltrados, setMovimientosFiltrados] = useState<Movimiento[]>([]);
+
   useEffect(() => {
     cargarMovimientos();
     const intervalo = setInterval(cargarMovimientos, 30000);
     return () => clearInterval(intervalo);
   }, []);
+
+  // Filtrar movimientos por rango de fechas y actualizar totales
+  useEffect(() => {
+    const filtered = movimientos.filter((mov) => {
+      const fechaMov = new Date(mov.fecha_movimiento);
+      const fechaMovStr = formatearFechaLocal(fechaMov);
+      return fechaMovStr >= fechaInicio && fechaMovStr <= fechaFin;
+    });
+    setMovimientosFiltrados(filtered);
+
+    // Calcular totales filtrados
+    let ingFilt = 0;
+    let egrFilt = 0;
+    filtered.forEach((mov) => {
+      const monto = Number(mov.monto) || 0;
+      if (mov.tipo === "entrada") {
+        ingFilt += monto;
+      } else if (mov.tipo === "salida") {
+        egrFilt += monto;
+      }
+    });
+    setIngresoFiltrado(ingFilt);
+    setEgresoFiltrado(egrFilt);
+    setAcumuladoFiltrado(ingFilt - egrFilt);
+  }, [movimientos, fechaInicio, fechaFin]);
 
   const cargarMovimientos = async () => {
     try {
@@ -137,6 +179,85 @@ export const CajaModule = () => {
     setChartData(Object.values(ultimos7Dias));
   };
 
+  // Exportar a Excel
+  const exportarExcel = () => {
+    if (movimientosFiltrados.length === 0) {
+      alert("No hay datos para exportar");
+      return;
+    }
+
+    const datosExcel = movimientosFiltrados.map((mov) => {
+      const fecha = new Date(mov.fecha_movimiento);
+      return {
+        "Fecha": fecha.toLocaleDateString(),
+        "Hora": fecha.toLocaleTimeString(),
+        "Tipo": mov.tipo === "entrada" ? "Ingreso" : "Egreso",
+        "Descripción": mov.descripcion,
+        "Monto": Number(mov.monto),
+        "Usuario": mov.usuario_nombre || "Sistema",
+        "Pedido": mov.id_pedido ? `#${mov.id_pedido}` : "-"
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Movimientos Caja");
+    XLSX.writeFile(workbook, `Caja_${fechaInicio}_a_${fechaFin}.xlsx`);
+  };
+
+  // Exportar a PDF
+  const exportarPDF = async () => {
+    if (movimientosFiltrados.length === 0) {
+      alert("No hay datos para exportar");
+      return;
+    }
+
+    const element = document.getElementById("tabla-movimientos-export");
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: "#fff",
+        logging: false
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4"
+      });
+
+      const imgWidth = 280;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Agregar título
+      pdf.setFontSize(14);
+      pdf.text("Reporte de Movimientos de Caja", 14, 10);
+      pdf.setFontSize(10);
+      pdf.text(`Período: ${fechaInicio} a ${fechaFin}`, 14, 18);
+
+      // Agregar tabla
+      pdf.addImage(imgData, "PNG", 10, 25, imgWidth, imgHeight);
+      heightLeft -= imgHeight;
+      position = heightLeft;
+
+      while (position >= 0) {
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 10, position - imgHeight, imgWidth, imgHeight);
+        position -= imgHeight;
+      }
+
+      pdf.save(`Caja_${fechaInicio}_a_${fechaFin}.pdf`);
+    } catch (error) {
+      console.error("Error al exportar PDF:", error);
+      alert("Error al exportar PDF");
+    }
+  };
+
   const handleCrearMovimiento = async () => {
     if (!nuevoMovimiento.descripcion.trim() || nuevoMovimiento.monto <= 0) {
       alert("Por favor completa todos los campos correctamente");
@@ -184,29 +305,75 @@ export const CajaModule = () => {
         </button>
       </div>
 
+      {/* Filtro de fechas y exportación */}
+      <div className="filtro-fechas-section">
+        <div className="filtro-group-caja">
+          <div className="field-inline">
+            <label>Fecha Inicio:</label>
+            <input
+              type="date"
+              value={fechaInicio}
+              onChange={(e) => setFechaInicio(e.target.value)}
+              className="filtro-input"
+            />
+          </div>
+
+          <div className="field-inline">
+            <label>Fecha Fin:</label>
+            <input
+              type="date"
+              value={fechaFin}
+              onChange={(e) => setFechaFin(e.target.value)}
+              className="filtro-input"
+            />
+          </div>
+
+          <div className="botones-filtro">
+            <button 
+              className="btn-exportar excel"
+              onClick={exportarExcel}
+              title="Exportar a Excel"
+            >
+              📊 Excel
+            </button>
+            <button 
+              className="btn-exportar pdf"
+              onClick={exportarPDF}
+              title="Exportar a PDF"
+            >
+              📄 PDF
+            </button>
+          </div>
+        </div>
+
+        <div className="resumen-filtro">
+          <strong>Registros encontrados:</strong> {movimientosFiltrados.length}
+        </div>
+      </div>
+
       <div className="cards-grid">
-        <div className="card">
-          <div className="card-label">Ingresos Hoy</div>
-          <div className="card-value income">{formatCOP(ingresoHoy)}</div>
+        <div className="card card-ingreso">
+          <div className="card-label">Ingresos (Filtrado)</div>
+          <div className="card-value income">{formatCOP(ingresoFiltrado)}</div>
           <span className="icon"><FaArrowTrendUp /></span>
         </div>
 
-        <div className="card">
-          <div className="card-label">Egresos Hoy</div>
-          <div className="card-value expense">{formatCOP(egresoHoy)}</div>
+        <div className="card card-egreso">
+          <div className="card-label">Egresos (Filtrado)</div>
+          <div className="card-value expense">{formatCOP(egresoFiltrado)}</div>
           <span className="icon"><FaArrowTrendDown /></span>
         </div>
 
-        <div className="card">
-          <div className="card-label">Total Ingresos</div>
-          <div className="card-value">{formatCOP(totalIngresos)}</div>
-          <span className="icon"><Icon icon="streamline-ultimate:cash-briefcase-bold" width="23px" height="26px" /></span>
+        <div className="card card-acumulado">
+          <div className="card-label">Acumulado (Filtrado)</div>
+          <div className="card-value">{formatCOP(acumuladoFiltrado)}</div>
+          <span className="icon"><Icon icon="streamline-ultimate:money-bag-dollar-bold" /></span>
         </div>
 
-        <div className="card">
-          <div className="card-label">Total Acumulado</div>
+        <div className="card card-total">
+          <div className="card-label">Total General</div>
           <div className="card-value">{formatCOP(totalAcumulado)}</div>
-          <span className="icon"><Icon icon="streamline-ultimate:money-bag-dollar-bold" /></span>
+          <span className="icon"><Icon icon="streamline-ultimate:cash-briefcase-bold" width="23px" height="26px" /></span>
         </div>
       </div>
 
@@ -277,7 +444,7 @@ export const CajaModule = () => {
 
       <div className="movimientos-section">
         <h3>Movimientos Recientes</h3>
-        <table className="movimientos-table">
+        <table className="movimientos-table" id="tabla-movimientos-export">
           <thead>
             <tr>
               <th>Fecha</th>
@@ -290,24 +457,32 @@ export const CajaModule = () => {
             </tr>
           </thead>
           <tbody>
-            {movimientos.slice(0, 15).map((mov) => {
-              const fecha = new Date(mov.fecha_movimiento);
-              return (
-                <tr key={mov.id_movimiento_caja} className={mov.tipo}>
-                  <td>{fecha.toLocaleDateString()}</td>
-                  <td>{fecha.toLocaleTimeString()}</td>
-                  <td className={`tipo-${mov.tipo}`}>
-                    {mov.tipo === "entrada" ? " Entrada" : " Salida"}
-                  </td>
-                  <td>{mov.descripcion}</td>
-                  <td className={`monto-${mov.tipo}`}>
-                    {mov.tipo === "entrada" ? "+" : "-"}{formatCOP(Number(mov.monto))}
-                  </td>
-                  <td>{mov.usuario_nombre || "Sistema"}</td>
-                  <td>{mov.id_pedido ? `#${mov.id_pedido}` : "-"}</td>
-                </tr>
-              );
-            })}
+            {movimientosFiltrados.length > 0 ? (
+              movimientosFiltrados.map((mov) => {
+                const fecha = new Date(mov.fecha_movimiento);
+                return (
+                  <tr key={mov.id_movimiento_caja} className={mov.tipo}>
+                    <td>{fecha.toLocaleDateString()}</td>
+                    <td>{fecha.toLocaleTimeString()}</td>
+                    <td className={`tipo-${mov.tipo}`}>
+                      {mov.tipo === "entrada" ? " Entrada" : " Salida"}
+                    </td>
+                    <td>{mov.descripcion}</td>
+                    <td className={`monto-${mov.tipo}`}>
+                      {mov.tipo === "entrada" ? "+" : "-"}{formatCOP(Number(mov.monto))}
+                    </td>
+                    <td>{mov.usuario_nombre || "Sistema"}</td>
+                    <td>{mov.id_pedido ? `#${mov.id_pedido}` : "-"}</td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={7} style={{ textAlign: "center", padding: "20px", color: "#999" }}>
+                  No hay movimientos en el rango de fechas seleccionado
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

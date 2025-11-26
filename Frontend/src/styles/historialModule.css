@@ -214,7 +214,7 @@
 }
 
 /* ACCIONES */
-.tabla-pedidos .acciones {
+.tabla-pedidos .acciones-historia {
   text-align: center;
 }
 
@@ -267,7 +267,7 @@
   overflow-y: auto;
 }
 
-.modal-content {
+.modal-content-detalle {
   background: white;
   border-radius: 8px;
   max-width: 900px;
@@ -278,6 +278,30 @@
   animation: slideIn 0.3s ease;
   margin: auto;
 }
+
+
+.acciones-historial {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-accion-abono {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    gap: 5px;
+}
+
 
 @keyframes slideIn {
   from {

@@ -19,6 +19,7 @@ export const ClientesModule = () => {
         direccion: "",
         email: "",
     });
+    const [formErrors, setFormErrors] = useState<{ [k: string]: string }>({});
     const [confirmAbierto, setConfirmAbierto] = useState(false);
     const [clienteParaPedido, setClienteParaPedido] = useState<Cliente | null>(null);
 
@@ -146,14 +147,55 @@ export const ClientesModule = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
+        // Aplicar lógica de lista blanca en el frontend (saneamiento en tiempo real)
+        let sanitized = value;
+        if (name === 'nombre') {
+            // Solo letras A-Z y espacios (sin acentos)
+            sanitized = value.replace(/[^A-Za-z ]/g, '');
+        } else if (name === 'nuip') {
+            // Solo dígitos y puntos
+            sanitized = value.replace(/[^0-9.]/g, '');
+        } else if (name === 'telefono') {
+            // Solo dígitos
+            sanitized = value.replace(/[^0-9]/g, '');
+        } else if (name === 'direccion') {
+            // Letras, números, espacios, # y -
+            sanitized = value.replace(/[^A-Za-z0-9 #\-]/g, '');
+        } else if (name === 'email') {
+            // Permitir caracteres básicos de email
+            sanitized = value.replace(/[^A-Za-z0-9@._\-]/g, '');
+        }
+
         setFormData({
             ...formData,
-            [name]: value,
+            [name]: sanitized,
         });
+
+        // Validación inmediata (solo para feedback)
+        try {
+            // importar validadores dinámicamente para evitar problemas de orden
+            // (se importó arriba en parche siguiente)
+        } catch (err) {}
     };
 
     const handleActualizar = async () => {
         if (!clienteEditando) return;
+
+        // Validar con lista blanca antes de enviar
+        const validators = require('../utils/validators');
+        const errs: { [k: string]: string } = {};
+
+        if (!validators.isValidName(formData.nombre)) errs.nombre = validators.ERR.nombre;
+        if (!validators.isValidCedula(formData.nuip)) errs.nuip = validators.ERR.cedula;
+        if (!validators.isValidTelefono(formData.telefono)) errs.telefono = validators.ERR.telefono;
+        if (formData.email && !validators.isValidEmail(formData.email)) errs.email = validators.ERR.email;
+        if (formData.direccion && !validators.isValidDireccion(formData.direccion)) errs.direccion = validators.ERR.direccion;
+
+        setFormErrors(errs);
+        if (Object.keys(errs).length > 0) {
+            setError('Por favor corrija los errores del formulario antes de continuar.');
+            return;
+        }
 
         try {
             await actualizarCliente(clienteEditando.id_cliente, {
@@ -162,6 +204,7 @@ export const ClientesModule = () => {
             });
             setModalAbierto(false);
             setClienteEditando(null);
+            setFormErrors({});
             await cargarClientesDelServidor();
         } catch (err) {
             console.error("Error al actualizar:", err);
@@ -174,30 +217,30 @@ export const ClientesModule = () => {
         setClienteEditando(null);
     };
 
-    if (cargando) return <div className="clientes-container"><p>Cargando clientes...</p></div>;
+    if (cargando) return <div className="cm-clientes-container"><p>Cargando clientes...</p></div>;
 
     return (
-        <div className="clientes-container">
-            <div className="clientes-header">
+        <div className="cm-clientes-container">
+            <div className="cm-clientes-header">
                 <h1>Gestión de Clientes</h1>
             </div>
 
-            <div className="clientes-busqueda">
+            <div className="cm-clientes-busqueda">
                 <input
                     type="text"
                     placeholder="Buscar por nombre, identificación, teléfono o email..."
                     value={busqueda}
                     onChange={handleBusqueda}
-                    className="input-busqueda"
+                    className="cm-input-busqueda"
                 />
             </div>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && <div className="cm-error-message">{error}</div>}
 
-            <div className="clientes-lista">
+            <div className="cm-clientes-lista">
                 <h2>Lista de Clientes ({clientesFiltrados.length})</h2>
                 {clientesFiltrados.length > 0 ? (
-                    <table className="tabla-clientes">
+                    <table className="cm-tabla-clientes">
                         <thead>
                             <tr>
                                 <th>Identificación</th>
@@ -216,23 +259,23 @@ export const ClientesModule = () => {
                                     <td>{cliente.telefono}</td>
                                     <td>{cliente.direccion}</td>
                                     <td>{cliente.email}</td>
-                                    <td className="acciones">
+                                    <td className="cm-acciones">
                                         <button
-                                            className="btn-accion editar"
+                                            className="cm-btn-accion cm-editar"
                                             onClick={() => handleEditar(cliente)}
                                             title="Editar"
                                         >
                                             <FaEdit /> Editar
                                         </button>
                                         <button
-                                            className="btn-accion nuevo-pedido"
+                                            className="cm-btn-accion cm-nuevo-pedido"
                                             onClick={() => handleNuevoPedido(cliente)}
                                             title="Nuevo Pedido"
                                         >
                                             <CgAdd /> Nuevo Pedido
                                         </button>
                                         <button
-                                            className="btn-accion eliminar"
+                                            className="cm-btn-accion cm-eliminar"
                                             onClick={() => handleEliminar(cliente.id_cliente)}
                                             title="Eliminar"
                                         >
@@ -244,31 +287,31 @@ export const ClientesModule = () => {
                         </tbody>
                     </table>
                 ) : (
-                    <p className="sin-resultados">No hay clientes que coincidan con la búsqueda</p>
+                    <p className="cm-sin-resultados">No hay clientes que coincidan con la búsqueda</p>
                 )}
             </div>
 
             {modalAbierto && clienteEditando && (
-                <div className="modal-overlay" onClick={handleCancelar}>
-                    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
+                <div className="cm-modal-overlay" onClick={handleCancelar}>
+                    <div className="cm-modal-content-clientes cm-compact-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="cm-modal-header">
                             <h2>Editar Cliente</h2>
-                            <button className="btn-cerrar" onClick={handleCancelar}>✕</button>
+                            <button className="cm-btn-cerrar" onClick={handleCancelar}>✕</button>
                         </div>
 
-                        <div className="modal-body">
-                            <div className="form-grid">
-                                <div className="form-group">
+                        <div className="cm-modal-body-clientes">
+                            <div className="cm-form-grid">
+                                <div className="cm-form-group">
                                     <label>Identificación *</label>
                                     <input
                                         type="text"
                                         value={clienteEditando.nuip}
                                         disabled
-                                        className="input-disabled"
+                                        className="cm-input-disabled"
                                     />
                                 </div>
 
-                                <div className="form-group">
+                                <div className="cm-form-group">
                                     <label>Nombre *</label>
                                     <input
                                         type="text"
@@ -277,9 +320,12 @@ export const ClientesModule = () => {
                                         onChange={handleInputChange}
                                         placeholder="Ingrese el nombre completo"
                                     />
+                                    {formErrors.nombre && (
+                                        <div className="field-error">{formErrors.nombre}</div>
+                                    )}
                                 </div>
 
-                                <div className="form-group">
+                                <div className="cm-form-group">
                                     <label>Teléfono *</label>
                                     <input
                                         type="text"
@@ -288,9 +334,12 @@ export const ClientesModule = () => {
                                         onChange={handleInputChange}
                                         placeholder="Número de contacto"
                                     />
+                                    {formErrors.telefono && (
+                                        <div className="field-error">{formErrors.telefono}</div>
+                                    )}
                                 </div>
 
-                                <div className="form-group full-width">
+                                <div className="cm-form-group cm-full-width">
                                     <label>Dirección</label>
                                     <input
                                         type="text"
@@ -299,9 +348,12 @@ export const ClientesModule = () => {
                                         onChange={handleInputChange}
                                         placeholder="Dirección completa"
                                     />
+                                    {formErrors.direccion && (
+                                        <div className="field-error">{formErrors.direccion}</div>
+                                    )}
                                 </div>
 
-                                <div className="form-group full-width">
+                                <div className="cm-form-group cm-full-width">
                                     <label>Email</label>
                                     <input
                                         type="email"
@@ -310,15 +362,18 @@ export const ClientesModule = () => {
                                         onChange={handleInputChange}
                                         placeholder="correo@ejemplo.com"
                                     />
+                                    {formErrors.email && (
+                                        <div className="field-error">{formErrors.email}</div>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="modal-footer">
-                            <button className="btn-cancelar" onClick={handleCancelar}>
+                        <div className="cm-modal-footer">
+                            <button className="cm-btn-cancelar" onClick={handleCancelar}>
                                 Cancelar
                             </button>
-                            <button className="btn-actualizar" onClick={handleActualizar}>
+                            <button className="cm-btn-actualizar" onClick={handleActualizar}>
                                 Actualizar Cliente
                             </button>
                         </div>
@@ -327,44 +382,44 @@ export const ClientesModule = () => {
             )}
 
             {confirmAbierto && clienteParaPedido && (
-                <div className="confirm-overlay" onClick={cancelarConfirmacion}>
-                    <div className="confirm-box" onClick={(e) => e.stopPropagation()}>
-                        <div className="confirm-header">
-                            <div className="confirm-icon">
-                                <FaClipboardList className="clipboard-icon" />
+                <div className="cm-confirm-overlay" onClick={cancelarConfirmacion}>
+                    <div className="cm-confirm-box" onClick={(e) => e.stopPropagation()}>
+                        <div className="cm-confirm-header">
+                            <div className="cm-confirm-icon">
+                                <FaClipboardList className="cm-clipboard-icon" />
                             </div>
-                            <h3 className="confirm-title">Crear nuevo pedido</h3>
+                            <h3 className="cm-confirm-title">Crear nuevo pedido</h3>
                         </div>
                         
-                        <div className="confirm-body">
-                            <div className="confirm-cliente-info">
-                                <div className="info-row">
-                                    <span className="info-label">Nombre:</span>
-                                    <span className="info-value"><strong>{clienteParaPedido.nombre}</strong></span>
+                        <div className="cm-confirm-body">
+                            <div className="cm-confirm-cliente-info">
+                                <div className="cm-info-row">
+                                    <span className="cm-info-label">Nombre:</span>
+                                    <span className="cm-info-value"><strong>{clienteParaPedido.nombre}</strong></span>
                                 </div>
-                                <div className="info-row">
-                                    <span className="info-label">Identificación:</span>
-                                    <span className="info-value">{clienteParaPedido.nuip}</span>
+                                <div className="cm-info-row">
+                                    <span className="cm-info-label">Identificación:</span>
+                                    <span className="cm-info-value">{clienteParaPedido.nuip}</span>
                                 </div>
-                                <div className="info-row">
-                                    <span className="info-label">Teléfono:</span>
-                                    <span className="info-value">{clienteParaPedido.telefono}</span>
+                                <div className="cm-info-row">
+                                    <span className="cm-info-label">Teléfono:</span>
+                                    <span className="cm-info-value">{clienteParaPedido.telefono}</span>
                                 </div>
-                                <div className="info-row">
-                                    <span className="info-label">Email:</span>
-                                    <span className="info-value">{clienteParaPedido.email || "No especificado"}</span>
+                                <div className="cm-info-row">
+                                    <span className="cm-info-label">Email:</span>
+                                    <span className="cm-info-value">{clienteParaPedido.email || "No especificado"}</span>
                                 </div>
-                                <div className="info-row">
-                                    <span className="info-label">Dirección:</span>
-                                    <span className="info-value">{clienteParaPedido.direccion || "No especificada"}</span>
+                                <div className="cm-info-row">
+                                    <span className="cm-info-label">Dirección:</span>
+                                    <span className="cm-info-value">{clienteParaPedido.direccion || "No especificada"}</span>
                                 </div>
                             </div>
                         </div>
-                        <div className="confirm-buttons">
-                            <button className="btn-confirm" onClick={confirmarNuevoPedido}>
+                        <div className="cm-confirm-buttons">
+                            <button className="cm-btn-confirm" onClick={confirmarNuevoPedido}>
                                 Confirmar
                             </button>
-                            <button className="btn-cancel" onClick={cancelarConfirmacion}>
+                            <button className="cm-btn-cancel" onClick={cancelarConfirmacion}>
                                 Cancelar
                             </button>
                         </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { crearUsuario } from "../../services/usuarioService";
+import validators from "../../utils/validators";
 import { Link , useNavigate } from "react-router-dom";
 import "./Registro.css";
 
@@ -12,6 +13,7 @@ export const Registro = () => {
 
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [errores, setErrores] = useState({});
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -23,6 +25,15 @@ export const Registro = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validaciones cliente-side
+        const nuevosErrores = {};
+        if (!formData.nombre || !validators.isValidName(formData.nombre)) nuevosErrores.nombre = validators.ERR.nombre;
+        if (!formData.email || !validators.isValidEmail(formData.email)) nuevosErrores.email = validators.ERR.email;
+        if (!formData.clave || formData.clave.trim().length < 6) nuevosErrores.clave = 'La clave debe tener al menos 6 caracteres.';
+
+        setErrores(nuevosErrores);
+        if (Object.keys(nuevosErrores).length > 0) return;
 
         try {
             const data = await crearUsuario(formData);
@@ -53,6 +64,7 @@ export const Registro = () => {
                             onChange={handleChange}
                             required
                         />
+                        {errores.nombre && <p className="registro-error" style={{ color: '#e63946' }}>{errores.nombre}</p>}
                     </div>
 
                     <div className="registro-grupo">
@@ -65,6 +77,7 @@ export const Registro = () => {
                             onChange={handleChange}
                             required
                         />
+                        {errores.email && <p className="registro-error" style={{ color: '#e63946' }}>{errores.email}</p>}
                     </div>
 
                     <div className="registro-grupo">
@@ -77,6 +90,7 @@ export const Registro = () => {
                             onChange={handleChange}
                             required
                         />
+                        {errores.clave && <p className="registro-error" style={{ color: '#e63946' }}>{errores.clave}</p>}
                     </div>
 
                     <button className="registro-boton" type="submit">Registrar</button>
