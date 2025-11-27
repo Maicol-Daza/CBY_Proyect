@@ -15,7 +15,7 @@ export const Principal = () => {
         <div className="principal-header">
           <div className="principal-welcome">
             <h1 className="principal-title">Bienvenido, {user?.nombre}</h1>
-            <p className="principal-subtitle">Rol: {user?.rol}</p>
+            {/* <p className="principal-subtitle">Rol: {user?.rol}</p> */}
           </div>
         </div>
 

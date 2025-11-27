@@ -7,6 +7,7 @@ import { obtenerMovimientos } from "../services/movimientos_caja";
 import { obtenerAjustes } from "../services/ajustesService";
 import { obtenerAcciones } from "../services/accionesService";
 import { obtenerAjustesAccion } from "../services/ajustesAccionService";
+import { obtenerPedidos } from "../services/pedidosService";
 import "./ControlAdministrador.css";
 
 export const ControlAdministrador = () => {
@@ -44,14 +45,15 @@ export const ControlAdministrador = () => {
       setError(null);
 
       // Cargar datos en paralelo
-      const [usuariosData, clientesData, movimientosData, ajustesData, accionesData, ajustesAccionData] = 
+      const [usuariosData, clientesData, movimientosData, ajustesData, accionesData, ajustesAccionData, pedidosData] = 
         await Promise.all([
           leerUsuarios().catch(() => []),
           obtenerClientes().catch(() => []),
           obtenerMovimientos().catch(() => []),
           obtenerAjustes().catch(() => []),
           obtenerAcciones().catch(() => []),
-          obtenerAjustesAccion().catch(() => [])
+          obtenerAjustesAccion().catch(() => []),
+          obtenerPedidos().catch(() => [])
         ]);
 
       // Calcular estadísticas
@@ -66,14 +68,14 @@ export const ControlAdministrador = () => {
       setEstadisticas({
         totalUsuarios: usuariosData.length,
         totalClientes: clientesData.length,
-        totalPedidos: 0, // Aquí puedes agregar obtenerPedidos cuando esté disponible
+        totalPedidos: pedidosData.length,
         balanceTotal: balanceTotal,
         usuariosActivos: usuariosActivos,
-        pedidosPendientes: 0 // Aquí puedes agregar la lógica de pedidos pendientes
+        pedidosPendientes: 0
       });
 
-      setUsuarios(usuariosData.slice(0, 10)); // Mostrar los primeros 10
-      setMovimientos(movimientosData.slice(0, 10)); // Mostrar los primeros 10
+      setUsuarios(usuariosData.slice(0, 10));
+      setMovimientos(movimientosData.slice(0, 10));
 
       setRecursos({
         arreglos: ajustesData.length,
@@ -118,12 +120,12 @@ export const ControlAdministrador = () => {
     <Layout>
       <div className="control-admin-container">
         <div className="control-admin-header">
-          <h1>🛡️ Panel de Control Administrador</h1>
+          <h1>Panel de Control Administrador</h1>
         </div>
 
         {error && (
           <div className="alerta-atencion" style={{ backgroundColor: '#fee2e2', borderLeftColor: '#dc2626' }}>
-            <div className="alerta-icon">⚠️</div>
+            <div className="alerta-icon"></div>
             <div className="alerta-contenido">
               <h4 style={{ color: '#991b1b' }}>Error:</h4>
               <p style={{ color: '#991b1b' }}>{error}</p>
@@ -133,7 +135,7 @@ export const ControlAdministrador = () => {
 
         {estadisticas.balanceTotal === 0 && !error && (
           <div className="alerta-atencion">
-            <div className="alerta-icon">⚠️</div>
+            <div className="alerta-icon"></div>
             <div className="alerta-contenido">
               <h4>Atención:</h4>
               <p>Se detectaron 1 problema(s) en el sistema:</p>
@@ -181,7 +183,7 @@ export const ControlAdministrador = () => {
                 <div className="stat-info">
                   <p className="stat-label">Total Usuarios</p>
                   <h2 className="stat-numero">{estadisticas.totalUsuarios}</h2>
-                  <p className="stat-detalle">{estadisticas.usuariosActivos} activos</p>
+                  <p className="stat-detalle">Registrados</p>
                 </div>
                 <div className="stat-icon usuarios">
                   <FaUsers />
@@ -203,7 +205,7 @@ export const ControlAdministrador = () => {
                 <div className="stat-info">
                   <p className="stat-label">Total Pedidos</p>
                   <h2 className="stat-numero">{estadisticas.totalPedidos}</h2>
-                  <p className="stat-detalle">{estadisticas.pedidosPendientes} pendientes</p>
+                  <p className="stat-detalle">Registrados</p>
                 </div>
                 <div className="stat-icon pedidos">
                   <FaReceipt />
@@ -274,8 +276,6 @@ export const ControlAdministrador = () => {
                       <th>Usuario</th>
                       <th>Email</th>
                       <th>Rol</th>
-                      <th>Estado</th>
-                      <th>Último Acceso</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -288,12 +288,6 @@ export const ControlAdministrador = () => {
                             {usuario.rol}
                           </span>
                         </td>
-                        <td>
-                          <span className={`estado-badge ${usuario.activo === true ? 'activo' : 'inactivo'}`}>
-                            ✓ {usuario.activo === true ? 'Activo' : 'Inactivo'}
-                          </span>
-                        </td>
-                        <td>{usuario.ultimo_acceso ? formatearFecha(usuario.ultimo_acceso) : 'Nunca'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -367,7 +361,7 @@ export const ControlAdministrador = () => {
                 <h4>Permisos y Seguridad</h4>
                 <div className="config-item">
                   <label>Roles Activos:</label>
-                  <p>Administrador, Empleado, Operario</p>
+                  <p>Administrador, Empleado</p>
                 </div>
                 <div className="config-item">
                   <label>Última Sincronización:</label>

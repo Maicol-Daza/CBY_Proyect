@@ -12,9 +12,8 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
     const location = useLocation();
 
     const items = [
-        { key: "/bienvenido", label: "Inicio", icon: <FaHome className="text-xl" /> },
+         { key: "/pedidos", label: "Pedidos", icon: <FaClipboardList className="text-xl" /> },
         { key: "/clientes", label: "Clientes", icon: <FaUsers className="text-xl" /> },
-        { key: "/pedidos", label: "Pedidos", icon: <FaClipboardList className="text-xl" /> },
         { key: "/historialPedidos", label: "Historial", icon: <FaHistory className="text-xl" /> },
         { key: "/moduloCaja", label: "Caja", icon: <FaCashRegister className="text-xl" /> },
         { key: "/configuracionAjustes", label: "Config. Ajustes", icon: <FaCog className="text-xl" /> },

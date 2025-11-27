@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/historialModule.css";
-import { FaDownload, FaEye, FaTimes } from "react-icons/fa";
+import { FaEye, FaTimes, FaHistory, FaUndo } from "react-icons/fa";
+import { FaFileExcel, FaFilePdf } from "react-icons/fa6";
 import { obtenerCodigos } from "../services/codigosService";
 import { obtenerCajones } from "../services/cajonesService";
 import { FaEdit } from 'react-icons/fa';
@@ -8,6 +9,7 @@ import { formatCOP } from '../utils/formatCurrency';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { InputMoneda } from './InputMoneda';
 
 export const HistorialModule = () => {
     const [pedidos, setPedidos] = useState<any[]>([]);
@@ -26,6 +28,15 @@ export const HistorialModule = () => {
     const [abonosSoloModalOpen, setAbonosSoloModalOpen] = useState(false);
     const [loadingAbonosSolo, setLoadingAbonosSolo] = useState(false);
     const [abonosSolo, setAbonosSolo] = useState<any[]>([]);
+    const [modalDevolucionOpen, setModalDevolucionOpen] = useState(false);
+    const [pedidoDevolucion, setPedidoDevolucion] = useState<any>(null);
+    const [devolucionData, setDevolucionData] = useState({
+      motivo: "",
+      descripcion: "",
+      solucion: "reembolso",
+      monto: 0
+    });
+    const [cargandoDevolucion, setCargandoDevolucion] = useState(false);
 
     useEffect(() => {
         cargarPedidos();
@@ -228,10 +239,11 @@ export const HistorialModule = () => {
             }
             doc.text(filtrosTexto, 14, 32);
 
-            // Tabla de datos - CORREGIR CALCULOS
+            // ✅ TABLA DE DATOS CON GARANTÍA
             const datosTabla = pedidosFiltrados.map(pedido => {
                 const total = parseFloat((pedido.total_pedido ?? pedido.totalPedido ?? 0).toString());
                 const saldo = parseFloat((pedido.saldo ?? pedido.saldoPendiente ?? 0).toString());
+                const garantia = pedido.garantia ? `${pedido.garantia} días` : "Sin garantía";
                 
                 return [
                     pedido.id_pedido || "-",
@@ -241,13 +253,14 @@ export const HistorialModule = () => {
                     pedido.estado === "en_proceso" ? "En proceso" :
                     pedido.estado === "listo" ? "Finalizado" :
                     pedido.estado === "entregado" ? "Entregado" : pedido.estado || "En proceso",
+                    garantia,
                     `$${total.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                     `$${saldo.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                 ];
             });
 
             autoTable(doc, {
-                head: [['Codigo', 'Cliente', 'Fecha Pedido', 'Fecha Entrega', 'Estado', 'Total', 'Saldo']],
+                head: [['Codigo', 'Cliente', 'Fecha Pedido', 'Fecha Entrega', 'Estado', 'Garantía', 'Total', 'Saldo']],
                 body: datosTabla,
                 startY: 38,
                 margin: { left: 14, right: 14 },
@@ -263,8 +276,9 @@ export const HistorialModule = () => {
                     2: { halign: 'center' },
                     3: { halign: 'center' },
                     4: { halign: 'center' },
-                    5: { halign: 'right' },
-                    6: { halign: 'right' }
+                    5: { halign: 'center' },
+                    6: { halign: 'right' },
+                    7: { halign: 'right' }
                 },
                 headStyles: {
                     fillColor: [25, 118, 210],
@@ -276,7 +290,7 @@ export const HistorialModule = () => {
                 }
             });
 
-            // Resumen al pie - CALCULOS CORRECTOS
+            // Resumen al pie
             const finalY = (doc as any).lastAutoTable.finalY + 10;
             doc.setFontSize(10);
             doc.text(`Total de registros: ${pedidosFiltrados.length}`, 14, finalY);
@@ -301,6 +315,7 @@ export const HistorialModule = () => {
         }
     };
 
+    // ✅ AGREGAR GARANTÍA EN EXCEL
     const exportarExcel = () => {
         try {
             const datosExportar = pedidosFiltrados.map(pedido => {
@@ -315,6 +330,7 @@ export const HistorialModule = () => {
                     'Estado': pedido.estado === "en_proceso" ? "En proceso" :
                              pedido.estado === "listo" ? "Finalizado" :
                              pedido.estado === "entregado" ? "Entregado" : pedido.estado,
+                    'Garantía (días)': pedido.garantia || "Sin garantía",
                     'Total': total,
                     'Saldo Pendiente': saldo
                 };
@@ -327,6 +343,7 @@ export const HistorialModule = () => {
             ws['!cols'] = [
                 { wch: 12 },
                 { wch: 20 },
+                { wch: 15 },
                 { wch: 15 },
                 { wch: 15 },
                 { wch: 15 },
@@ -368,16 +385,170 @@ export const HistorialModule = () => {
         return cumpleBusqueda && cumpleEstado && cumpleFecha;
     });
 
+    // ✅ Función para calcular la fecha final de garantía
+    const calcularFechaGarantia = (fechaEntrega: string, diasGarantia: number): string => {
+      try {
+        const fecha = new Date(fechaEntrega);
+        fecha.setDate(fecha.getDate() + diasGarantia);
+        return fecha.toLocaleDateString("es-CO", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        });
+      } catch {
+        return "-";
+      }
+    };
+
+    // ✅ Función para verificar si la garantía está vigente
+    const verificarGarantiaVigente = (fechaEntrega: string, diasGarantia: number): boolean => {
+      if (!fechaEntrega || !diasGarantia) return false;
+      
+      try {
+        const fechaFin = new Date(fechaEntrega);
+        fechaFin.setDate(fechaFin.getDate() + diasGarantia);
+        
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        fechaFin.setHours(0, 0, 0, 0);
+        
+        return hoy <= fechaFin;
+      } catch {
+        return false;
+      }
+    };
+
+    // ✅ Función para obtener el estado de la garantía
+    const obtenerEstadoGarantia = (fechaEntrega: string, diasGarantia: number): string => {
+      if (!diasGarantia) return "Sin garantía";
+      
+      const vigente = verificarGarantiaVigente(fechaEntrega, diasGarantia);
+      const diasRestantes = calcularDiasRestantes(fechaEntrega, diasGarantia);
+      
+      if (vigente) {
+        return `Vigente (${diasRestantes} días restantes)`;
+      } else {
+        return "Vencida";
+      }
+    };
+
+    // ✅ Función para calcular días restantes
+    const calcularDiasRestantes = (fechaEntrega: string, diasGarantia: number): number => {
+      if (!fechaEntrega || !diasGarantia) return 0;
+      
+      try {
+        const fechaFin = new Date(fechaEntrega);
+        fechaFin.setDate(fechaFin.getDate() + diasGarantia);
+        
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        fechaFin.setHours(0, 0, 0, 0);
+        
+        const diferencia = fechaFin.getTime() - hoy.getTime();
+        const dias = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+        
+        return dias > 0 ? dias : 0;
+      } catch {
+        return 0;
+      }
+    };
+
+    // Función para abrir el modal de devolución
+    const handleAbrirDevolucion = (pedido: any) => {
+      // ✅ NUEVA VALIDACIÓN: Solo permitir devolución si está entregado
+      if (pedido.estado !== "entregado") {
+        alert("❌ Solo se pueden devolver pedidos en estado 'Entregado'.\nEstado actual: " + 
+          (pedido.estado === "en_proceso" ? "En proceso" : pedido.estado));
+        return;
+      }
+
+      // Si elige reembolso, cargar automáticamente el monto total
+      const montoTotal = parseFloat((pedido.total_pedido ?? pedido.totalPedido ?? 0).toString());
+      
+      setPedidoDevolucion(pedido);
+      setDevolucionData({
+        motivo: "",
+        descripcion: "",
+        solucion: "reembolso",
+        monto: montoTotal
+      });
+      setModalDevolucionOpen(true);
+    };
+
+    // Función para cerrar el modal de devolución
+    const handleCerrarDevolucion = () => {
+      setModalDevolucionOpen(false);
+      setPedidoDevolucion(null);
+      setDevolucionData({
+        motivo: "",
+        descripcion: "",
+        solucion: "reembolso",
+        monto: 0
+      });
+    };
+
+
+
+    // Función para guardar la devolución
+    const handleGuardarDevolucion = async () => {
+      // ✅ NUEVA VALIDACIÓN: Verificar si la garantía está vencida
+      if (!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)) {
+        alert("❌ No se puede registrar la devolución: La garantía ha vencido");
+        return;
+      }
+
+      if (!pedidoDevolucion || !devolucionData.motivo) {
+        alert("⚠️ Por favor selecciona un motivo de devolución");
+        return;
+      }
+
+      setCargandoDevolucion(true);
+
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/pedidos/${pedidoDevolucion.id_pedido}/devolucion`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              motivo_devolucion: devolucionData.motivo,
+              descripcion_devolucion: devolucionData.descripcion || null,
+              solucion_devolucion: devolucionData.solucion,
+              monto_devolucion: devolucionData.solucion === "reembolso" ? devolucionData.monto : 0
+            })
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Error al registrar devolución");
+        }
+
+        alert("✓ Devolución registrada correctamente");
+        
+        await cargarPedidos();
+        handleCerrarDevolucion();
+      } catch (error) {
+        console.error("Error:", error);
+        alert(`❌ ${error instanceof Error ? error.message : "Error al registrar"}`);
+      } finally {
+        setCargandoDevolucion(false);
+      }
+    };
+
+
+
     return (
         <div className="historial-container">
             <div className="historial-header">
                 <h1>Historial de Pedidos</h1>
                 <div className="export-buttons">
                     <button className="btn-export btn-excel" type="button" onClick={exportarExcel}>
-                        <FaDownload /> Excel
+                        <FaFileExcel style={{ marginRight: "8px" }} /> Excel
                     </button>
                     <button className="btn-export btn-pdf" type="button" onClick={exportarPDF}>
-                        <FaDownload /> PDF
+                        <FaFilePdf style={{ marginRight: "8px" }} /> PDF
                     </button>
                 </div>
             </div>
@@ -400,18 +571,19 @@ export const HistorialModule = () => {
                     </div>
 
                     <div className="filtro-group">
-                        <label>Estado</label>
-                        <select
-                            name="estado"
-                            value={filtros.estado}
-                            onChange={handleFiltroChange}
-                            className="select-filtro"
-                        >
-                            <option value="todos">Todos los estados</option>
-                            <option value="en_proceso">En proceso</option>
-                            <option value="entregado">Entregado</option>
-                        </select>
-                    </div>
+  <label>Estado</label>
+  <select
+    name="estado"
+    value={filtros.estado}
+    onChange={handleFiltroChange}
+    className="select-filtro"
+  >
+    <option value="todos">Todos los estados</option>
+    <option value="en_proceso">En proceso</option>
+    <option value="entregado">Entregado</option>
+    <option value="devuelto">Devuelto</option>
+  </select>
+</div>
 
                     <div className="filtro-group">
                         <label>Fecha desde</label>
@@ -454,6 +626,7 @@ export const HistorialModule = () => {
                                     <th>Fecha Pedido</th>
                                     <th>Fecha Entrega</th>
                                     <th>Estado</th>
+                                    <th>Garantía</th>
                                     <th>Total</th>
                                     <th>Saldo Pediente</th>
                                     <th>Acciones</th>
@@ -470,8 +643,15 @@ export const HistorialModule = () => {
                                             <span className={`estado-badge estado-${pedido.estado?.toLowerCase() || "en_proceso"}`}>
                                                 {pedido.estado === "en_proceso" ? "En proceso" :
                                                     pedido.estado === "listo" ? "Finalizado" :
-                                                        pedido.estado === "entregado" ? "Entregado" :
-                                                            pedido.estado || "En proceso"}
+                                                    pedido.estado === "entregado" ? "Entregado" :
+                                                    pedido.estado === "devuelto" ? "DEVUELTO" :
+                                                    pedido.estado || "En proceso"}
+                                            </span>
+                                        </td>
+                                        {/* ✅ NUEVA COLUMNA DE GARANTÍA */}
+                                        <td>
+                                            <span className="garantia-badge">
+                                                {pedido.garantia ? `${pedido.garantia} días` : "Sin garantía"}
                                             </span>
                                         </td>
                                         <td>{formatCOP(pedido.total_pedido ?? pedido.totalPedido ?? 0)}</td>
@@ -485,15 +665,26 @@ export const HistorialModule = () => {
                                                 type="button"
                                                 onClick={() => handleVerDetalles(pedido.id_pedido)}
                                             >
-                                                <FaEye />
+                                                <FaEye /> Ver
                                             </button>
-                                            {/* Botón separado para ver solo abonos de este pedido */}
                                             <button
                                                 className="btn-accion-abono"
                                                 title="Ver Abonos"
                                                 onClick={() => verAbonosSolo(pedido.id_pedido)}
                                             >
-                                                💳 Ver Abonos
+                                                <FaHistory /> Abonos
+                                            </button>
+                                            <button
+                                                className="btn-accion-devolucion"
+                                                title={pedido.estado !== "entregado" ? "Solo se pueden devolver pedidos entregados" : "Registrar Devolución"}
+                                                onClick={() => handleAbrirDevolucion(pedido)}
+                                                disabled={pedido.estado !== "entregado"}  // ✅ DESHABILITAR BOTÓN
+                                                style={{
+                                                    opacity: pedido.estado !== "entregado" ? 0.5 : 1,
+                                                    cursor: pedido.estado !== "entregado" ? "not-allowed" : "pointer"
+                                                }}
+                                            >
+                                                <FaUndo /> Devolución
                                             </button>
                                         </td>
                                     </tr>
@@ -571,6 +762,31 @@ export const HistorialModule = () => {
                                           <label>Fecha Entrega:</label>
                                           <p>{formatearFecha(pedidoSeleccionado.fecha_entrega)}</p>
                                         </div>
+                                        
+                                        {/* ✅ NUEVA SECCIÓN: INFORMACIÓN DE GARANTÍA */}
+                                        <div className="info-item">
+                                          <label>Garantía:</label>
+                                          <p>
+                                            {pedidoSeleccionado.garantia ? (
+                                              <span className="garantia-info">
+                                                <strong>{pedidoSeleccionado.garantia} días</strong>
+                                                {pedidoSeleccionado.fecha_entrega && (
+                                                  <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "5px" }}>
+                                                    Válida hasta: <strong>{calcularFechaGarantia(pedidoSeleccionado.fecha_entrega, pedidoSeleccionado.garantia)}</strong>
+                                                  </div>
+                                                )}
+                                                {pedidoSeleccionado.estado === "entregado" && (
+                                                  <div style={{ fontSize: "0.85rem", color: verificarGarantiaVigente(pedidoSeleccionado.fecha_entrega, pedidoSeleccionado.garantia) ? "#28a745" : "#dc3545", marginTop: "5px" }}>
+                                                    {verificarGarantiaVigente(pedidoSeleccionado.fecha_entrega, pedidoSeleccionado.garantia) ? "✓ Garantía vigente" : "✗ Garantía vencida"}
+                                                  </div>
+                                                )}
+                                              </span>
+                                            ) : (
+                                              <span style={{ color: "#999" }}>Sin garantía</span>
+                                            )}
+                                          </p>
+                                        </div>
+
                                         <div className="info-item">
                                           <label>Estado:</label>
                                           <p>
@@ -578,6 +794,7 @@ export const HistorialModule = () => {
                                               {pedidoSeleccionado.estado === "en_proceso" ? "En proceso" :
                                                 pedidoSeleccionado.estado === "listo" ? "Finalizado" :
                                                   pedidoSeleccionado.estado === "entregado" ? " Entregado (Cajón Liberado)" :
+                                                    pedidoSeleccionado.estado === "devuelto" ? "DEVUELTO" :
                                                     pedidoSeleccionado.estado || "En proceso"}
                                             </span>
                                           </p>
@@ -723,67 +940,265 @@ export const HistorialModule = () => {
                                         </table>
                                     )}
                                 </div> */}
+
+                                {/* ✅ SECCIÓN DE DEVOLUCIÓN - SOLO SI ESTADO ES DEVUELTO */}
+                                {pedidoSeleccionado.estado === "devuelto" && (
+                                    <div className="detalle-seccion devolucion-seccion">
+                                        <h3>Información de Devolución</h3>
+                                        <div className="info-items">
+                                            <div className="info-item">
+                                                <label>Motivo de Devolución:</label>
+                                                <p>
+                                                    {pedidoSeleccionado.motivo_devolucion ? (
+                                                        pedidoSeleccionado.motivo_devolucion
+                                                            .replace(/_/g, " ")
+                                                            .split(" ")
+                                                            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                                                            .join(" ")
+                                                    ) : (
+                                                        "-"
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div className="info-item">
+                                                <label>Descripción del Defecto:</label>
+                                                <p>{pedidoSeleccionado.descripcion_devolucion || "-"}</p>
+                                            </div>
+                                            <div className="info-item">
+                                                <label>Solución Aplicada:</label>
+                                                <p>
+                                                    {pedidoSeleccionado.solucion_devolucion ? (
+                                                        pedidoSeleccionado.solucion_devolucion === "reembolso"
+                                                            ? "Reembolso Total"
+                                                            : pedidoSeleccionado.solucion_devolucion === "nuevo_procedimiento"
+                                                            ? "Nuevo Procedimiento Gratuito"
+                                                            : pedidoSeleccionado.solucion_devolucion
+                                                    ) : (
+                                                        "-"
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div className="info-item">
+                                                <label>Monto de Reembolso:</label>
+                                                <p style={{ color: "#d32f2f", fontWeight: "600" }}>
+                                                    {formatCOP(pedidoSeleccionado.monto_devolucion ?? 0)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
             )}
 
-{/* MODAL ABONOS SOLOS */}
-{abonosSoloModalOpen && (
-    <div className="modal-overlay" onClick={() => setAbonosSoloModalOpen(false)}>
-        <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-                <h2>Abonos del Pedido</h2>
-                <button className="btn-cerrar" onClick={() => setAbonosSoloModalOpen(false)}>✕</button>
-            </div>
+            {/* MODAL ABONOS SOLOS */}
+            {abonosSoloModalOpen && (
+                <div className="modal-overlay" onClick={() => setAbonosSoloModalOpen(false)}>
+                    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Abonos del Pedido</h2>
+                            <button className="btn-cerrar" onClick={() => setAbonosSoloModalOpen(false)}>✕</button>
+                        </div>
 
-            <div className="modal-body">
-                {loadingAbonosSolo ? (
-                    <p className="cargando">Cargando abonos...</p>
-                ) : abonosSolo.length === 0 ? (
-                    <div className="sin-abonos">
-                        <div className="icono">💳</div>
-                        <p>No se encontraron abonos para este pedido.</p>
+                        <div className="modal-body">
+                            {loadingAbonosSolo ? (
+                                <p className="cargando">Cargando abonos...</p>
+                            ) : abonosSolo.length === 0 ? (
+                                <div className="sin-abonos">
+                                    <div className="icono">💳</div>
+                                    <p>No se encontraron abonos para este pedido.</p>
+                                </div>
+                            ) : (
+                                <table className="tabla-abonos">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Monto</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {abonosSolo.map((a) => (
+                                            <tr key={a.id_historial_abono}>
+                                                <td>{new Date(a.fecha_abono).toLocaleDateString('es-CO', {
+                                                    year: 'numeric',
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}</td>
+                                                <td>{formatCOP(Number(a.abono || 0))}</td>
+                                                <td>{a.observaciones || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+
+                        <div className="modal-footer">
+                            <button className="btn-cancelar" onClick={() => setAbonosSoloModalOpen(false)}>
+                                Cerrar
+                            </button>
+                        </div>
                     </div>
-                ) : (
-                    <table className="tabla-abonos">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Monto</th>
-                                <th>Observaciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {abonosSolo.map((a) => (
-                                <tr key={a.id_historial_abono}>
-                                    <td>{new Date(a.fecha_abono).toLocaleDateString('es-CO', {
-                                        year: 'numeric',
-                                        month: '2-digit',
-                                        day: '2-digit',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}</td>
-                                    <td>{formatCOP(Number(a.abono || 0))}</td>
-                                    <td>{a.observaciones || '-'}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+                </div>
+            )}
 
-            <div className="modal-footer">
-                <button className="btn-cancelar" onClick={() => setAbonosSoloModalOpen(false)}>
-                    Cerrar
-                </button>
+            {/* MODAL REGISTRAR DEVOLUCIÓN - SIMPLIFICADO */}
+            {modalDevolucionOpen && pedidoDevolucion && (
+  <div className="modal-overlay" onClick={handleCerrarDevolucion}>
+    <div className="modal-content-devolucion" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-header">
+        <h2>Registrar Devolución - Pedido #{pedidoDevolucion.id_pedido}</h2>
+        <button className="btn-cerrar" onClick={handleCerrarDevolucion} type="button">
+          <FaTimes />
+        </button>
+      </div>
+
+      <div className="modal-body-devolucion">
+        {/* INFORMACIÓN DEL PEDIDO */}
+        <div className="devolucion-info-pedido">
+          <div className="info-row">
+            <span><strong>Cliente:</strong> {pedidoDevolucion.cliente_nombre}</span>
+            <span><strong>Cédula:</strong> {pedidoDevolucion.cliente_cedula}</span>
+          </div>
+          <div className="info-row">
+            <span><strong>Fecha Entrega:</strong> {formatearFecha(pedidoDevolucion.fecha_entrega)}</span>
+            <span><strong>Garantía:</strong> {pedidoDevolucion.garantia} días</span>
+          </div>
+
+          {/* ⚠️ ADVERTENCIA SI ESTÁ FUERA DE PLAZO */}
+          {!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia) && (
+            <div className="advertencia-garantia-vencida">
+              <strong>⚠️ ADVERTENCIA: Garantía Vencida</strong>
+              <p>
+                La garantía venció el {calcularFechaGarantia(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)}.
+              </p>
             </div>
+          )}
         </div>
+
+        {/* FORMULARIO DEVOLUCIÓN */}
+        <div className="formulario-devolucion">
+          {/* MOTIVO */}
+          <div className="form-group">
+            <label htmlFor="motivo">
+              <strong>Motivo de la Devolución *</strong>
+            </label>
+            <select
+              id="motivo"
+              value={devolucionData.motivo}
+              onChange={(e) =>
+                setDevolucionData({ ...devolucionData, motivo: e.target.value })
+              }
+              className="input-devolucion"
+            >
+              <option value="">Selecciona un motivo...</option>
+              <option value="medidas_incorrectas">Medidas Incorrectas</option>
+              <option value="defecto_costura">Defecto de Costura</option>
+              <option value="diferencia_pedido">Diferencia con lo Solicitado</option>
+              <option value="calidad_material">Calidad del Material</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+
+          {/* DESCRIPCIÓN */}
+          <div className="form-group">
+            <label htmlFor="descripcion">
+              <strong>Descripción del Defecto</strong>
+            </label>
+            <textarea
+              id="descripcion"
+              value={devolucionData.descripcion}
+              onChange={(e) =>
+                setDevolucionData({ ...devolucionData, descripcion: e.target.value })
+              }
+              placeholder="Describe detalladamente el defecto encontrado..."
+              className="input-devolucion textarea"
+              rows={4}
+            />
+          </div>
+
+          {/* SOLUCIÓN */}
+          <div className="form-group">
+            <label htmlFor="solucion">
+              <strong>Solución a Aplicar *</strong>
+            </label>
+            <select
+              id="solucion"
+              value={devolucionData.solucion}
+              onChange={(e) => {
+                const nuevaSolucion = e.target.value;
+                // Si elige reembolso, cargar automáticamente el monto total
+                const nuevoMonto = nuevaSolucion === "reembolso" 
+                  ? parseFloat((pedidoDevolucion.total_pedido ?? pedidoDevolucion.totalPedido ?? 0).toString())
+                  : 0;
+                
+                setDevolucionData({ 
+                  ...devolucionData, 
+                  solucion: nuevaSolucion,
+                  monto: nuevoMonto
+                });
+              }}
+              className="input-devolucion"
+            >
+              <option value="reembolso">Reembolso Total</option>
+              <option value="nuevo_procedimiento">Nuevo Procedimiento Gratuito</option>
+            </select>
+          </div>
+
+          {/* MONTO - SOLO SI ES REEMBOLSO CON InputMoneda */}
+          {devolucionData.solucion === "reembolso" && (
+            <div className="form-group">
+              <label htmlFor="monto">
+                <strong>Monto a Reembolsar</strong>
+              </label>
+              <InputMoneda
+                value={devolucionData.monto}
+                onChange={(valor) =>
+                  setDevolucionData({
+                    ...devolucionData,
+                    monto: valor
+                  })
+                }
+                placeholder="$ 0,00"
+                disabled={true}
+              />
+              <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
+                Monto original del pedido: {formatCOP(parseFloat((pedidoDevolucion.total_pedido ?? pedidoDevolucion.totalPedido ?? 0).toString()))}
+              </small>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="modal-footer">
+        <button
+          className="btn-cancelar"
+          onClick={handleCerrarDevolucion}
+          type="button"
+        >
+          Cancelar
+        </button>
+        <button
+          className="btn-guardar"
+          onClick={handleGuardarDevolucion}
+          disabled={cargandoDevolucion}
+          type="button"
+        >
+          {cargandoDevolucion ? "Guardando..." : "✓ Registrar Devolución"}
+        </button>
+      </div>
     </div>
+  </div>
 )}
         </div>
     );
 };
+
+
 
 export default HistorialModule;

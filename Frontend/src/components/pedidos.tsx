@@ -7,14 +7,14 @@ import { obtenerAjustes, type Ajuste } from "../services/ajustesService";
 import { obtenerAcciones, type Accion } from "../services/accionesService";
 import { obtenerAjustesAccion, type AjusteAccion } from "../services/ajustesAccionService";
 import ModalPrenda from "../components/ModalPrenda";
+import ModalFactura from "../components/ModalFactura";
 import validators from '../utils/validators';
-import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { type Prenda } from "../services/prendasService";
+import { FaEdit, FaTrash, FaBox, FaSearch, FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEnvelope, FaCalendarAlt, FaClock, FaCheckCircle, FaDollarSign, FaExclamationTriangle, FaShoppingCart, FaFileInvoice, FaPercent } from "react-icons/fa";
 import { obtenerClientes, type Cliente as ClienteService } from "../services/clientesService";
 import { formatCOP } from '../utils/formatCurrency';
 import { InputMoneda } from "./InputMoneda";
 
-// Interfaces (manteniendo las existentes)
 interface Pedido {
   fechaInicio: string;
   fechaEntrega: string;
@@ -24,6 +24,7 @@ interface Pedido {
   abonoObservaciones?: string;
   totalPedido: number;
   saldoPendiente: number;
+  garantia?: string;  // ✅ NUEVO: Agregar campo de garantía
 }
 
 interface Cliente {
@@ -50,7 +51,6 @@ interface PedidoEntrega {
   fecha_entrega: string;
 }
 
-// Configuración de cajones basada en la imagen
 const CONFIG_CAJONES = [
   { id: 1, nombre: "Cajón 01", rango: "1-26" },
   { id: 2, nombre: "Cajón 02", rango: "27-53" },
@@ -68,72 +68,48 @@ const CONFIG_CAJONES = [
   { id: 14, nombre: "Cajón 14", rango: "Tintes 308-334" }
 ];
 
-// Clave para localStorage
 const PEDIDO_STORAGE_KEY = "pedido_en_proceso";
 
 export default function Pedidos() {
-  // Estados principales - cargando desde localStorage si existe
+  // ✅ ESTADO DE PEDIDO
   const [pedido, setPedido] = useState<Pedido>(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
     if (guardado) {
       const datos = JSON.parse(guardado);
-      return datos.pedido || {
-        fechaInicio: "",
-        fechaEntrega: "",
-        estado: "En proceso",  // ✅ Cambiar aquí
-        observaciones: "",
-        abonoInicial: "",
-        abonoObservaciones: "",
-        totalPedido: 0,
-        saldoPendiente: 0,
-      };
+      return datos.pedido || getDefaultPedido();
     }
-    return {
-      fechaInicio: "",
-      fechaEntrega: "",
-      estado: "En proceso",  // ✅ Cambiar aquí
-      observaciones: "",
-      abonoInicial: "",
-      abonoObservaciones: "",
-      totalPedido: 0,
-      saldoPendiente: 0,
-    };
+    return getDefaultPedido();
   });
 
+  // ✅ ESTADO DE CLIENTE
   const [cliente, setCliente] = useState<Cliente>(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
     if (guardado) {
       const datos = JSON.parse(guardado);
-      return datos.cliente || {
-        nombre: "",
-        cedula: "",
-        telefono: "",
-        direccion: "",
-        email: "",
-      };
+      return datos.cliente || getDefaultCliente();
     }
-    return {
-      nombre: "",
-      cedula: "",
-      telefono: "",
-      direccion: "",
-      email: "",
-    };
+    return getDefaultCliente();
   });
 
-  // Estados para entrega de pedidos - CORRECCIÓN
+  // ✅ ESTADOS DE ENTREGA (SIN DUPLICADOS)
   const [mostrarModalEntrega, setMostrarModalEntrega] = useState(false);
   const [pedidosLista, setPedidosLista] = useState<PedidoEntrega[]>([]);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoEntrega | null>(null);
   const [busquedaPedido, setBusquedaPedido] = useState("");
-  const [abonoEntrega, setAbonoEntrega] = useState<number>(0); // Cambiar a number
+  const [abonoEntrega, setAbonoEntrega] = useState<number>(0);
   const [cargandoEntrega, setCargandoEntrega] = useState(false);
+  const [errorEntrega, setErrorEntrega] = useState<string>("");
 
-  // Mini búsqueda de clientes dentro del formulario
+  // ✅ ESTADOS DE FACTURA (AGREGADOS)
+  const [mostrarModalFactura, setMostrarModalFactura] = useState(false);
+  const [datosFactura, setDatosFactura] = useState<any>(null);
+
+  // ✅ BÚSQUEDA DE CLIENTES
   const [clientesLista, setClientesLista] = useState<ClienteService[]>([]);
   const [busquedaCliente, setBusquedaCliente] = useState("");
   const [sugerenciasClientes, setSugerenciasClientes] = useState<ClienteService[]>([]);
 
+  // ✅ DATOS DEL FORMULARIO
   const [cajones, setCajones] = useState<Cajon[]>([]);
   const [codigos, setCodigos] = useState<Codigo[]>([]);
   const [codigosFiltrados, setCodigosFiltrados] = useState<Codigo[]>([]);
@@ -153,8 +129,8 @@ export default function Pedidos() {
     }
     return [];
   });
-  
-  // Estados para prendas
+
+  // ✅ PRENDAS
   const [mostrarModalPrenda, setMostrarModalPrenda] = useState(false);
   const [prendasTemporales, setPrendasTemporales] = useState<Prenda[]>(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
@@ -165,20 +141,24 @@ export default function Pedidos() {
     return [];
   });
   const [prendaEditando, setPrendaEditando] = useState<number | null>(null);
-  
-  // Estados para ajustes y combinaciones
+
+  // ✅ AJUSTES Y ACCIONES
   const [ajustes, setAjustes] = useState<Ajuste[]>([]);
   const [acciones, setAcciones] = useState<Accion[]>([]);
   const [combinaciones, setCombinaciones] = useState<AjusteAccion[]>([]);
 
-  // Estados de carga
+  // ✅ CARGANDO
   const [cargandoCajones, setCargandoCajones] = useState(false);
   const [cargandoCodigos, setCargandoCodigos] = useState(false);
   const [cargandoAjustes, setCargandoAjustes] = useState(false);
   const [errores, setErrores] = useState<Errores>({});
   const [cargando, setCargando] = useState(false);
 
-  // Estado para modificar precio final
+  // ✅ ESTADOS DE IMAGEN (AGREGAR AQUÍ)
+  const [imagenFile, setImagenFile] = useState<File | null>(null);
+  const [imagenPreview, setImagenPreview] = useState<string | null>(null);
+
+  // ✅ MODIFICACIÓN DE PRECIO
   const [mostrarModificarPrecio, setMostrarModificarPrecio] = useState(false);
   const [precioModificado, setPrecioModificado] = useState(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
@@ -190,9 +170,30 @@ export default function Pedidos() {
   });
   const [motivoModificacion, setMotivoModificacion] = useState("");
 
-  // Estados para foto del pedido (preview + archivo)
-  const [imagenPreview, setImagenPreview] = useState<string | null>(null);
-  const [imagenFile, setImagenFile] = useState<File | null>(null);
+  // ✅ FUNCIONES AUXILIARES
+  function getDefaultPedido(): Pedido {
+    return {
+      fechaInicio: "",
+      fechaEntrega: "",
+      estado: "En proceso",
+      observaciones: "",
+      abonoInicial: "",
+      abonoObservaciones: "",
+      totalPedido: 0,
+      saldoPendiente: 0,
+      garantia: "",  // ✅ NUEVO
+    };
+  }
+
+  function getDefaultCliente(): Cliente {
+    return {
+      nombre: "",
+      cedula: "",
+      telefono: "",
+      direccion: "",
+      email: "",
+    };
+  }
 
   // Handler para cambiar la imagen (preview)
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -296,29 +297,20 @@ export default function Pedidos() {
     }
   };
 
-  // Agregar este estado para almacenar el error de entrega
-  const [errorEntrega, setErrorEntrega] = useState<string>("");
-
   // Función para manejar la entrega del pedido - CORRECCIÓN
   const handleEntregarPedido = async () => {
     if (!pedidoSeleccionado) return;
 
-    // Limpiar error anterior
     setErrorEntrega("");
 
-    // ✅ VALIDACIÓN: Verificar que el abono no exceda el saldo pendiente
     const saldoPendiente = Number(pedidoSeleccionado.saldo);
     const abonoIngresado = Number(abonoEntrega);
 
-    // No permitir abono negativo
     if (abonoIngresado < 0) {
-      setErrorEntrega(
-        `El abono no puede ser negativo.`
-      );
+      setErrorEntrega(`El abono no puede ser negativo.`);
       return;
     }
 
-    // No permitir abono mayor al saldo pendiente
     if (abonoIngresado > saldoPendiente) {
       setErrorEntrega(
         `❌ El abono ingresado (${formatCOP(abonoIngresado)}) no puede ser mayor al saldo pendiente (${formatCOP(saldoPendiente)}). Ingrese un monto igual o menor.`
@@ -326,11 +318,8 @@ export default function Pedidos() {
       return;
     }
 
-    // OBTENER usuario del localStorage
     const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
     const idUsuario = usuarioGuardado?.id_usuario || 1;
-
-    console.log("Entregando pedido con usuario:", idUsuario);
 
     try {
       setCargandoEntrega(true);
@@ -346,14 +335,25 @@ export default function Pedidos() {
       });
 
       if (response.ok) {
-        alert("✓ Pedido marcado como entregado exitosamente");
+        // ✅ OBTENER datos completos del pedido para la factura
+        const responsePedido = await fetch(`http://localhost:3000/api/pedidos/${pedidoSeleccionado.id_pedido}`);
+        const pedidoCompleto = await responsePedido.json();
+
+        // ✅ Mostrar modal de factura
+        setDatosFactura({
+          ...pedidoSeleccionado,
+          prendas: pedidoCompleto.prendas || [],
+          ...pedidoCompleto
+        });
+        setMostrarModalFactura(true);
+
+        // Cerrar modal de entrega
         setMostrarModalEntrega(false);
         setPedidoSeleccionado(null);
         setAbonoEntrega(0);
         setBusquedaPedido("");
-        setErrorEntrega(""); // Limpiar error
+        setErrorEntrega("");
         
-        // Recargar la lista de pedidos
         cargarPedidosParaEntrega();
       } else {
         const error = await response.json();
@@ -481,6 +481,14 @@ export default function Pedidos() {
     
     if (abonoActual > totalActual) {
       nuevosErrores.abonoInicial = `El abono (${formatCOP(abonoActual)}) no puede ser mayor al total del pedido (${formatCOP(totalActual)}).`;
+    }
+
+    // ✅ VALIDACIÓN DE GARANTÍA
+    if (pedido.garantia) {
+      const garantiaNum = Number(pedido.garantia);
+      if (garantiaNum < 0 || garantiaNum > 30) {
+        nuevosErrores.garantia = 'La garantía debe ser entre 0 y 30 días.';
+      }
     }
 
     setErrores(nuevosErrores);
@@ -756,6 +764,7 @@ export default function Pedidos() {
           pedido: {
             ...pedido,
             totalPedido: totalFinal,
+            garantia: pedido.garantia || null,  // ✅ NUEVO
             observaciones_abono: pedido.abonoObservaciones || null,
             observaciones: motivoModificacion 
               ? `${pedido.observaciones || ''}\nMODIFICACIÓN DE PRECIO: ${motivoModificacion} - Precio original: $${calcularTotalPrendas().toLocaleString()}, Precio final: $${totalFinal.toLocaleString()}`
@@ -791,6 +800,7 @@ export default function Pedidos() {
         abonoObservaciones: "",
         totalPedido: 0,
         saldoPendiente: 0,
+        garantia: "",  // ✅ NUEVO: Resetear garantía
       });
       setCajonSeleccionado(null);
       setCodigosSeleccionados([]);
@@ -898,7 +908,7 @@ export default function Pedidos() {
             backgroundColor: "#3b82f6"
           }}
         >
-           Entrega de Pedidos
+          <FaBox style={{ marginRight: "8px" }} /> Entrega de Pedidos
         </button>
       </div>
 
@@ -907,7 +917,7 @@ export default function Pedidos() {
         <div className="pedido-form card">
           {/* Información del Cliente */}
           <div className="cliente-form">
-            <h2>Información del Cliente</h2>
+            <h2><FaUser style={{ marginRight: "8px" }} /> Información del Cliente</h2>
             {/* Mini búsqueda rápida de clientes */}
             <div className="cliente-mini-search">
               <input
@@ -915,7 +925,7 @@ export default function Pedidos() {
                 placeholder="Buscar cliente rápido..."
                 value={busquedaCliente}
                 onChange={handleBusquedaCliente}
-                onFocus={handleFocusCliente} // AGREGAR onFocus
+                onFocus={handleFocusCliente}
                 className="input-mini-busqueda"
               />
               {sugerenciasClientes.length > 0 && (
@@ -938,6 +948,11 @@ export default function Pedidos() {
               (campo) => (
                 <div className="field" key={campo}>
                   <label>
+                    {campo === "nombre" && <FaUser style={{ marginRight: "6px" }} />}
+                    {campo === "cedula" && <FaIdCard style={{ marginRight: "6px" }} />}
+                    {campo === "telefono" && <FaPhone style={{ marginRight: "6px" }} />}
+                    {campo === "direccion" && <FaMapMarkerAlt style={{ marginRight: "6px" }} />}
+                    {campo === "email" && <FaEnvelope style={{ marginRight: "6px" }} />}
                     {campo.charAt(0).toUpperCase() + campo.slice(1)}:
                   </label>
                   <input
@@ -956,10 +971,10 @@ export default function Pedidos() {
           </div>
 
           {/* Información del Pedido */}
-          <h2>Información del Pedido</h2>
+          <h2><FaShoppingCart style={{ marginRight: "8px" }} /> Información del Pedido</h2>
 
           <div className="field">
-            <label>Fecha de Inicio:</label>
+            <label><FaCalendarAlt style={{ marginRight: "6px" }} /> Fecha de Inicio:</label>
             <input
               type="date"
               name="fechaInicio"
@@ -972,7 +987,7 @@ export default function Pedidos() {
           </div>
 
           <div className="field">
-            <label>Fecha de Entrega:</label>
+            <label><FaCalendarAlt style={{ marginRight: "6px" }} /> Fecha de Entrega:</label>
             <input
               type="date"
               name="fechaEntrega"
@@ -985,22 +1000,58 @@ export default function Pedidos() {
           </div>
 
           <div className="field">
-            <label>Estado:</label>
+            <label><FaClock style={{ marginRight: "6px" }} /> Estado:</label>
             <select
               name="estado"
               value={pedido.estado}
               onChange={handleInputPedido}
               disabled
-              className="input-disabled"  // ✅ Agregar esta clase
+              className="input-disabled"
             >
               <option value="En proceso">En proceso</option>
             </select>
             {errores.estado && <p className="error">{errores.estado}</p>}
           </div>
 
-          {/* Sección de prendas (movida): Gestión de Prendas integrada aquí */}
+          {/* NUEVO CAMPO DE GARANTÍA */}
+          <div className="field">
+            <label><FaCheckCircle style={{ marginRight: "6px" }} /> Garantía (Plazo en días):</label>
+            <input
+              type="number"
+              name="garantia"
+              value={pedido.garantia || ""}
+              onChange={(e) => {
+                const valor = e.target.value;
+                if (valor === "") {
+                  setPedido(prev => ({
+                    ...prev,
+                    garantia: ""
+                  }));
+                } else {
+                  const num = Math.max(0, Math.min(30, Number(valor)));
+                  setPedido(prev => ({
+                    ...prev,
+                    garantia: num.toString()
+                  }));
+                }
+              }}
+              placeholder="Ej: 30"
+              min="0"
+              max="30"
+              step="1"
+              className="input-garantia"
+            />
+            {errores.garantia && (
+              <p className="error">{errores.garantia}</p>
+            )}
+            <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
+              Máximo 30 días (Ej: 5, 15, 30)
+            </small>
+          </div>
+
+          {/* Sección de prendas */}
           <div className="prendas-section card">
-            <h2>Gestión de Prendas</h2>
+            <h2><FaShoppingCart style={{ marginRight: "8px" }} /> Gestión de Prendas</h2>
             {errores.prendas && <p className="error">{errores.prendas}</p>}
             
             {/* Lista de prendas temporales */}
@@ -1072,8 +1123,8 @@ export default function Pedidos() {
                 
                 {/* Total del pedido */}
                 <div className="total-pedido">
-                  <h3>Total Calculado: {formatCOP(calcularTotalPrendas())}</h3>
-                  <h3>Total Final: {formatCOP(precioModificado && precioModificado > 0 ? precioModificado : calcularTotalPrendas())}</h3>
+                  <h3><FaDollarSign style={{ marginRight: "6px" }} /> Total Calculado: {formatCOP(calcularTotalPrendas())}</h3>
+                  <h3><FaDollarSign style={{ marginRight: "6px" }} /> Total Final: {formatCOP(precioModificado && precioModificado > 0 ? precioModificado : calcularTotalPrendas())}</h3>
                 </div>
               </div>
             )}
@@ -1100,7 +1151,7 @@ export default function Pedidos() {
           </div>
 
           <div className="field">
-            <label>Abono Inicial (Opcional):</label>
+            <label><FaDollarSign style={{ marginRight: "6px" }} /> Abono Inicial (Opcional):</label>
             <InputMoneda
               value={Number(pedido.abonoInicial || 0)}
               onChange={(valor) => {
@@ -1133,15 +1184,14 @@ export default function Pedidos() {
             />
           </div>
           
-          {/* Resumen del pedido con opción de modificar precio */}
+          {/* Resumen del pedido */}
           <div className="resumen-pedido">
             <div className="precio-header">
-              <h3>Total del Pedido</h3>
+              <h3><FaDollarSign style={{ marginRight: "6px" }} /> Total del Pedido</h3>
               <button 
                 type="button"
                 className="btn-modificar-precio"
                 onClick={() => setMostrarModificarPrecio(true)}
-             
               >
                 <FaEdit /> Modificar
               </button>
@@ -1175,9 +1225,9 @@ export default function Pedidos() {
 
         {/* Cajones y Códigos */}
         <div className="cajones-codigos-container">
-          {/* Cajones - Cargados dinámicamente */}
+          {/* Cajones */}
           <div className="cajones-section card">
-            <h2>Seleccionar Cajón</h2>
+            <h2><FaBox style={{ marginRight: "8px" }} /> Seleccionar Cajón</h2>
             {errores.cajon && <p className="error" style={{textAlign: 'center'}}>{errores.cajon}</p>}
             
             {cargandoCajones ? (
@@ -1186,22 +1236,21 @@ export default function Pedidos() {
               <div className="cajones-grid">
                 {cajones.map((cajon) => {
                   const infoCajon = getInfoCajon(cajon.id_cajon);
-                  const estaOcupado = cajon.estado === "ocupado"; // ✅ Nuevo
+                  const estaOcupado = cajon.estado === "ocupado";
                   
                   return (
                     <div 
                       key={cajon.id_cajon}
                       className={getClaseCajon(cajon)}
-                      onClick={() => !estaOcupado && handleSeleccionarCajon(cajon.id_cajon)} // ✅ Cambio
+                      onClick={() => !estaOcupado && handleSeleccionarCajon(cajon.id_cajon)}
                       style={{
-                        opacity: estaOcupado ? 0.5 : 1, // ✅ Nuevo - transparencia
-                        cursor: estaOcupado ? "not-allowed" : "pointer", // ✅ Nuevo
-                        pointerEvents: estaOcupado ? "none" : "auto" // ✅ Nuevo - deshabilitado
+                        opacity: estaOcupado ? 0.5 : 1,
+                        cursor: estaOcupado ? "not-allowed" : "pointer",
+                        pointerEvents: estaOcupado ? "none" : "auto"
                       }}
                     >
                       <div className="cajon-nombre">{infoCajon.nombre}</div>
                       <div className="cajon-rango">{infoCajon.rango}</div>
-                      {/* ❌ Eliminar el div estado-cajon */}
                     </div>
                   );
                 })}
@@ -1213,7 +1262,7 @@ export default function Pedidos() {
           {cajonSeleccionado && (
             <div className="codigos-section card">
               <h2>
-                Códigos Disponibles - {getInfoCajon(cajonSeleccionado).nombre}
+                <FaSearch style={{ marginRight: "6px" }} /> Códigos Disponibles - {getInfoCajon(cajonSeleccionado).nombre}
               </h2>
               {errores.codigos && <p className="error">{errores.codigos}</p>}
               
@@ -1231,7 +1280,7 @@ export default function Pedidos() {
                         checked={codigosSeleccionados.includes(codigo.id_codigo)}
                         onChange={() => handleSeleccionarCodigo(codigo.id_codigo)}
                         disabled={codigo.estado === "ocupado"}
-                        className={codigo.estado === "ocupado" ? "input-disabled" : ""} // ✅ Agregar clase
+                        className={codigo.estado === "ocupado" ? "input-disabled" : ""}
                       />
                       <span className={`codigo-numero ${codigo.estado === "ocupado" ? "ocupado" : ""}`}>
                         {codigo.codigo_numero}
@@ -1267,11 +1316,11 @@ export default function Pedidos() {
       {mostrarModalEntrega && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "800px" }}>
-            <h2>📦 Entrega de Pedidos</h2>
+            <h2><FaBox style={{ marginRight: "8px" }} /> Entrega de Pedidos</h2>
             
             {/* Barra de búsqueda */}
             <div className="field">
-              <label>Buscar Pedido:</label>
+              <label><FaSearch style={{ marginRight: "6px" }} /> Buscar Pedido:</label>
               <input
                 type="text"
                 placeholder="Buscar por nombre del cliente, cédula o ID..."
@@ -1297,7 +1346,6 @@ export default function Pedidos() {
                     className={`pedido-item ${pedidoSeleccionado?.id_pedido === pedido.id_pedido ? 'selected' : ''}`}
                     onClick={() => {
                       setPedidoSeleccionado(pedido);
-                      // Establecer el saldo como abono inicial (convertir a número)
                       setAbonoEntrega(Number(pedido.saldo) || 0);
                     }}
                     style={{
@@ -1314,10 +1362,10 @@ export default function Pedidos() {
                       <div>
                         <strong>{pedido.cliente_nombre}</strong>
                         <div style={{ fontSize: "0.9rem", color: "#666" }}>
-                          Cédula: {pedido.cliente_cedula} | Pedido #: {pedido.id_pedido}
+                          <FaIdCard style={{ marginRight: "4px" }} /> Cédula: {pedido.cliente_cedula} | <FaFileInvoice style={{ marginRight: "4px" }} /> Pedido #: {pedido.id_pedido}
                         </div>
                         <div style={{ fontSize: "0.9rem", color: "#666" }}>
-                          Total: {formatCOP(Number(pedido.total_pedido))} | Abonado: {formatCOP(Number(pedido.abono))} | Saldo: {formatCOP(Number(pedido.saldo))}
+                          <FaDollarSign style={{ marginRight: "4px" }} /> Total: {formatCOP(Number(pedido.total_pedido))} | Abonado: {formatCOP(Number(pedido.abono))} | Saldo: {formatCOP(Number(pedido.saldo))}
                         </div>
                       </div>
                       <div style={{ textAlign: "right" }}>
@@ -1329,7 +1377,7 @@ export default function Pedidos() {
                           fontSize: "0.8rem",
                           fontWeight: "bold"
                         }}>
-                          Pedido
+                          <FaShoppingCart style={{ marginRight: "4px" }} /> Pedido
                         </div>
                       </div>
                     </div>
@@ -1353,7 +1401,6 @@ export default function Pedidos() {
               }}>
                 <h3>Información de Entrega</h3>
                 
-                {/* ✅ AGREGAR ESTE BLOQUE PARA MOSTRAR EL ERROR */}
                 {errorEntrega && (
                   <p className="error" style={{ 
                     padding: "10px", 
@@ -1363,22 +1410,22 @@ export default function Pedidos() {
                     borderRadius: "4px",
                     color: "#c33"
                   }}>
-                    ⚠️ {errorEntrega}
+                    <FaExclamationTriangle style={{ marginRight: "6px" }} /> {errorEntrega}
                   </p>
                 )}
                 
                 <div className="field">
-                  <label>Ingrese el abono en este momento (Saldo Pendiente):</label>
+                  <label><FaDollarSign style={{ marginRight: "6px" }} /> Ingrese el abono en este momento (Saldo Pendiente):</label>
                   <InputMoneda
                     value={abonoEntrega}
                     onChange={(valor) => {
                       setAbonoEntrega(Number(valor));
-                      setErrorEntrega(""); // Limpiar error al escribir
+                      setErrorEntrega("");
                     }}
                     placeholder="Ingrese el abono"
                   />
                   <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
-                    💰 Saldo pendiente total: <strong>{formatCOP(Number(pedidoSeleccionado.saldo))}</strong>
+                    <FaDollarSign style={{ marginRight: "4px" }} /> Saldo pendiente total: <strong>{formatCOP(Number(pedidoSeleccionado.saldo))}</strong>
                   </small>
                 </div>
 
@@ -1392,19 +1439,19 @@ export default function Pedidos() {
                   borderRadius: "6px"
                 }}>
                   <div>
-                    <strong>👤 Cliente:</strong> {pedidoSeleccionado.cliente_nombre}
+                    <strong><FaUser style={{ marginRight: "4px" }} /> Cliente:</strong> {pedidoSeleccionado.cliente_nombre}
                   </div>
                   <div>
-                    <strong>🆔 Cédula:</strong> {pedidoSeleccionado.cliente_cedula}
+                    <strong><FaIdCard style={{ marginRight: "4px" }} /> Cédula:</strong> {pedidoSeleccionado.cliente_cedula}
                   </div>
                   <div>
-                    <strong>💵 Total Pedido:</strong> {formatCOP(Number(pedidoSeleccionado.total_pedido))}
+                    <strong><FaDollarSign style={{ marginRight: "4px" }} /> Total Pedido:</strong> {formatCOP(Number(pedidoSeleccionado.total_pedido))}
                   </div>
                   <div>
-                    <strong>✓ Abonado:</strong> {formatCOP(Number(pedidoSeleccionado.abono))}
+                    <strong><FaCheckCircle style={{ marginRight: "4px" }} /> Abonado:</strong> {formatCOP(Number(pedidoSeleccionado.abono))}
                   </div>
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <strong>⚠️ Saldo Pendiente:</strong> {formatCOP(Number(pedidoSeleccionado.saldo))}
+                    <strong><FaExclamationTriangle style={{ marginRight: "4px" }} /> Saldo Pendiente:</strong> {formatCOP(Number(pedidoSeleccionado.saldo))}
                   </div>
                 </div>
               </div>
@@ -1437,18 +1484,29 @@ export default function Pedidos() {
                   opacity: !pedidoSeleccionado ? 0.6 : 1
                 }}
               >
-                {cargandoEntrega ? "⏳ Procesando..." : "✓ Entregar Pedido"}
+                {cargandoEntrega ? <FaClock style={{ marginRight: "6px" }} /> : <FaCheckCircle style={{ marginRight: "6px" }} />}
+                {cargandoEntrega ? "Procesando..." : "Entregar Pedido"}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Modal de Factura */}
+      <ModalFactura
+        isOpen={mostrarModalFactura}
+        facturaData={datosFactura}
+        onClose={() => {
+          setMostrarModalFactura(false);
+          setDatosFactura(null);
+        }}
+      />
+
       {/* Modal de modificar precio final */}
       {mostrarModificarPrecio && (
         <div className="modal-overlay">
           <div className="modal-content-modificar">
-            <h2>Modificar Precio Final</h2>
+            <h2><FaDollarSign style={{ marginRight: "8px" }} /> Modificar Precio Final</h2>
             
             <div className="form-group-modificar">
               <label>Total Calculado:</label>
@@ -1460,9 +1518,8 @@ export default function Pedidos() {
               />
             </div>
 
-            {/* ✅ SELECTOR DE DESCUENTOS MEJORADO */}
             <div className="form-group-modificar">
-              <label>Descuentos Rápidos:</label>
+              <label><FaPercent style={{ marginRight: "6px" }} /> Descuentos Rápidos:</label>
               <select
                 onChange={(e) => {
                   const porcentaje = Number(e.target.value);
@@ -1488,7 +1545,7 @@ export default function Pedidos() {
             </div>
 
             <div className="form-group-modifica">
-              <label>Nuevo Precio Final *</label>
+              <label><FaDollarSign style={{ marginRight: "6px" }} /> Nuevo Precio Final *</label>
               <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
                 <div style={{ flex: 1 }}>
                   <InputMoneda

@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     nombre VARCHAR(100),
     email VARCHAR(150),
     clave VARCHAR(500),
-    foto LONGBLOB,
+    reset_codigo VARCHAR(255) NULL,
+    reset_codigo_expires DATETIME NULL,
     id_rol INT,
     FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -78,15 +79,20 @@ CREATE TABLE IF NOT EXISTS pedido_cliente (
     abono DECIMAL(10,2) DEFAULT 0,
     saldo DECIMAL(10,2) DEFAULT 0,
     observaciones VARCHAR(500),
-    garantia varchar(500),
-    estado ENUM('en_proceso','entregado') DEFAULT 'en_proceso',
+    garantia INT NULL DEFAULT NULL COMMENT 'Plazo de garantía en días',
+    estado ENUM('en_proceso', 'entregado', 'devuelto') DEFAULT 'en_proceso',
+    motivo_devolucion VARCHAR(100),
+    descripcion_devolucion LONGTEXT,
+    solucion_devolucion VARCHAR(50),
+    monto_devolucion DECIMAL(10, 2) DEFAULT 0,
+    fecha_devolucion DATETIME,
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS cajones (
     id_cajon INT AUTO_INCREMENT PRIMARY KEY,
     nombre_cajon VARCHAR(30),
-    estado VARCHAR(20) DEFAULT NULL
+     estado VARCHAR(20) DEFAULT NULL
 );
 
 CREATE TABLE IF NOT EXISTS codigos (
@@ -159,7 +165,7 @@ WITH RECURSIVE seq AS (
   SELECT n + 1 FROM seq WHERE n < 400
 )
 SELECT LPAD(n, 3, '0'),
-       CEIL(n / 26)  -- cada 25 códigos cambia de cajón
+       CEIL(n / 26)  -- cada 26 códigos cambia de cajón
 FROM seq;
 
 
@@ -167,44 +173,45 @@ FROM seq;
 
 
 
-INSERT INTO ajustes (nombre_ajuste) VALUES
-('Cintura'),
-('Bota'),
-('Espalda'),
-('Puño'),
-('Ruedo'),
-('Hombro'),
-('Manga'),
-('Cierre'),
-('Tiro'),
-('Lados'),
-('Bolsillo'),
-('Tinturados'),
-('Cuello'),
-('Sisa'),
-('Dobladillo'),
-('Parche'),
-('Pretina');
+-- 17 Ajustes con precios aleatorios en formato colombiano
+INSERT INTO ajustes (nombre_ajuste, precio_ajuste) VALUES
+('Cintura', 15000.00),
+('Bota', 12000.00),
+('Espalda', 18000.00),
+('Puño', 10000.00),
+('Ruedo', 8500.00),
+('Hombro', 20000.00),
+('Manga', 16000.00),
+('Cierre', 9000.00),
+('Tiro', 14000.00),
+('Lados', 17000.00),
+('Bolsillo', 19000.00),
+('Tinturados', 25000.00),
+('Cuello', 13000.00),
+('Sisa', 11000.00),
+('Dobladillo', 7500.00),
+('Parche', 22000.00),
+('Pretina', 21000.00);
 
--- 17 Acciones
-INSERT INTO acciones (nombre_accion) VALUES
-('Entallar'),
-('Adaptado'),
-('Subir'),
-('Bajar'),
-('Recoser'),
-('Costura Sencilla'),
-('Cambiar'),
-('Quitar'),
-('Pegar'),
-('Refuerzo'),
-('Desflecado'),
-('Reemplazar'),
-('Ajustar'),
-('Reforzar'),
-('a mano'),
-('Menos'),
-('embonada');
+-- 17 Acciones con precios aleatorios en formato colombiano
+INSERT INTO acciones (nombre_accion, precio_acciones) VALUES
+('Entallar', 35000.00),
+('Adaptado', 40000.00),
+('Subir', 28000.00),
+('Bajar', 28000.00),
+('Recoser', 32000.00),
+('Costura Sencilla', 25000.00),
+('Cambiar', 45000.00),
+('Quitar', 22000.00),
+('Pegar', 30000.00),
+('Refuerzo', 38000.00),
+('Desflecado', 26000.00),
+('Reemplazar', 50000.00),
+('Ajustar', 33000.00),
+('Reforzar', 36000.00),
+('a mano', 42000.00),
+('Menos', 20000.00),
+('embonada', 44000.00);
 
 INSERT INTO prendas (tipo, descripcion) VALUES
 ('Jean', 'Jean azul clásico'),
@@ -250,7 +257,7 @@ VALUES
 -- La contraseña es: 1
 
 
-
+select * from acciones;
 select * from clientes;
 select * from codigos;
 select * from detalle_pedido_combo;
@@ -263,9 +270,34 @@ select * from ajustes;
 select * from historial_abonos;
 select * from movimientos_caja;
 
+
+
+ALTER TABLE usuarios ADD COLUMN reset_codigo VARCHAR(255) NULL;
+ALTER TABLE usuarios ADD COLUMN reset_codigo_expires DATETIME NULL;
+
+
+ALTER TABLE usuarios ADD COLUMN reset_token VARCHAR(255) NULL;
+ALTER TABLE usuarios ADD COLUMN reset_token_expires DATETIME NULL;
+
+ALTER TABLE usuarios ADD COLUMN token_recuperacion VARCHAR(64) NULL;
+ALTER TABLE usuarios ADD COLUMN expiracion_token DATETIME NULL;
 ALTER TABLE movimientos_caja 
 MODIFY COLUMN fecha_movimiento DATETIME DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE ajustes_accion ADD COLUMN descripcion_combinacion VARCHAR(255);
 ALTER TABLE ajustes_accion DROP CONSTRAINT id_ajuste_id_accion_unique;
 ALTER TABLE ajustes_accion DROP INDEX `id_ajuste_id_accion_unique`;
-drop database clinicabluyin
+drop database clinicabluyin;
+use clinicabluyin;
+
+
+ALTER TABLE pedido_cliente ADD COLUMN garantia INT NULL DEFAULT NULL COMMENT 'Plazo de garantía en días';
+
+
+-- Agregar columnas simples a pedido_cliente (sin tablas extra)
+ALTER TABLE pedido_cliente ADD COLUMN motivo_devolucion VARCHAR(100);
+ALTER TABLE pedido_cliente ADD COLUMN   descripcion_devolucion LONGTEXT;
+ALTER TABLE pedido_cliente ADD COLUMN  solucion_devolucion VARCHAR(50);
+ALTER TABLE pedido_cliente ADD COLUMN  monto_devolucion DECIMAL(10, 2) DEFAULT 0;
+ALTER TABLE pedido_cliente ADD COLUMN  fecha_devolucion DATETIME;
+
+ALTER TABLE pedido_cliente MODIFY COLUMN estado ENUM('en_proceso', 'entregado', 'devuelto') DEFAULT 'en_proceso';

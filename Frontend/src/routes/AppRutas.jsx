@@ -8,7 +8,6 @@ import { PermisosPagina } from "../pages/PermisosPagina";
 import { RolPermisoPagina } from "../pages/RolPermisoPagina";
 import { ControlAdministrador } from "../pages/ControlAdministrador";
 import { Bienvenido } from "../pages/Bienvenido";
-import Inicio from "../pages/Inicio";
 import Clientes from "../pages/Clientes";
 import Pedidos from "../pages/Pedidos";
 import HistorialPedidos from "../pages/HistorialPedidos";
@@ -46,28 +45,13 @@ export const AppRutas = () => (
             }
         />
         <Route
-            path="/roles"
-            element={
-                <PrivateRoute allowedRoles={["Administrador"]}>
-                    <RolesPagina />
-                </PrivateRoute>
-            }
+        
         />
         <Route
-            path="/permisos"
-            element={
-                <PrivateRoute allowedRoles={["Administrador"]}>
-                    <PermisosPagina />
-                </PrivateRoute>
-            }
+         
         />
         <Route
-            path="/rol-permisos"
-            element={
-                <PrivateRoute allowedRoles={["Administrador"]}>
-                    <RolPermisoPagina />
-                </PrivateRoute>
-            }
+          
         />
         <Route
             path="/control-administrador"
@@ -80,20 +64,10 @@ export const AppRutas = () => (
 
         {/* Rutas accesibles para cualquier usuario autenticado */}
         <Route
-            path="/bienvenido"
-            element={
-                <PrivateRoute>
-                    <Bienvenido />
-                </PrivateRoute>
-            }
+          
         />
         <Route
-            path="/inicio"
-            element={
-                <PrivateRoute>
-                    <Inicio />
-                </PrivateRoute>
-            }
+           
         />
         <Route
             path="/clientes"

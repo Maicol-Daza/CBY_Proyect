@@ -4,7 +4,7 @@ import "../styles/moduloCaja.css";
 import "../styles/inputMoneda.css";
 import { crearMovimiento, obtenerMovimientos, type Movimiento } from "../services/movimientos_caja";
 import { formatCOP } from "../utils/formatCurrency";
-import { FaArrowTrendUp, FaArrowTrendDown } from "react-icons/fa6";
+import { FaArrowTrendUp, FaArrowTrendDown, FaFileExcel, FaFilePdf, FaMoneyBillWave } from "react-icons/fa6";
 import { Icon } from "@iconify/react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -259,25 +259,41 @@ export const CajaModule = () => {
   };
 
   const handleCrearMovimiento = async () => {
+    // Validar campos obligatorios
     if (!nuevoMovimiento.descripcion.trim() || nuevoMovimiento.monto <= 0) {
       alert("Por favor completa todos los campos correctamente");
       return;
+    }
+
+    // VALIDAR SALDO DISPONIBLE PARA EGRESOS
+    if (nuevoMovimiento.tipo === "salida") {
+      const saldoDisponible = totalAcumulado;
+      
+      if (nuevoMovimiento.monto > saldoDisponible) {
+        alert(
+          `❌ Saldo insuficiente\n\n` +
+          `Saldo disponible: ${formatCOP(saldoDisponible)}\n` +
+          `Intenta retirar: ${formatCOP(nuevoMovimiento.monto)}\n` +
+          `Falta: ${formatCOP(nuevoMovimiento.monto - saldoDisponible)}`
+        );
+        return; // IMPORTANTE: Detener aquí
+      }
     }
 
     // OBTENER usuario del localStorage directamente
     const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
     const idUsuario = usuarioGuardado?.id_usuario || 1;
 
-    console.log("Usuario enviando movimiento:", idUsuario, usuarioGuardado); // DEBUG
+    console.log("Usuario enviando movimiento:", idUsuario, usuarioGuardado);
 
     try {
       setCargando(true);
       await crearMovimiento({
         ...nuevoMovimiento,
-        id_usuario: idUsuario  // Usar esto en lugar de user?.id_usuario
+        id_usuario: idUsuario
       });
       
-      alert("Movimiento registrado correctamente");
+      alert("✅ Movimiento registrado correctamente");
       setNuevoMovimiento({
         tipo: "entrada",
         descripcion: "",
@@ -334,14 +350,16 @@ export const CajaModule = () => {
               onClick={exportarExcel}
               title="Exportar a Excel"
             >
-              📊 Excel
+              <FaFileExcel style={{ marginRight: "8px" }} />
+              Excel
             </button>
             <button 
               className="btn-exportar pdf"
               onClick={exportarPDF}
               title="Exportar a PDF"
             >
-              📄 PDF
+              <FaFilePdf style={{ marginRight: "8px" }} />
+              PDF
             </button>
           </div>
         </div>
@@ -501,6 +519,12 @@ export const CajaModule = () => {
               </button>
             </div>
 
+            {/* INDICADOR DE SALDO DISPONIBLE */}
+            <div className="saldo-info">
+              <span><FaMoneyBillWave style={{ marginRight: "8px" }} />Saldo disponible:</span>
+              <strong>{formatCOP(totalAcumulado)}</strong>
+            </div>
+
             <div className="form-movimiento">
               <div className="field">
                 <label>Tipo de Movimiento *</label>
@@ -554,6 +578,14 @@ export const CajaModule = () => {
                     {nuevoMovimiento.tipo === "entrada" ? "+" : "-"}{formatCOP(nuevoMovimiento.monto)}
                   </strong>
                 </div>
+                {nuevoMovimiento.tipo === "salida" && (
+                  <div className="resumen-item">
+                    <span>Saldo después:</span>
+                    <strong style={{ color: totalAcumulado - nuevoMovimiento.monto >= 0 ? '#10b981' : '#ef4444' }}>
+                      {formatCOP(totalAcumulado - nuevoMovimiento.monto)}
+                    </strong>
+                  </div>
+                )}
                 <div className="resumen-item">
                   <span>Descripción:</span>
                   <strong>{nuevoMovimiento.descripcion || "Sin descripción"}</strong>

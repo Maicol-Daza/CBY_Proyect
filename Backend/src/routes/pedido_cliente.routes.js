@@ -11,5 +11,6 @@ router.post('/', validarCliente, validarPedido, (req, res) => pedidoController.c
 router.put('/:id', validarCliente, validarPedido, (req, res) => pedidoController.actualizarPedido(req, res));
 router.delete('/:id', (req, res) => pedidoController.eliminarPedido(req, res));
 router.put('/:id/estado', (req, res) => pedidoController.cambiarEstado(req, res));
+router.post('/:id/devolucion', (req, res) => pedidoController.registrarDevolucion(req, res));
 
 module.exports = router;

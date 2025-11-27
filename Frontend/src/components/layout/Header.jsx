@@ -2,6 +2,7 @@ import { useAuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
 import { Navbar } from "./Navbar";
+import { FaTshirt } from 'react-icons/fa';
 import "./Header.css";
 
 export const Header = () => {
@@ -15,7 +16,7 @@ export const Header = () => {
                 <div className="header-left">
                     <div className="brand">
                         <a onClick={() => navigate("/principal")}>
-                            <span>📋</span>
+                            <span><FaTshirt className="text-2xl" /></span>
                             Clínica del Bluyin
                         </a>
                     </div>

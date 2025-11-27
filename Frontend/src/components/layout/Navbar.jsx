@@ -18,27 +18,7 @@ export const Navbar = () => {
                 <FiUsers className="icon-container" />
                 <span className="label">Usuarios</span>
             </NavLink>
-            <NavLink 
-                to="/roles" 
-                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-            >
-                <FiShield className="icon-container" />
-                <span className="label">Roles</span>
-            </NavLink>
-            <NavLink 
-                to="/permisos" 
-                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-            >
-                <FiLock className="icon-container" />
-                <span className="label">Permisos</span>
-            </NavLink>
-            <NavLink 
-                to="/rol-permisos" 
-                className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-            >
-                <FiLink className="icon-container" />
-                <span className="label">Rol-Permisos</span>
-            </NavLink>
+            
             <NavLink 
                 to="/control-administrador" 
                 className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}

@@ -5,7 +5,7 @@ class AccionesController {
     async obtenerAcciones(req, res) {
         try {
             const [acciones] = await db.query(
-                `SELECT id_accion, nombre_accion FROM acciones`
+                `SELECT id_accion, nombre_accion, precio_acciones FROM acciones`
             );
             res.json(acciones);
         } catch (error) {
@@ -19,7 +19,7 @@ class AccionesController {
         const { id } = req.params;
         try {
             const [accion] = await db.query(
-                `SELECT id_accion, nombre_accion FROM acciones WHERE id_accion = ?`,
+                `SELECT id_accion, nombre_accion, precio_acciones FROM acciones WHERE id_accion = ?`,
                 [id]
             );
 

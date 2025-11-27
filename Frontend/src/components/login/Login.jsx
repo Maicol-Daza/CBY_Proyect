@@ -27,7 +27,7 @@ export const Login = () => {
             if (usuario) {
                 const rol = usuario.rol || user?.rol;
                 if (rol === "Administrador") navigate("/principal");
-                else navigate("/bienvenido");
+                else navigate("/pedidos");
             } else {
                 setErrorMsg("Credenciales inválidas");
             }
@@ -424,7 +424,7 @@ export const Login = () => {
                     />
                     {errorMsg && (
                         <p style={{ color: '#e63946', margin: '6px 0 0', fontSize: '14px' }}>
-                            ❌ {errorMsg}
+                            {errorMsg}
                         </p>
                     )}
 
@@ -466,7 +466,7 @@ export const Login = () => {
                     </button>
                 </p>
 
-                <p className="login-texto">
+                {/* <p className="login-texto">
                     ¿No tienes cuenta?{" "}
                     <Link 
                         className="login-enlace" 
@@ -479,7 +479,7 @@ export const Login = () => {
                     >
                         Regístrate
                     </Link>
-                </p>
+                </p> */}
             </div>
         </div>
     );

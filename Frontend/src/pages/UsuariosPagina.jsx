@@ -115,8 +115,7 @@ export const UsuariosPagina = () => {
     const totalUsuarios = usuarios.length;
     const administradores = usuarios.filter(u => u.rol === "Administrador").length;
     const empleados = usuarios.filter(u => u.rol === "Empleado").length;
-    const usuariosActivos = usuarios.filter(u => u.activo === true).length;
-
+    
     return (
         <Layout>
             <div className="pagina-contenedor">
@@ -148,7 +147,7 @@ export const UsuariosPagina = () => {
                     </button>
                 </div>
 
-                {/* ========== PESTAÑA USUARIOS ========== */}
+                {/* PESTAÑA USUARIOS */}
                 {pestanaActiva === "usuarios" && (
                     <>
                         <div className="usuarios-header">
@@ -196,15 +195,7 @@ export const UsuariosPagina = () => {
                                 </div>
                             </div>
 
-                            <div className="card-stat">
-                                <div className="card-stat-content">
-                                    <p className="card-stat-label">Usuarios Activos</p>
-                                    <h3 className="card-stat-numero">{usuariosActivos}</h3>
-                                </div>
-                                <div className="card-stat-icon icon-check">
-                                    <FaCheckCircle />
-                                </div>
-                            </div>
+                            
                         </div>
 
                         {/* Tabla de usuarios */}
@@ -217,7 +208,6 @@ export const UsuariosPagina = () => {
                                             <th>USUARIO</th>
                                             <th>EMAIL</th>
                                             <th>ROL</th>
-                                            <th>ESTADO</th>
                                             <th>ACCIONES</th>
                                         </tr>
                                     </thead>
@@ -232,11 +222,7 @@ export const UsuariosPagina = () => {
                                                             {u.rol || 'Empleado'}
                                                         </span>
                                                     </td>
-                                                    <td>
-                                                        <span className={`estado-badge ${u.activo ? 'activo' : 'inactivo'}`}>
-                                                            {u.activo ? 'Activo' : 'Inactivo'}
-                                                        </span>
-                                                    </td>
+                                                    
                                                     <td className="tabla-acciones">
                                                         <button
                                                             onClick={() => {
@@ -246,14 +232,14 @@ export const UsuariosPagina = () => {
                                                             className="boton-accion boton-editar"
                                                             title="Editar usuario"
                                                         >
-                                                            <FaPen />
+                                                            <FaPen /> Editar
                                                         </button>
                                                         <button
                                                             onClick={() => eliminarUsuario(u.id_usuario).then(fetchUsuarios)}
                                                             className="boton-accion boton-eliminar"
                                                             title="Eliminar usuario"
                                                         >
-                                                            <FaTrash />
+                                                            <FaTrash /> Eliminar
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -272,7 +258,7 @@ export const UsuariosPagina = () => {
                     </>
                 )}
 
-                {/* ========== PESTAÑA ROLES ========== */}
+                {/* PESTAÑA ROLES*/}
                 {pestanaActiva === "roles" && (
                     <>
                         <div className="usuarios-header">
@@ -310,14 +296,14 @@ export const UsuariosPagina = () => {
                                                         className="boton-accion boton-editar"
                                                         title="Editar rol"
                                                     >
-                                                        <FaPen />
+                                                        <FaPen /> Editar
                                                     </button>
                                                     <button
                                                         onClick={() => eliminarRol(r.id_rol).then(fetchRoles)}
                                                         className="boton-accion boton-eliminar"
                                                         title="Eliminar rol"
                                                     >
-                                                        <FaTrash />
+                                                        <FaTrash /> Eliminar
                                                     </button>
                                                 </td>
                                             </tr>
@@ -375,14 +361,14 @@ export const UsuariosPagina = () => {
                                                         className="boton-accion boton-editar"
                                                         title="Editar permiso"
                                                     >
-                                                        <FaPen />
+                                                        <FaPen /> Editar
                                                     </button>
                                                     <button
                                                         onClick={() => eliminarPermiso(p.id_permiso).then(fetchPermisos)}
                                                         className="boton-accion boton-eliminar"
                                                         title="Eliminar permiso"
                                                     >
-                                                        <FaTrash />
+                                                        <FaTrash /> Eliminar
                                                     </button>
                                                 </td>
                                             </tr>
@@ -441,14 +427,14 @@ export const UsuariosPagina = () => {
                                                         className="boton-accion boton-editar"
                                                         title="Editar asignación"
                                                     >
-                                                        <FaPen />
+                                                        <FaPen /> Editar
                                                     </button>
                                                     <button
                                                         onClick={() => eliminarRolPermiso(rp.id_rol_permiso).then(fetchRolPermisos)}
                                                         className="boton-accion boton-eliminar"
                                                         title="Eliminar asignación"
                                                     >
-                                                        <FaTrash />
+                                                        <FaTrash /> Eliminar
                                                     </button>
                                                 </td>
                                             </tr>

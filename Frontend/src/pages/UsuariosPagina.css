@@ -284,7 +284,7 @@
 }
 
 .boton-accion {
-    font-size: 1rem;
+    font-size: 0.85rem;
     padding: 0.5rem 0.75rem;
     background: none;
     border: none;
@@ -294,10 +294,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    font-weight: 500;
 }
 
 .boton-accion:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .boton-editar {

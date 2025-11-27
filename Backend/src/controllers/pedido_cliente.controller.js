@@ -8,10 +8,10 @@ class PedidoClienteController {
       id_cajon,
       codigos_seleccionados,
       prendas,
-      id_usuario  // RECIBIR del frontend
+      id_usuario
     } = req.body;
 
-    console.log("Backend recibió id_usuario:", id_usuario); // DEBUG
+    console.log("Backend recibió id_usuario:", id_usuario);
 
     if (!cliente || !pedido) {
       return res.status(400).json({ error: "Faltan datos del cliente o pedido" });
@@ -99,20 +99,21 @@ class PedidoClienteController {
         throw new Error('No se pudo crear/actualizar el cliente');
       }
 
-      // 2️⃣ Crear pedido asociado (abono no es obligatorio)
+      // 2️⃣ Crear pedido asociado con GARANTÍA
       const [nuevoPedido] = await connection.query(
         `INSERT INTO pedido_cliente 
-          (id_cliente, fecha_pedido, fecha_entrega, total_pedido, abono, saldo, observaciones, estado)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          (id_cliente, fecha_pedido, fecha_entrega, total_pedido, abono, saldo, observaciones, estado, garantia)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id_cliente,
           pedido.fechaInicio,
           pedido.fechaEntrega,
           pedido.totalPedido || 0,
           pedido.abonoInicial || 0,
-          (pedido.totalPedido || 0) - (pedido.abonoInicial || 0), // Calcular saldo
+          (pedido.totalPedido || 0) - (pedido.abonoInicial || 0),
           pedido.observaciones || "",
-          pedido.estado === "Finalizado" ? "listo" : "en_proceso"
+          pedido.estado === "Finalizado" ? "listo" : "en_proceso",
+          pedido.garantia || null  // ✅ NUEVO: Guardar garantía
         ]
       );
 
@@ -391,10 +392,10 @@ class PedidoClienteController {
     await connection.beginTransaction();
 
     try {
-      // Actualizar datos del pedido
+      // Actualizar datos del pedido CON GARANTÍA
       await connection.query(
         `UPDATE pedido_cliente 
-         SET fecha_entrega = ?, total_pedido = ?, abono = ?, saldo = ?, observaciones = ?, estado = ?
+         SET fecha_entrega = ?, total_pedido = ?, abono = ?, saldo = ?, observaciones = ?, estado = ?, garantia = ?
          WHERE id_pedido = ?`,
         [
           pedido.fechaEntrega,
@@ -403,6 +404,7 @@ class PedidoClienteController {
           pedido.saldoPendiente,
           pedido.observaciones,
           pedido.estado === "Finalizado" ? "listo" : "en_proceso",
+          pedido.garantia || null,  // ✅ NUEVO: Actualizar garantía
           id
         ]
       );
@@ -690,6 +692,57 @@ class PedidoClienteController {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error al obtener estadísticas", error: error.message });
+    }
+  }
+
+  async registrarDevolucion(req, res) {
+    const { id } = req.params;
+    const {
+      motivo_devolucion,
+      descripcion_devolucion,
+      solucion_devolucion,
+      monto_devolucion
+    } = req.body;
+
+    if (!id || !motivo_devolucion) {
+      return res.status(400).json({
+        error: "Faltan datos obligatorios"
+      });
+    }
+
+    const connection = await db.getConnection();
+
+    try {
+      await connection.query(
+        `UPDATE pedido_cliente 
+         SET motivo_devolucion = ?, 
+             descripcion_devolucion = ?, 
+             solucion_devolucion = ?, 
+             monto_devolucion = ?,
+             fecha_devolucion = NOW(),
+             estado = ?
+         WHERE id_pedido = ?`,
+        [
+          motivo_devolucion,
+          descripcion_devolucion || null,
+          solucion_devolucion || "reembolso",
+          monto_devolucion || 0,
+          "devuelto",
+          id
+        ]
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "✓ Devolución registrada correctamente"
+      });
+    } catch (error) {
+      console.error("Error al registrar devolución:", error);
+      res.status(500).json({
+        error: "Error al registrar la devolución"
+      });
+    } finally {
+      connection.release();
     }
   }
 }

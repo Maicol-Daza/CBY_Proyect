@@ -75,3 +75,31 @@ export async function crearPedidoCompleto(pedidoData: PedidoCompleto & { id_usua
     throw error;
   }
 }
+
+export async function obtenerPedidos() {
+  try {
+    const response = await fetch(API_URL, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!response.ok) {
+      throw new Error("Error al obtener pedidos");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error en obtenerPedidos:", error);
+    throw error;
+  }
+}
+
+export async function contarPedidos() {
+  try {
+    const pedidos = await obtenerPedidos();
+    return pedidos.length || 0;
+  } catch (error) {
+    console.error("Error en contarPedidos:", error);
+    return 0;
+  }
+}

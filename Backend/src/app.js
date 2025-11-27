@@ -21,7 +21,11 @@ app.use('/api/codigos', require('./routes/codigos.routes'));
 app.use('/api/ajustes', require('./routes/ajustes.routes'));
 app.use('/api/acciones', require('./routes/acciones.routes'));
 app.use('/api/ajustes_accion', require('./routes/ajustes_accion.routes'));
-app.use('/api/pedidos', require('./routes/pedido_cliente.routes'));
+
+const pedidoClienteRoutes = require('./routes/pedido_cliente.routes');
+// ✅ REGISTRAR RUTA DE PEDIDOS
+app.use('/api/pedidos', pedidoClienteRoutes);
+
 app.use('/api/prendas', require('./routes/prendas.routes'));
 app.use('/api/detalle-pedido-combo', require('./routes/detalle_pedido_combo.routes'));
 app.use('/api/movimientos_caja', require('./routes/movimientos_caja.routes'));
