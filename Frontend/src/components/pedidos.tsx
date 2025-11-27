@@ -24,7 +24,7 @@ interface Pedido {
   abonoObservaciones?: string;
   totalPedido: number;
   saldoPendiente: number;
-  garantia?: string;  // ✅ NUEVO: Agregar campo de garantía
+  garantia?: string;  
 }
 
 interface Cliente {
@@ -71,7 +71,7 @@ const CONFIG_CAJONES = [
 const PEDIDO_STORAGE_KEY = "pedido_en_proceso";
 
 export default function Pedidos() {
-  // ✅ ESTADO DE PEDIDO
+  //ESTADO DE PEDIDO
   const [pedido, setPedido] = useState<Pedido>(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
     if (guardado) {
@@ -81,7 +81,7 @@ export default function Pedidos() {
     return getDefaultPedido();
   });
 
-  // ✅ ESTADO DE CLIENTE
+  //ESTADO DE CLIENTE
   const [cliente, setCliente] = useState<Cliente>(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
     if (guardado) {
@@ -91,7 +91,7 @@ export default function Pedidos() {
     return getDefaultCliente();
   });
 
-  // ✅ ESTADOS DE ENTREGA (SIN DUPLICADOS)
+  //ESTADOS DE ENTREGA (SIN DUPLICADOS)
   const [mostrarModalEntrega, setMostrarModalEntrega] = useState(false);
   const [pedidosLista, setPedidosLista] = useState<PedidoEntrega[]>([]);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<PedidoEntrega | null>(null);
@@ -100,16 +100,24 @@ export default function Pedidos() {
   const [cargandoEntrega, setCargandoEntrega] = useState(false);
   const [errorEntrega, setErrorEntrega] = useState<string>("");
 
-  // ✅ ESTADOS DE FACTURA (AGREGADOS)
+  //ESTADOS DE FACTURA (AGREGADOS)
   const [mostrarModalFactura, setMostrarModalFactura] = useState(false);
   const [datosFactura, setDatosFactura] = useState<any>(null);
 
-  // ✅ BÚSQUEDA DE CLIENTES
+  //BÚSQUEDA DE CLIENTES
   const [clientesLista, setClientesLista] = useState<ClienteService[]>([]);
   const [busquedaCliente, setBusquedaCliente] = useState("");
   const [sugerenciasClientes, setSugerenciasClientes] = useState<ClienteService[]>([]);
+  const [clienteCargado, setClienteCargado] = useState(() => {
+    const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
+    if (guardado) {
+      const datos = JSON.parse(guardado);
+      return datos.clienteCargado || false;
+    }
+    return false;
+  });
 
-  // ✅ DATOS DEL FORMULARIO
+  //DATOS DEL FORMULARIO
   const [cajones, setCajones] = useState<Cajon[]>([]);
   const [codigos, setCodigos] = useState<Codigo[]>([]);
   const [codigosFiltrados, setCodigosFiltrados] = useState<Codigo[]>([]);
@@ -130,7 +138,7 @@ export default function Pedidos() {
     return [];
   });
 
-  // ✅ PRENDAS
+  //PRENDAS
   const [mostrarModalPrenda, setMostrarModalPrenda] = useState(false);
   const [prendasTemporales, setPrendasTemporales] = useState<Prenda[]>(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
@@ -142,23 +150,23 @@ export default function Pedidos() {
   });
   const [prendaEditando, setPrendaEditando] = useState<number | null>(null);
 
-  // ✅ AJUSTES Y ACCIONES
+  //AJUSTES Y ACCIONES
   const [ajustes, setAjustes] = useState<Ajuste[]>([]);
   const [acciones, setAcciones] = useState<Accion[]>([]);
   const [combinaciones, setCombinaciones] = useState<AjusteAccion[]>([]);
 
-  // ✅ CARGANDO
+  //CARGANDO
   const [cargandoCajones, setCargandoCajones] = useState(false);
   const [cargandoCodigos, setCargandoCodigos] = useState(false);
   const [cargandoAjustes, setCargandoAjustes] = useState(false);
   const [errores, setErrores] = useState<Errores>({});
   const [cargando, setCargando] = useState(false);
 
-  // ✅ ESTADOS DE IMAGEN (AGREGAR AQUÍ)
+  //ESTADOS DE IMAGEN (AGREGAR AQUÍ)
   const [imagenFile, setImagenFile] = useState<File | null>(null);
   const [imagenPreview, setImagenPreview] = useState<string | null>(null);
 
-  // ✅ MODIFICACIÓN DE PRECIO
+  //MODIFICACIÓN DE PRECIO
   const [mostrarModificarPrecio, setMostrarModificarPrecio] = useState(false);
   const [precioModificado, setPrecioModificado] = useState(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
@@ -170,7 +178,7 @@ export default function Pedidos() {
   });
   const [motivoModificacion, setMotivoModificacion] = useState("");
 
-  // ✅ FUNCIONES AUXILIARES
+  //FUNCIONES AUXILIARES
   function getDefaultPedido(): Pedido {
     return {
       fechaInicio: "",
@@ -181,7 +189,7 @@ export default function Pedidos() {
       abonoObservaciones: "",
       totalPedido: 0,
       saldoPendiente: 0,
-      garantia: "",  // ✅ NUEVO
+      garantia: "",  
     };
   }
 
@@ -224,10 +232,11 @@ export default function Pedidos() {
       cajonSeleccionado,
       codigosSeleccionados,
       prendasTemporales,
-      precioModificado
+      precioModificado,
+      clienteCargado
     };
     localStorage.setItem(PEDIDO_STORAGE_KEY, JSON.stringify(datosParaGuardar));
-  }, [pedido, cliente, cajonSeleccionado, codigosSeleccionados, prendasTemporales, precioModificado]);
+  }, [pedido, cliente, cajonSeleccionado, codigosSeleccionados, prendasTemporales, precioModificado, clienteCargado]);
 
   // Cargar lista de clientes para la mini búsqueda (opcional)
   useEffect(() => {
@@ -297,7 +306,7 @@ export default function Pedidos() {
     }
   };
 
-  // Función para manejar la entrega del pedido - CORRECCIÓN
+  // Función para manejar la entrega del pedido 
   const handleEntregarPedido = async () => {
     if (!pedidoSeleccionado) return;
 
@@ -313,7 +322,7 @@ export default function Pedidos() {
 
     if (abonoIngresado > saldoPendiente) {
       setErrorEntrega(
-        `❌ El abono ingresado (${formatCOP(abonoIngresado)}) no puede ser mayor al saldo pendiente (${formatCOP(saldoPendiente)}). Ingrese un monto igual o menor.`
+        `El abono ingresado (${formatCOP(abonoIngresado)}) no puede ser mayor al saldo pendiente (${formatCOP(saldoPendiente)}). Ingrese un monto igual o menor.`
       );
       return;
     }
@@ -335,11 +344,11 @@ export default function Pedidos() {
       });
 
       if (response.ok) {
-        // ✅ OBTENER datos completos del pedido para la factura
+        //OBTENER datos completos del pedido para la factura
         const responsePedido = await fetch(`http://localhost:3000/api/pedidos/${pedidoSeleccionado.id_pedido}`);
         const pedidoCompleto = await responsePedido.json();
 
-        // ✅ Mostrar modal de factura
+        //Mostrar modal de factura
         setDatosFactura({
           ...pedidoSeleccionado,
           prendas: pedidoCompleto.prendas || [],
@@ -403,7 +412,7 @@ export default function Pedidos() {
     const fechaInicio = pedido.fechaInicio ? new Date(pedido.fechaInicio) : null;
     const fechaEntrega = pedido.fechaEntrega ? new Date(pedido.fechaEntrega) : null;
 
-    // ✅ Solo validar que fecha de entrega no sea anterior a fecha de inicio
+    //Solo validar que fecha de entrega no sea anterior a fecha de inicio
     if (fechaInicio && fechaEntrega && fechaEntrega < fechaInicio) {
       return "La fecha de entrega no puede ser anterior a la fecha de inicio.";
     }
@@ -475,7 +484,7 @@ export default function Pedidos() {
     if (prendasTemporales.length === 0) nuevosErrores.prendas = 'Debe agregar al menos una prenda.';
     if (precioModificado < 0) nuevosErrores.precioModificado = 'El precio no puede ser negativo.';
 
-    // ✅ VALIDACIÓN: El abono no debe ser mayor al total
+    //VALIDACIÓN: El abono no debe ser mayor al total
     const totalActual = (precioModificado && precioModificado > 0) ? precioModificado : calcularTotalPrendas();
     const abonoActual = Number(pedido.abonoInicial || 0);
     
@@ -483,7 +492,7 @@ export default function Pedidos() {
       nuevosErrores.abonoInicial = `El abono (${formatCOP(abonoActual)}) no puede ser mayor al total del pedido (${formatCOP(totalActual)}).`;
     }
 
-    // ✅ VALIDACIÓN DE GARANTÍA
+    //VALIDACIÓN DE GARANTÍA
     if (pedido.garantia) {
       const garantiaNum = Number(pedido.garantia);
       if (garantiaNum < 0 || garantiaNum > 30) {
@@ -542,7 +551,7 @@ export default function Pedidos() {
     setSugerenciasClientes(filtradas);
   };
 
-  // AGREGAR ESTA FUNCIÓN: Mostrar 5 clientes al hacer clic
+  //Mostrar 5 clientes al hacer clic
   const handleFocusCliente = () => {
     const clientesRecientes = clientesLista.slice(0, 5);
     setSugerenciasClientes(clientesRecientes);
@@ -559,6 +568,7 @@ export default function Pedidos() {
     });
     setBusquedaCliente("");
     setSugerenciasClientes([]);
+    setClienteCargado(true); //Marcar cliente como cargado
     const firstInput = document.querySelector('.pedido-form input[name="fechaInicio"]') as HTMLInputElement | null;
     if (firstInput) firstInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -764,7 +774,7 @@ export default function Pedidos() {
           pedido: {
             ...pedido,
             totalPedido: totalFinal,
-            garantia: pedido.garantia || null,  // ✅ NUEVO
+            garantia: pedido.garantia || null,  
             observaciones_abono: pedido.abonoObservaciones || null,
             observaciones: motivoModificacion 
               ? `${pedido.observaciones || ''}\nMODIFICACIÓN DE PRECIO: ${motivoModificacion} - Precio original: $${calcularTotalPrendas().toLocaleString()}, Precio final: $${totalFinal.toLocaleString()}`
@@ -800,13 +810,14 @@ export default function Pedidos() {
         abonoObservaciones: "",
         totalPedido: 0,
         saldoPendiente: 0,
-        garantia: "",  // ✅ NUEVO: Resetear garantía
+        garantia: "",  
       });
       setCajonSeleccionado(null);
       setCodigosSeleccionados([]);
       setPrendasTemporales([]);
-      setPrecioModificado(0); // ✅ Aquí se resetea correctamente
-      setMotivoModificacion(""); // ✅ Limpiar motivo también
+      setPrecioModificado(0); //Aquí se resetea correctamente
+      setMotivoModificacion(""); //Limpiar motivo también
+      setClienteCargado(false); //Resetear estado de cliente cargado
       setErrores({});
       setImagenFile(null);
       setImagenPreview(null);
@@ -817,11 +828,11 @@ export default function Pedidos() {
       // Recargar datos para actualizar estados de cajones y códigos
       cargarDatos();
     } else {
-      alert(`❌ Error: ${data.message || "No se pudo guardar el pedido."}`);
+      alert(`Error: ${data.message || "No se pudo guardar el pedido."}`);
     }
   } catch (error) {
     console.error("Error al guardar pedido:", error);
-    alert("❌ Error al conectar con el servidor.");
+    alert("Error al conectar con el servidor.");
   } finally {
     setCargando(false);
   }
@@ -855,6 +866,7 @@ export default function Pedidos() {
       setErrores({});
       setImagenFile(null);
       setImagenPreview(null);
+      setClienteCargado(false); //Resetear estado de cliente cargado
       localStorage.removeItem(PEDIDO_STORAGE_KEY);
       alert("✓ Formulario limpiado correctamente");
     }
@@ -873,6 +885,7 @@ export default function Pedidos() {
           direccion: data.direccion || "",
           email: data.email || ""
         });
+        setClienteCargado(true); //Marcar cliente como cargado
         localStorage.removeItem("nuevoPedidoCliente");
       }
     } catch (err) {
@@ -917,7 +930,32 @@ export default function Pedidos() {
         <div className="pedido-form card">
           {/* Información del Cliente */}
           <div className="cliente-form">
-            <h2><FaUser style={{ marginRight: "8px" }} /> Información del Cliente</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h2 style={{ margin: 0 }}><FaUser style={{ marginRight: "8px" }} /> Información del Cliente</h2>
+              {clienteCargado && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setClienteCargado(false);
+                    setCliente(getDefaultCliente());
+                    setBusquedaCliente("");
+                    setSugerenciasClientes([]);
+                  }}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: "0.9rem",
+                    backgroundColor: "#6b7280",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  }}
+                >
+                  Cambiar Cliente
+                </button>
+              )}
+            </div>
             {/* Mini búsqueda rápida de clientes */}
             <div className="cliente-mini-search">
               <input
@@ -961,6 +999,8 @@ export default function Pedidos() {
                     value={(cliente as any)[campo]}
                     onChange={handleInputCliente}
                     placeholder={`Ingrese ${campo}`}
+                    disabled={clienteCargado}
+                    className={clienteCargado ? "input-disabled" : ""}
                   />
                   {errores[campo] && (
                     <p className="error">{errores[campo]}</p>

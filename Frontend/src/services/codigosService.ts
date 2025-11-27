@@ -7,8 +7,8 @@ export interface Codigo {
   id_cajon: number;
   nombre_cajon: string;
   estado_cajon: string | null;
-  id_pedido: number | null;  // Nuevo campo
-  estado: string;            // Nuevo campo
+  id_pedido: number | null;  
+  estado: string;        
 }
 
 export async function obtenerCodigos(): Promise<Codigo[]> {

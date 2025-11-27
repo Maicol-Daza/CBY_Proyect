@@ -23,14 +23,14 @@ app.use('/api/acciones', require('./routes/acciones.routes'));
 app.use('/api/ajustes_accion', require('./routes/ajustes_accion.routes'));
 
 const pedidoClienteRoutes = require('./routes/pedido_cliente.routes');
-// ✅ REGISTRAR RUTA DE PEDIDOS
+//REGISTRAR RUTA DE PEDIDOS
 app.use('/api/pedidos', pedidoClienteRoutes);
 
 app.use('/api/prendas', require('./routes/prendas.routes'));
 app.use('/api/detalle-pedido-combo', require('./routes/detalle_pedido_combo.routes'));
 app.use('/api/movimientos_caja', require('./routes/movimientos_caja.routes'));
 
-// ⭐ ESTA LÍNEA DEBE ESTAR AQUÍ
+//ESTA LÍNEA DEBE ESTAR AQUÍ
 app.use('/api/email', require('./routes/email.route'));
 
 app.use('/api/historial_abonos', require('./routes/historial_abonos.routes'));

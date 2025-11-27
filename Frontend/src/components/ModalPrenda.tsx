@@ -267,7 +267,7 @@ export default function ModalPrenda({
       return;
     }
 
-    // Construir lista legible de arreglos (usa descripcion_combinacion si existe)
+    // Construir lista legible de arreglos 
     const nombresArreglos = arreglosSeleccionados.map(a => {
       if (a.tipo === 'combinacion') {
         const nombre = (a as any).descripcion_combinacion

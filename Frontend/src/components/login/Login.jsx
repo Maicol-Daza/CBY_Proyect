@@ -208,12 +208,12 @@ export const Login = () => {
 
                                 {errorRecuperacion && (
                                     <p style={{ color: '#e63946', margin: '6px 0', fontSize: '14px' }}>
-                                        ❌ {errorRecuperacion}
+                                        {errorRecuperacion}
                                     </p>
                                 )}
                                 {mensajeRecuperacion && (
                                     <p style={{ color: '#06a77d', margin: '6px 0', fontSize: '14px' }}>
-                                        ✅ {mensajeRecuperacion}
+                                        {mensajeRecuperacion}
                                     </p>
                                 )}
 
@@ -256,12 +256,12 @@ export const Login = () => {
 
                                 {errorRecuperacion && (
                                     <p style={{ color: '#e63946', margin: '10px 0', fontSize: '14px' }}>
-                                        ❌ {errorRecuperacion}
+                                        {errorRecuperacion}
                                     </p>
                                 )}
                                 {mensajeRecuperacion && (
                                     <p style={{ color: '#06a77d', margin: '10px 0', fontSize: '14px' }}>
-                                        ✅ {mensajeRecuperacion}
+                                        {mensajeRecuperacion}
                                     </p>
                                 )}
 
@@ -338,12 +338,12 @@ export const Login = () => {
 
                                 {errorRecuperacion && (
                                     <p style={{ color: '#e63946', margin: '10px 0', fontSize: '14px' }}>
-                                        ❌ {errorRecuperacion}
+                                        {errorRecuperacion}
                                     </p>
                                 )}
                                 {mensajeRecuperacion && (
                                     <p style={{ color: '#06a77d', margin: '10px 0', fontSize: '14px' }}>
-                                        ✅ {mensajeRecuperacion}
+                                        {mensajeRecuperacion}
                                     </p>
                                 )}
 
@@ -358,7 +358,7 @@ export const Login = () => {
                             </form>
 
                             <p className="login-texto" style={{ marginTop: '10px' }}>
-                                <button
+                                {/* <button
                                     type="button"
                                     onClick={() => {
                                         setPasoRecuperacion(2);
@@ -377,7 +377,7 @@ export const Login = () => {
                                     }}
                                 >
                                     ← Volver atrás
-                                </button>
+                                </button> */}
                             </p>
                         </>
                     )}

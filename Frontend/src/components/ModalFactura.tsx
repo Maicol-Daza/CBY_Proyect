@@ -2,6 +2,9 @@ import { useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import '../styles/modalFactura.css';
+import { FaPrint } from "react-icons/fa6";
+import { FaDownload } from "react-icons/fa";
+import { VscChromeClose } from "react-icons/vsc";
 import { formatCOP } from '../utils/formatCurrency';
 
 interface FacturaData {
@@ -103,13 +106,13 @@ export default function ModalFactura({ isOpen, facturaData, onClose }: ModalFact
         {/* Botones de acción */}
         <div className="factura-acciones">
           <button className="btn-primary" onClick={handleImpimir}>
-            🖨️ Imprimir
+            <FaPrint /> Imprimir
           </button>
           <button className="btn-primary" onClick={handleDescargarPDF}>
-            📥 Descargar PDF
+            <FaDownload /> Descargar PDF
           </button>
           <button className="btn-cancelar" onClick={onClose}>
-            ❌ Cerrar
+            <VscChromeClose /> Cerrar
           </button>
         </div>
 

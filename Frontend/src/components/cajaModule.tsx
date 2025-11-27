@@ -5,6 +5,7 @@ import "../styles/inputMoneda.css";
 import { crearMovimiento, obtenerMovimientos, type Movimiento } from "../services/movimientos_caja";
 import { formatCOP } from "../utils/formatCurrency";
 import { FaArrowTrendUp, FaArrowTrendDown, FaFileExcel, FaFilePdf, FaMoneyBillWave } from "react-icons/fa6";
+import { VscChromeClose } from "react-icons/vsc";
 import { Icon } from "@iconify/react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -271,7 +272,7 @@ export const CajaModule = () => {
       
       if (nuevoMovimiento.monto > saldoDisponible) {
         alert(
-          `❌ Saldo insuficiente\n\n` +
+          `Saldo insuficiente\n\n` +
           `Saldo disponible: ${formatCOP(saldoDisponible)}\n` +
           `Intenta retirar: ${formatCOP(nuevoMovimiento.monto)}\n` +
           `Falta: ${formatCOP(nuevoMovimiento.monto - saldoDisponible)}`
@@ -293,7 +294,7 @@ export const CajaModule = () => {
         id_usuario: idUsuario
       });
       
-      alert("✅ Movimiento registrado correctamente");
+      alert("Movimiento registrado correctamente");
       setNuevoMovimiento({
         tipo: "entrada",
         descripcion: "",
@@ -515,7 +516,7 @@ export const CajaModule = () => {
                 className="modal-close"
                 onClick={() => setMostrarModalMovimiento(false)}
               >
-                ✕
+                <VscChromeClose size={20} />
               </button>
             </div>
 

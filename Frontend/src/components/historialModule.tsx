@@ -189,7 +189,7 @@ export const HistorialModule = () => {
         setAbonosPedido([]);
     };
 
-    // Nueva función: obtener y mostrar solo los abonos de un pedido en modal separado
+    //función: obtener y mostrar solo los abonos de un pedido en modal separado
     const verAbonosSolo = async (id_pedido: number) => {
         try {
             setLoadingAbonosSolo(true);
@@ -239,7 +239,7 @@ export const HistorialModule = () => {
             }
             doc.text(filtrosTexto, 14, 32);
 
-            // ✅ TABLA DE DATOS CON GARANTÍA
+            //TABLA DE DATOS CON GARANTÍA
             const datosTabla = pedidosFiltrados.map(pedido => {
                 const total = parseFloat((pedido.total_pedido ?? pedido.totalPedido ?? 0).toString());
                 const saldo = parseFloat((pedido.saldo ?? pedido.saldoPendiente ?? 0).toString());
@@ -315,7 +315,7 @@ export const HistorialModule = () => {
         }
     };
 
-    // ✅ AGREGAR GARANTÍA EN EXCEL
+    // GARANTÍA EN EXCEL
     const exportarExcel = () => {
         try {
             const datosExportar = pedidosFiltrados.map(pedido => {
@@ -385,7 +385,7 @@ export const HistorialModule = () => {
         return cumpleBusqueda && cumpleEstado && cumpleFecha;
     });
 
-    // ✅ Función para calcular la fecha final de garantía
+    //Función para calcular la fecha final de garantía
     const calcularFechaGarantia = (fechaEntrega: string, diasGarantia: number): string => {
       try {
         const fecha = new Date(fechaEntrega);
@@ -400,7 +400,7 @@ export const HistorialModule = () => {
       }
     };
 
-    // ✅ Función para verificar si la garantía está vigente
+    // Función para verificar si la garantía está vigente
     const verificarGarantiaVigente = (fechaEntrega: string, diasGarantia: number): boolean => {
       if (!fechaEntrega || !diasGarantia) return false;
       
@@ -418,7 +418,7 @@ export const HistorialModule = () => {
       }
     };
 
-    // ✅ Función para obtener el estado de la garantía
+    //Función para obtener el estado de la garantía
     const obtenerEstadoGarantia = (fechaEntrega: string, diasGarantia: number): string => {
       if (!diasGarantia) return "Sin garantía";
       
@@ -432,7 +432,7 @@ export const HistorialModule = () => {
       }
     };
 
-    // ✅ Función para calcular días restantes
+    // Función para calcular días restantes
     const calcularDiasRestantes = (fechaEntrega: string, diasGarantia: number): number => {
       if (!fechaEntrega || !diasGarantia) return 0;
       
@@ -455,7 +455,7 @@ export const HistorialModule = () => {
 
     // Función para abrir el modal de devolución
     const handleAbrirDevolucion = (pedido: any) => {
-      // ✅ NUEVA VALIDACIÓN: Solo permitir devolución si está entregado
+      // VALIDACIÓN: Solo permitir devolución si está entregado
       if (pedido.estado !== "entregado") {
         alert("❌ Solo se pueden devolver pedidos en estado 'Entregado'.\nEstado actual: " + 
           (pedido.estado === "en_proceso" ? "En proceso" : pedido.estado));
@@ -491,14 +491,14 @@ export const HistorialModule = () => {
 
     // Función para guardar la devolución
     const handleGuardarDevolucion = async () => {
-      // ✅ NUEVA VALIDACIÓN: Verificar si la garantía está vencida
+      //VALIDACIÓN: Verificar si la garantía está vencida
       if (!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)) {
-        alert("❌ No se puede registrar la devolución: La garantía ha vencido");
+        alert("No se puede registrar la devolución: La garantía ha vencido");
         return;
       }
 
       if (!pedidoDevolucion || !devolucionData.motivo) {
-        alert("⚠️ Por favor selecciona un motivo de devolución");
+        alert("Por favor selecciona un motivo de devolución");
         return;
       }
 
@@ -648,7 +648,7 @@ export const HistorialModule = () => {
                                                     pedido.estado || "En proceso"}
                                             </span>
                                         </td>
-                                        {/* ✅ NUEVA COLUMNA DE GARANTÍA */}
+                                        {/* NUEVA COLUMNA DE GARANTÍA */}
                                         <td>
                                             <span className="garantia-badge">
                                                 {pedido.garantia ? `${pedido.garantia} días` : "Sin garantía"}
@@ -941,7 +941,7 @@ export const HistorialModule = () => {
                                     )}
                                 </div> */}
 
-                                {/* ✅ SECCIÓN DE DEVOLUCIÓN - SOLO SI ESTADO ES DEVUELTO */}
+                                {/* SECCIÓN DE DEVOLUCIÓN - SOLO SI ESTADO ES DEVUELTO */}
                                 {pedidoSeleccionado.estado === "devuelto" && (
                                     <div className="detalle-seccion devolucion-seccion">
                                         <h3>Información de Devolución</h3>
@@ -1070,10 +1070,10 @@ export const HistorialModule = () => {
             <span><strong>Garantía:</strong> {pedidoDevolucion.garantia} días</span>
           </div>
 
-          {/* ⚠️ ADVERTENCIA SI ESTÁ FUERA DE PLAZO */}
+          {/*ADVERTENCIA SI ESTÁ FUERA DE PLAZO */}
           {!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia) && (
             <div className="advertencia-garantia-vencida">
-              <strong>⚠️ ADVERTENCIA: Garantía Vencida</strong>
+              <strong>ADVERTENCIA: Garantía Vencida</strong>
               <p>
                 La garantía venció el {calcularFechaGarantia(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)}.
               </p>

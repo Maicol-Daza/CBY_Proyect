@@ -17,7 +17,7 @@ class PedidoClienteController {
       return res.status(400).json({ error: "Faltan datos del cliente o pedido" });
     }
 
-    // ✅ VALIDACIÓN: El abono inicial no debe ser mayor al total
+    //VALIDACIÓN: El abono inicial no debe ser mayor al total
     const totalPedidoNum = Number(pedido.totalPedido || 0);
     const abonoInicialNum = Number(pedido.abonoInicial || 0);
 
@@ -99,7 +99,7 @@ class PedidoClienteController {
         throw new Error('No se pudo crear/actualizar el cliente');
       }
 
-      // 2️⃣ Crear pedido asociado con GARANTÍA
+      //Crear pedido asociado con GARANTÍA
       const [nuevoPedido] = await connection.query(
         `INSERT INTO pedido_cliente 
           (id_cliente, fecha_pedido, fecha_entrega, total_pedido, abono, saldo, observaciones, estado, garantia)
@@ -113,7 +113,7 @@ class PedidoClienteController {
           (pedido.totalPedido || 0) - (pedido.abonoInicial || 0),
           pedido.observaciones || "",
           pedido.estado === "Finalizado" ? "listo" : "en_proceso",
-          pedido.garantia || null  // ✅ NUEVO: Guardar garantía
+          pedido.garantia || null  
         ]
       );
 
@@ -125,11 +125,11 @@ class PedidoClienteController {
       const observacionAbono = pedido.observaciones_abono ?? pedido.observaciones ?? null;
 
       if (abonoInicial > 0) {
-        // ✅ Usar la observación enviada, o dejar null si está vacía
+        //Usar la observación enviada, o dejar null si está vacía
         await connection.query(
           `INSERT INTO historial_abonos (id_pedido, fecha_abono, abono, observaciones)
            VALUES (?, NOW(), ?, ?)`,
-          [id_pedido, abonoInicial, observacionAbono]  // ✅ Cambio aquí
+          [id_pedido, abonoInicial, observacionAbono]  //Cambio aquí
         );
 
         const usuarioMovimiento = id_usuario || 1;
@@ -404,7 +404,7 @@ class PedidoClienteController {
           pedido.saldoPendiente,
           pedido.observaciones,
           pedido.estado === "Finalizado" ? "listo" : "en_proceso",
-          pedido.garantia || null,  // ✅ NUEVO: Actualizar garantía
+          pedido.garantia || null,  
           id
         ]
       );
@@ -570,7 +570,7 @@ class PedidoClienteController {
 
     // Si el estado es "entregado", validar abono y guardar registro
     if (estadoBD === 'entregado') {
-      // ✅ VALIDACIÓN: No permitir abono mayor al saldo pendiente
+      //VALIDACIÓN: No permitir abono mayor al saldo pendiente
       const abonoEntregaNum = abonoEntrega ? Number(abonoEntrega) : 0;
       
       if (abonoEntregaNum < 0) {
@@ -609,7 +609,7 @@ class PedidoClienteController {
       // Liberar los códigos
       await this.liberarCodigosPedido(id, connection);
 
-      // ✅ CREAR MOVIMIENTO EN CAJA Y ACTUALIZAR SALDO
+      //CREAR MOVIMIENTO EN CAJA Y ACTUALIZAR SALDO
       const montoACobrar = abonoEntrega ? Number(abonoEntrega) : saldoAnterior;
       
       if (montoACobrar > 0) {
@@ -622,10 +622,10 @@ class PedidoClienteController {
           [id, `Cobro en entrega - Pedido #${id}`, montoACobrar, usuarioMovimiento]
         );
 
-        console.log(`✅ Movimiento registrado por usuario ${usuarioMovimiento}: $${montoACobrar}`);
+        console.log(`Movimiento registrado por usuario ${usuarioMovimiento}: $${montoACobrar}`);
       }
 
-      // ✅ ACTUALIZAR ABONO Y SALDO CUANDO SE ENTREGA
+      // ACTUALIZAR ABONO Y SALDO CUANDO SE ENTREGA
       const nuevoAbono = abonoAnterior + montoACobrar;
       const nuevoSaldo = totalPedido - nuevoAbono; // Debería ser 0 si se pagó completo
 
