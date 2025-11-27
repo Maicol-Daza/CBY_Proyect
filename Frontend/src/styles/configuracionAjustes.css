@@ -496,7 +496,7 @@
   animation: slideUp 0.3s ease-out;
   /* Eliminar scroll vertical */
   overflow-y: visible;
-  max-height: none;
+  
 }
 
 .modal-small {

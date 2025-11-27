@@ -602,14 +602,15 @@
   justify-content: center;
   z-index: 2400;
   padding: 16px;
+  overflow-y: auto;
 }
 
 .prenda-modal-content {
   width: 92%;
-  max-width: 920px;
-  max-height: calc(90vh - 40px);
-  /* ocultar scroll externo; el scroll será interno en .modal-scroll */
-  overflow: hidden;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -635,6 +636,7 @@
   margin: 0 0 16px;
   font-size: 1.15rem;
   font-weight: 700;
+  padding: 16px 22px 0 22px;
 }
 
 /* Formulario interno del modal */
@@ -644,10 +646,18 @@
   gap: 14px;
   margin-bottom: 18px;
   align-items: end;
+  padding: 0;
+}
+
+/* Descripción de la prenda */
+.prenda-modal-content > .form-group:nth-of-type(1) {
+  padding: 0;
+  margin-bottom: 14px;
 }
 
 .prenda-modal-content .busqueda-arreglos {
   margin-bottom: 14px;
+  padding: 0;
 }
 
 .prenda-modal-content .search-box input {
@@ -662,18 +672,21 @@
 /* Lista de arreglos dentro del modal (scoped) */
 .prenda-modal-content .arreglos-disponibles {
   margin-bottom: 8px;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .prenda-modal-content .arreglos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
-  max-height: 260px;
+  max-height: 180px;
   overflow-y: auto;
   padding: 10px;
   border: 1px solid #e9eef6;
   border-radius: 6px;
   background: #ffffff;
+  flex-shrink: 0;
 }
 
 .prenda-modal-content .arreglo-item {
@@ -727,12 +740,40 @@
 /* Arreglos seleccionados (scoped) */
 .prenda-modal-content .arreglos-seleccionados {
   border-top: 2px solid #0b74ff;
-  padding-top: 16px;
+  padding: 16px 0 0 0;
   margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .prenda-modal-content .lista-arreglos {
   margin-bottom: 12px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Scrollbar para lista de arreglos */
+.prenda-modal-content .lista-arreglos::-webkit-scrollbar {
+  width: 6px;
+}
+
+.prenda-modal-content .lista-arreglos::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.prenda-modal-content .lista-arreglos::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.prenda-modal-content .lista-arreglos::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .prenda-modal-content .arreglo-seleccionado {
@@ -790,8 +831,10 @@
 }
 
 .prenda-modal-content .resumen-precios {
-  border-top: 1px soliprenda-modal-contentd #e6eef7;
+  border-top: 1px solid #e6eef7;
   padding-top: 12px;
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .prenda-modal-content .precio-linea {
@@ -847,6 +890,7 @@
   justify-content: flex-end;
   gap: 10px;
   margin-top: 18px;
+  padding: 0;
 }
 
 .prenda-modal-content .btn-cancelar {
@@ -1090,16 +1134,12 @@
 .modal-content-prenda {
   background: white;
   border-radius: 8px;
-  max-width: 450px;
+  max-width: 500px;
   width: 100%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   animation: slideUp 0.3s ease-out;
-  /* Eliminar scroll vertical */
-  overflow-y: visible;
-  max-height: none;
-  
 }
 
 @keyframes modal-appear {
