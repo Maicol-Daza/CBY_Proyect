@@ -287,30 +287,32 @@ export default function ConfiguracionAjustes() {
             <p>Haz clic en "Agregar combinación" para comenzar</p>
           </div>
         ) : (
-          <table className="combinaciones-table">
-            <thead>
-              <tr>
-                <th>Combinación</th>
-                <th>Precio</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {combinaciones.map((comb) => (
-                <tr key={comb.id_ajuste_accion}>
-                  <td>{obtenerNombresCombinacion(comb)}</td>
-                  <td>{formatCOP(Number(comb.precio))}</td>
-                  <td className="actions-cell">
-                    <div className="actions-group">
-                      <button className="btn-eliminar" onClick={() => handleEliminar(comb.id_ajuste_accion)} title="Eliminar">
-                        <FaTrash /> Eliminar
-                      </button>
-                    </div>
-                  </td>
+          <div className="table-responsive-container">
+            <table className="combinaciones-table">
+              <thead>
+                <tr>
+                  <th>Combinación</th>
+                  <th>Precio</th>
+                  <th>Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {combinaciones.map((comb) => (
+                  <tr key={comb.id_ajuste_accion}>
+                    <td>{obtenerNombresCombinacion(comb)}</td>
+                    <td>{formatCOP(Number(comb.precio))}</td>
+                    <td className="actions-cell">
+                      <div className="actions-group">
+                        <button className="btn-eliminar" onClick={() => handleEliminar(comb.id_ajuste_accion)} title="Eliminar">
+                          <FaTrash /> Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

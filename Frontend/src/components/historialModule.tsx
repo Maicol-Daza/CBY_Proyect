@@ -618,36 +618,37 @@ export const HistorialModule = () => {
                     ) : error ? (
                         <p className="error">{error}</p>
                     ) : pedidosFiltrados && pedidosFiltrados.length > 0 ? (
-                        <table className="tabla-pedidos">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Cliente</th>
-                                    <th>Fecha Pedido</th>
-                                    <th>Fecha Entrega</th>
-                                    <th>Estado</th>
-                                    <th>Garantía</th>
-                                    <th>Total</th>
-                                    <th>Saldo Pediente</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {pedidosFiltrados.map((pedido) => (
-                                    <tr key={pedido.id_pedido}>
-                                        <td>{pedido.id_pedido || "-"}</td>
-                                        <td>{pedido.cliente_nombre || "-"}</td>
-                                        <td>{formatearFecha(pedido.fecha_pedido)}</td>
-                                        <td>{formatearFecha(pedido.fecha_entrega)}</td>
-                                        <td>
-                                            <span className={`estado-badge estado-${pedido.estado?.toLowerCase() || "en_proceso"}`}>
-                                                {pedido.estado === "en_proceso" ? "En proceso" :
-                                                    pedido.estado === "listo" ? "Finalizado" :
-                                                    pedido.estado === "entregado" ? "Entregado" :
-                                                    pedido.estado === "devuelto" ? "DEVUELTO" :
-                                                    pedido.estado || "En proceso"}
-                                            </span>
-                                        </td>
+                        <div className="table-responsive-container">
+                            <table className="tabla-pedidos">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Cliente</th>
+                                        <th>Fecha Pedido</th>
+                                        <th>Fecha Entrega</th>
+                                        <th>Estado</th>
+                                        <th>Garantía</th>
+                                        <th>Total</th>
+                                        <th>Saldo Pediente</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pedidosFiltrados.map((pedido) => (
+                                        <tr key={pedido.id_pedido}>
+                                            <td>{pedido.id_pedido || "-"}</td>
+                                            <td>{pedido.cliente_nombre || "-"}</td>
+                                            <td>{formatearFecha(pedido.fecha_pedido)}</td>
+                                            <td>{formatearFecha(pedido.fecha_entrega)}</td>
+                                            <td>
+                                                <span className={`estado-badge estado-${pedido.estado?.toLowerCase() || "en_proceso"}`}>
+                                                    {pedido.estado === "en_proceso" ? "En proceso" :
+                                                        pedido.estado === "listo" ? "Finalizado" :
+                                                        pedido.estado === "entregado" ? "Entregado" :
+                                                        pedido.estado === "devuelto" ? "DEVUELTO" :
+                                                        pedido.estado || "En proceso"}
+                                                </span>
+                                            </td>
                                         {/* NUEVA COLUMNA DE GARANTÍA */}
                                         <td>
                                             <span className="garantia-badge">
@@ -689,8 +690,9 @@ export const HistorialModule = () => {
                                         </td>
                                     </tr>
                                 ))}
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     ) : (
                         <p className="sin-resultados">No hay pedidos que coincidan con los filtros</p>
                     )}
@@ -1011,30 +1013,32 @@ export const HistorialModule = () => {
                                     <p>No se encontraron abonos para este pedido.</p>
                                 </div>
                             ) : (
-                                <table className="tabla-abonos">
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <th>Monto</th>
-                                            <th>Observaciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {abonosSolo.map((a) => (
-                                            <tr key={a.id_historial_abono}>
-                                                <td>{new Date(a.fecha_abono).toLocaleDateString('es-CO', {
-                                                    year: 'numeric',
-                                                    month: '2-digit',
-                                                    day: '2-digit',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}</td>
-                                                <td>{formatCOP(Number(a.abono || 0))}</td>
-                                                <td>{a.observaciones || '-'}</td>
+                                <div className="table-responsive-container">
+                                    <table className="tabla-abonos">
+                                        <thead>
+                                            <tr>
+                                                <th>Fecha</th>
+                                                <th>Monto</th>
+                                                <th>Observaciones</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {abonosSolo.map((a) => (
+                                                <tr key={a.id_historial_abono}>
+                                                    <td>{new Date(a.fecha_abono).toLocaleDateString('es-CO', {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}</td>
+                                                    <td>{formatCOP(Number(a.abono || 0))}</td>
+                                                    <td>{a.observaciones || '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
 

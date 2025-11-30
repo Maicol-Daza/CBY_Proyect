@@ -463,31 +463,32 @@ export const CajaModule = () => {
 
       <div className="movimientos-section">
         <h3>Movimientos Recientes</h3>
-        <table className="movimientos-table" id="tabla-movimientos-export">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Hora</th>
-              <th>Tipo</th>
-              <th>Descripción</th>
-              <th>Monto</th>
-              <th>Usuario</th>
-              <th>Pedido</th>
-            </tr>
-          </thead>
-          <tbody>
-            {movimientosFiltrados.length > 0 ? (
-              movimientosFiltrados.map((mov) => {
-                const fecha = new Date(mov.fecha_movimiento);
-                return (
-                  <tr key={mov.id_movimiento_caja} className={mov.tipo}>
-                    <td>{fecha.toLocaleDateString()}</td>
-                    <td>{fecha.toLocaleTimeString()}</td>
-                    <td className={`tipo-${mov.tipo}`}>
-                      {mov.tipo === "entrada" ? " Entrada" : " Salida"}
-                    </td>
-                    <td>{mov.descripcion}</td>
-                    <td className={`monto-${mov.tipo}`}>
+        <div className="table-responsive-container">
+          <table className="movimientos-table" id="tabla-movimientos-export">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Monto</th>
+                <th>Usuario</th>
+                <th>Pedido</th>
+              </tr>
+            </thead>
+            <tbody>
+              {movimientosFiltrados.length > 0 ? (
+                movimientosFiltrados.map((mov) => {
+                  const fecha = new Date(mov.fecha_movimiento);
+                  return (
+                    <tr key={mov.id_movimiento_caja} className={mov.tipo}>
+                      <td>{fecha.toLocaleDateString()}</td>
+                      <td>{fecha.toLocaleTimeString()}</td>
+                      <td className={`tipo-${mov.tipo}`}>
+                        {mov.tipo === "entrada" ? " Entrada" : " Salida"}
+                      </td>
+                      <td>{mov.descripcion}</td>
+                      <td className={`monto-${mov.tipo}`}>
                       {mov.tipo === "entrada" ? "+" : "-"}{formatCOP(Number(mov.monto))}
                     </td>
                     <td>{mov.usuario_nombre || "Sistema"}</td>
@@ -502,8 +503,9 @@ export const CajaModule = () => {
                 </td>
               </tr>
             )}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal para nuevo movimiento */}

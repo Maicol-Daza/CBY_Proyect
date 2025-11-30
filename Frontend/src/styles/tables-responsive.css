@@ -1,0 +1,185 @@
+/* Estilos globales responsivos para tablas */
+
+/* Contenedor base para tablas */
+.table-responsive-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin: 1rem 0;
+}
+
+.table-responsive-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.table-responsive-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.table-responsive-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Estilos generales para todas las tablas */
+table {
+    min-width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+/* Encabezados de tabla */
+table thead {
+    background: #f3f4f6;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+table thead th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    border-right: 1px solid #e5e7eb;
+}
+
+table thead th:last-child {
+    border-right: none;
+}
+
+/* Filas del cuerpo */
+table tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+}
+
+table tbody tr:hover {
+    background: #f9fafb;
+}
+
+table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Celdas del cuerpo */
+table tbody td {
+    padding: 1rem;
+    color: #4b5563;
+    font-size: 0.875rem;
+    border-right: 1px solid #e5e7eb;
+}
+
+table tbody td:last-child {
+    border-right: none;
+}
+
+/* Clases específicas para tablas existentes */
+
+/* Tabla estándar */
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Tabla admin */
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Tabla de movimientos de caja */
+.movimientos-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Tabla de pedidos */
+.tabla-pedidos {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Tabla de abonos */
+.tabla-abonos {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Tabla de factura */
+.factura-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Tabla de prendas */
+.prendas-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Tabla de combinaciones */
+.combinaciones-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Tabla de clientes */
+.cm-tabla-clientes {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Media queries responsivas para tablets y móviles */
+@media (max-width: 1024px) {
+    .table-responsive-container {
+        margin: 0.75rem 0;
+    }
+
+    table thead th {
+        padding: 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    table tbody td {
+        padding: 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .table-responsive-container {
+        margin: 0.5rem 0;
+        border-radius: 0;
+    }
+
+    table thead th {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    table tbody td {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    /* En móviles, permitir scroll horizontal más fácil */
+    .table-responsive-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Estilos para cuando una tabla no tiene scroll necesario */
+@media (min-width: 1025px) {
+    .table-responsive-container {
+        overflow-x: hidden;
+    }
+}

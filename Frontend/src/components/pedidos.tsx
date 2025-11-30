@@ -203,6 +203,9 @@ export default function Pedidos() {
     };
   }
 
+  // Obtener la fecha de hoy en formato YYYY-MM-DD
+  const getTodayString = () => new Date().toISOString().slice(0, 10);
+
   // Handler para cambiar la imagen (preview)
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -578,22 +581,52 @@ export default function Pedidos() {
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setPedido((prev) => {
-      const updated = {
-        ...prev,
-        [name]:
-          name === "abonoInicial" || name === "totalPedido"
-            ? Number(value)
-            : value,
-      };
 
-      // Recalcular saldo pendiente
-      if (name === "abonoInicial" || name === "totalPedido") {
-        updated.saldoPendiente =
-          Number(updated.totalPedido) - Number(updated.abonoInicial || 0);
+    // Calcular el nuevo estado del pedido de forma inmediata
+    const updatedPedido = {
+      ...pedido,
+      [name]: name === "abonoInicial" || name === "totalPedido" ? Number(value) : value,
+    } as Pedido;
+
+    // Recalcular saldo pendiente si cambia abono o total
+    if (name === "abonoInicial" || name === "totalPedido") {
+      updatedPedido.saldoPendiente =
+        Number(updatedPedido.totalPedido) - Number(updatedPedido.abonoInicial || 0);
+    }
+
+    setPedido(updatedPedido);
+
+    // Validación inmediata de fechas para dar retroalimentación instantánea
+    setErrores((prev) => {
+      const copy = { ...prev } as Errores;
+      const today = getTodayString();
+
+      if (name === "fechaInicio") {
+        // fechaInicio no puede ser menor a hoy
+        if (value && value < today) {
+          copy.fechaInicio = 'La fecha de inicio no puede ser anterior a la fecha de hoy.';
+        } else {
+          delete copy.fechaInicio;
+
+          // Si hay fechaEntrega y ahora es menor a la nueva fechaInicio, marcar error en entrega
+          if (updatedPedido.fechaEntrega && updatedPedido.fechaEntrega < (value || today)) {
+            copy.fechaEntrega = 'La fecha de entrega no puede ser anterior a la fecha de inicio.';
+          } else {
+            delete copy.fechaEntrega;
+          }
+        }
       }
 
-      return updated;
+      if (name === "fechaEntrega") {
+        const minEntrega = updatedPedido.fechaInicio ? updatedPedido.fechaInicio : today;
+        if (value && value < minEntrega) {
+          copy.fechaEntrega = 'La fecha de entrega no puede ser anterior a la fecha de inicio.';
+        } else {
+          delete copy.fechaEntrega;
+        }
+      }
+
+      return copy;
     });
   };
 
@@ -1003,7 +1036,7 @@ export default function Pedidos() {
                     className={clienteCargado ? "input-disabled" : ""}
                   />
                   {errores[campo] && (
-                    <p className="error">{errores[campo]}</p>
+                    <p className="pedido-error">{errores[campo]}</p>
                   )}
                 </div>
               )
@@ -1020,9 +1053,11 @@ export default function Pedidos() {
               name="fechaInicio"
               value={pedido.fechaInicio}
               onChange={handleInputPedido}
+              min={getTodayString()}
+              className="pedido-input-date"
             />
             {errores.fechaInicio && (
-              <p className="error">{errores.fechaInicio}</p>
+              <p className="pedido-error">{errores.fechaInicio}</p>
             )}
           </div>
 
@@ -1033,9 +1068,11 @@ export default function Pedidos() {
               name="fechaEntrega"
               value={pedido.fechaEntrega}
               onChange={handleInputPedido}
+              min={pedido.fechaInicio || getTodayString()}
+              className="pedido-input-date"
             />
             {errores.fechaEntrega && (
-              <p className="error">{errores.fechaEntrega}</p>
+              <p className="pedido-error">{errores.fechaEntrega}</p>
             )}
           </div>
 
@@ -1050,7 +1087,7 @@ export default function Pedidos() {
             >
               <option value="En proceso">En proceso</option>
             </select>
-            {errores.estado && <p className="error">{errores.estado}</p>}
+            {errores.estado && <p className="pedido-error">{errores.estado}</p>}
           </div>
 
           {/* NUEVO CAMPO DE GARANTÍA */}
@@ -1082,7 +1119,7 @@ export default function Pedidos() {
               className="input-garantia"
             />
             {errores.garantia && (
-              <p className="error">{errores.garantia}</p>
+              <p className="pedido-error">{errores.garantia}</p>
             )}
             <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
               Máximo 30 días (Ej: 5, 15, 30)
@@ -1092,74 +1129,76 @@ export default function Pedidos() {
           {/* Sección de prendas */}
           <div className="prendas-section card">
             <h2><FaShoppingCart style={{ marginRight: "8px" }} /> Gestión de Prendas</h2>
-            {errores.prendas && <p className="error">{errores.prendas}</p>}
+            {errores.prendas && <p className="pedido-error">{errores.prendas}</p>}
             
             {/* Lista de prendas temporales */}
             {prendasTemporales.length > 0 && (
               <div className="prendas-lista">
-                <table className="prendas-table">
-                  <thead>
-                    <tr>
-                      <th>Prenda</th>
-                      <th>Cantidad</th>
-                      <th>Arreglos</th>
-                      <th>Subtotal</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {prendasTemporales.map((prenda, index) => (
-                      <tr key={index}>
-                        <td>{prenda.tipo}</td>
-                        <td>{prenda.cantidad}</td>
-                        <td>
-                          {(prenda.arreglos || []).map((arreglo, i) => {
-                            const nombreArreglo = arreglo.tipo === 'combinacion'
-                              ? (arreglo.descripcion_combinacion && arreglo.descripcion_combinacion.trim()
-                                  ? arreglo.descripcion_combinacion
-                                  : `${arreglo.nombre_ajuste ?? ''} ${arreglo.nombre_accion ?? ''}`.trim()
-                                )
-                              : arreglo.tipo === 'ajuste'
-                                ? arreglo.nombre_ajuste
-                                : arreglo.nombre_accion;
-
-                            return (
-                              <div key={i} className="arreglo-mini">
-                                {nombreArreglo} - {formatCOP(Number(arreglo.precio) || 0)}
-                              </div>
-                            );
-                          })}
-                        </td>
-                        <td>
-                          {formatCOP(
-                            (prenda.arreglos || []).reduce(
-                              (total, arreglo) => total + Number(arreglo.precio || 0),
-                              0
-                            ) * (prenda.cantidad || 1)
-                          )}
-                        </td>
-                        <td>
-                          <div className="acciones-prenda">
-                            <button 
-                              className="btn-editar"
-                              onClick={() => handleEditarPrenda(index)}
-                              title="Editar prenda"
-                            >
-                              <FaEdit />
-                            </button>
-                            <button 
-                              className="btn-eliminar"
-                              onClick={() => handleEliminarPrendaTemporal(index)}
-                              title="Eliminar prenda"
-                            >
-                              <FaTrash />
-                            </button>
-                          </div>
-                        </td>
+                <div className="table-responsive-container">
+                  <table className="prendas-table">
+                    <thead>
+                      <tr>
+                        <th>Prenda</th>
+                        <th>Cantidad</th>
+                        <th>Arreglos</th>
+                        <th>Subtotal</th>
+                        <th>Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {prendasTemporales.map((prenda, index) => (
+                        <tr key={index}>
+                          <td>{prenda.tipo}</td>
+                          <td>{prenda.cantidad}</td>
+                          <td>
+                            {(prenda.arreglos || []).map((arreglo, i) => {
+                              const nombreArreglo = arreglo.tipo === 'combinacion'
+                                ? (arreglo.descripcion_combinacion && arreglo.descripcion_combinacion.trim()
+                                    ? arreglo.descripcion_combinacion
+                                    : `${arreglo.nombre_ajuste ?? ''} ${arreglo.nombre_accion ?? ''}`.trim()
+                                  )
+                                : arreglo.tipo === 'ajuste'
+                                  ? arreglo.nombre_ajuste
+                                  : arreglo.nombre_accion;
+
+                              return (
+                                <div key={i} className="arreglo-mini">
+                                  {nombreArreglo} - {formatCOP(Number(arreglo.precio) || 0)}
+                                </div>
+                              );
+                            })}
+                          </td>
+                          <td>
+                            {formatCOP(
+                              (prenda.arreglos || []).reduce(
+                                (total, arreglo) => total + Number(arreglo.precio || 0),
+                                0
+                              ) * (prenda.cantidad || 1)
+                            )}
+                          </td>
+                          <td>
+                            <div className="acciones-prenda">
+                              <button 
+                                className="btn-editar"
+                                onClick={() => handleEditarPrenda(index)}
+                                title="Editar prenda"
+                              >
+                                <FaEdit />
+                              </button>
+                              <button 
+                                className="btn-eliminar"
+                                onClick={() => handleEliminarPrendaTemporal(index)}
+                                title="Eliminar prenda"
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 
                 {/* Total del pedido */}
                 <div className="total-pedido">
@@ -1209,7 +1248,7 @@ export default function Pedidos() {
               placeholder="Ingrese el abono"
             />
             {errores.abonoInicial && (
-              <p className="error">{errores.abonoInicial}</p>
+              <p className="pedido-error">{errores.abonoInicial}</p>
             )}
           </div>
 
@@ -1268,7 +1307,7 @@ export default function Pedidos() {
           {/* Cajones */}
           <div className="cajones-section card">
             <h2><FaBox style={{ marginRight: "8px" }} /> Seleccionar Cajón</h2>
-            {errores.cajon && <p className="error" style={{textAlign: 'center'}}>{errores.cajon}</p>}
+            {errores.cajon && <p className="pedido-error" style={{textAlign: 'center'}}>{errores.cajon}</p>}
             
             {cargandoCajones ? (
               <div className="cargando">Cargando cajones...</div>
@@ -1304,7 +1343,7 @@ export default function Pedidos() {
               <h2>
                 <FaSearch style={{ marginRight: "6px" }} /> Códigos Disponibles - {getInfoCajon(cajonSeleccionado).nombre}
               </h2>
-              {errores.codigos && <p className="error">{errores.codigos}</p>}
+              {errores.codigos && <p className="pedido-error">{errores.codigos}</p>}
               
               {cargandoCodigos ? (
                 <div className="cargando">Cargando códigos...</div>
@@ -1442,7 +1481,7 @@ export default function Pedidos() {
                 <h3>Información de Entrega</h3>
                 
                 {errorEntrega && (
-                  <p className="error" style={{ 
+                  <p className="pedido-error" style={{ 
                     padding: "10px", 
                     backgroundColor: "#fee",
                     borderLeft: "4px solid #f66",

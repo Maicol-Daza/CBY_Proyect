@@ -240,52 +240,54 @@ export const ClientesModule = () => {
             <div className="cm-clientes-lista">
                 <h2>Lista de Clientes ({clientesFiltrados.length})</h2>
                 {clientesFiltrados.length > 0 ? (
-                    <table className="cm-tabla-clientes">
-                        <thead>
-                            <tr>
-                                <th>Identificación</th>
-                                <th>Nombre</th>
-                                <th>Teléfono</th>
-                                <th>Dirección</th>
-                                <th>Email</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {clientesFiltrados.map((cliente) => (
-                                <tr key={cliente.id_cliente}>
-                                    <td>{cliente.nuip}</td>
-                                    <td>{cliente.nombre}</td>
-                                    <td>{cliente.telefono}</td>
-                                    <td>{cliente.direccion}</td>
-                                    <td>{cliente.email}</td>
-                                    <td className="cm-acciones">
-                                        <button
-                                            className="cm-btn-accion cm-editar"
-                                            onClick={() => handleEditar(cliente)}
-                                            title="Editar"
-                                        >
-                                            <FaEdit /> Editar
-                                        </button>
-                                        <button
-                                            className="cm-btn-accion cm-nuevo-pedido"
-                                            onClick={() => handleNuevoPedido(cliente)}
-                                            title="Nuevo Pedido"
-                                        >
-                                            <CgAdd /> Nuevo Pedido
-                                        </button>
-                                        <button
-                                            className="cm-btn-accion cm-eliminar"
-                                            onClick={() => handleEliminar(cliente.id_cliente)}
-                                            title="Eliminar"
+                    <div className="table-responsive-container">
+                        <table className="cm-tabla-clientes">
+                            <thead>
+                                <tr>
+                                    <th>Identificación</th>
+                                    <th>Nombre</th>
+                                    <th>Teléfono</th>
+                                    <th>Dirección</th>
+                                    <th>Email</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {clientesFiltrados.map((cliente) => (
+                                    <tr key={cliente.id_cliente}>
+                                        <td>{cliente.nuip}</td>
+                                        <td>{cliente.nombre}</td>
+                                        <td>{cliente.telefono}</td>
+                                        <td>{cliente.direccion}</td>
+                                        <td>{cliente.email}</td>
+                                        <td className="cm-acciones">
+                                            <button
+                                                className="cm-btn-accion cm-editar"
+                                                onClick={() => handleEditar(cliente)}
+                                                title="Editar"
+                                            >
+                                                <FaEdit /> Editar
+                                            </button>
+                                            <button
+                                                className="cm-btn-accion cm-nuevo-pedido"
+                                                onClick={() => handleNuevoPedido(cliente)}
+                                                title="Nuevo Pedido"
+                                            >
+                                                <CgAdd /> Nuevo Pedido
+                                            </button>
+                                            <button
+                                                className="cm-btn-accion cm-eliminar"
+                                                onClick={() => handleEliminar(cliente.id_cliente)}
+                                                title="Eliminar"
                                         >
                                             <FaTrash /> Eliminar
                                         </button>
                                     </td>
                                 </tr>
                             ))}
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 ) : (
                     <p className="cm-sin-resultados">No hay clientes que coincidan con la búsqueda</p>
                 )}

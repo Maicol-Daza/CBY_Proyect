@@ -201,7 +201,7 @@ export const UsuariosPagina = () => {
                         {/* Tabla de usuarios */}
                         <div className="usuarios-tabla-section">
                             <h3 className="usuarios-tabla-titulo">Lista de Usuarios</h3>
-                            <div className="tabla-contenedor">
+                            <div className="tabla-contenedor table-responsive-container">
                                 <table className="tabla">
                                     <thead>
                                         <tr>
@@ -274,7 +274,7 @@ export const UsuariosPagina = () => {
                             </button>
                         </div>
 
-                        <div className="tabla-contenedor">
+                        <div className="tabla-contenedor table-responsive-container">
                             <table className="tabla">
                                 <thead>
                                     <tr>
@@ -337,7 +337,7 @@ export const UsuariosPagina = () => {
                             </button>
                         </div>
 
-                        <div className="tabla-contenedor">
+                        <div className="tabla-contenedor table-responsive-container">
                             <table className="tabla">
                                 <thead>
                                     <tr>
@@ -402,7 +402,7 @@ export const UsuariosPagina = () => {
                             </button>
                         </div>
 
-                        <div className="tabla-contenedor">
+                        <div className="tabla-contenedor table-responsive-container">
                             <table className="tabla">
                                 <thead>
                                     <tr>

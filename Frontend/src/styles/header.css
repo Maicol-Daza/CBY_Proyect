@@ -9,7 +9,7 @@
     padding: 0.5rem 0;
 }
 
-.app-header .container {
+.header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -17,17 +17,17 @@
     max-width: 1280px;
     margin: 0 auto;
     padding: 0 1rem;
-    
+    flex-wrap: wrap;
 }
 
 .app-header .brand {
     color: #2563eb;
     font-weight: 600;
     font-size: 1.25rem;
-    
+    flex-shrink: 0;
 }
 
-.app-header .brand a {
+.app-header .brand-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -36,16 +36,50 @@
     transition: color 0.2s ease;
 }
 
-.app-header .brand a:hover {
+.app-header .brand-link:hover {
     color: #1e40af;
 }
 
-.app-header nav ul {
+.app-header .brand-icon {
+    font-size: 1.75rem;
+}
+
+.app-header .brand-text {
+    display: inline;
+}
+
+/* Botón hamburguesa - oculto por defecto */
+.hamburger-button {
+    display: none;
+    flex-direction: column;
+    background: none;
+    border: none;
+    color: #2563eb;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    transition: color 0.2s ease;
+    z-index: 40;
+}
+
+.hamburger-button:hover {
+    color: #1e40af;
+}
+
+.app-header .nav-menu {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+}
+
+.app-header .nav-list {
     display: flex;
     gap: 0.5rem;
     list-style: none;
     padding: 0;
     margin: 0;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .app-header .nav-button {
@@ -62,12 +96,14 @@
     font-weight: 500;
     transition: all 0.2s ease;
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .app-header .nav-button .icon-container {
     display: flex;
     align-items: center;
     font-size: 1.25rem;
+    flex-shrink: 0;
 }
 
 .app-header .nav-button:hover {
@@ -89,6 +125,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-shrink: 0;
 }
 
 .app-header .user-details {
@@ -121,6 +158,7 @@
     font-size: 0.875rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .app-header .logout-button:hover {
@@ -129,22 +167,199 @@
     color: #dc2626;
 }
 
-@media (max-width: 768px) {
+.logo {
+    width: 110px;
+    height: auto;
+    object-fit: cover;
+}
+
+/* Media Queries Responsivas */
+
+/* Pantalla grande - Mantener todo visible */
+@media (min-width: 1025px) {
+    .header-container {
+        flex-wrap: nowrap;
+    }
+
+    .hamburger-button {
+        display: none !important;
+    }
+
+    .app-header .nav-menu {
+        display: flex;
+        flex: 1;
+    }
+
     .app-header .nav-button .label {
-        display: none;
+        display: inline;
     }
-    
-    .app-header .nav-button {
-        padding: 0.5rem;
-    }
-    
+
     .app-header .user-details {
-        display: none;
+        display: flex;
+    }
+
+    .mobile-user-section {
+        display: none !important;
+    }
+
+    .app-header .user-info {
+        display: flex;
     }
 }
 
-.logo {
-    width: 110px;
-    height: px;
-    object-fit: cover;
+/* Pantalla media y pequeña - Menú hamburguesa */
+@media (max-width: 1024px) {
+    .header-container {
+        flex-wrap: nowrap;
+        padding: 0 1rem;
+    }
+
+    .hamburger-button {
+        display: flex;
+        margin-left: auto;
+        order: 2;
+    }
+
+    .app-header .brand {
+        order: 1;
+    }
+
+    .app-header .nav-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: auto;
+        width: 100%;
+        max-height: 0;
+        overflow: hidden;
+        flex-direction: column;
+        justify-content: flex-start;
+        background: #ffffff;
+        border-top: 1px solid #eef2f6;
+        border-bottom: 1px solid #eef2f6;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: max-height 0.3s ease;
+        z-index: 30;
+    }
+
+    .app-header .nav-menu.open {
+        max-height: 600px;
+    }
+
+    .app-header .nav-list {
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        padding: 0;
+    }
+
+    .app-header .nav-button {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 1rem 1.5rem;
+        border-radius: 0;
+        gap: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .app-header .nav-button:last-child {
+        border-bottom: none;
+    }
+
+    .app-header .nav-button .label {
+        display: inline;
+    }
+
+    .mobile-user-section {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #eef2f6;
+        background: #f9fafb;
+    }
+
+    .mobile-user-details {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+    }
+
+    .mobile-user-details .user-name {
+        color: #374151;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .mobile-user-details .user-role {
+        color: #6b7280;
+        font-size: 0.75rem;
+    }
+
+    .mobile-logout-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: #ef4444;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        justify-content: center;
+    }
+
+    .mobile-logout-button:hover {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+
+    .app-header .user-info {
+        display: none !important;
+    }
+}
+
+/* Pantalla pequeña (mobile) */
+@media (max-width: 640px) {
+    .header-container {
+        padding: 0 0.75rem;
+    }
+
+    .app-header .brand {
+        font-size: 1rem;
+    }
+
+    .app-header .brand-icon {
+        font-size: 1.25rem;
+    }
+
+    .app-header .brand-text {
+        display: none;
+    }
+
+    .hamburger-button {
+        font-size: 1.25rem;
+        padding: 0.25rem;
+    }
+
+    .app-header .nav-button {
+        padding: 0.75rem 1rem;
+    }
+
+    .app-header .user-details {
+        display: none;
+    }
+
+    .app-header .logout-button {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .app-header .logout-button span {
+        display: none;
+    }
 }

@@ -305,6 +305,22 @@
   margin-top: 4px;
 }
 
+/* Estilos específicos y únicos para el componente Pedidos */
+.pedido-error {
+  color: #c33;
+  background-color: #fff6f6;
+  border-left: 4px solid #f66;
+  padding: 8px 10px;
+  margin-top: 6px;
+  border-radius: 4px;
+  font-size: 0.92rem;
+}
+
+.pedido-input-date {
+  /* Mantener apariencia consistente con inputs del formulario */
+  padding: 9px 11px;
+}
+
 .btn-primary:hover,
 .NuevoCliente:hover {
   background: #2563eb;

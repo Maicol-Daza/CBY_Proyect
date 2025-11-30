@@ -152,32 +152,33 @@ export default function ModalFactura({ isOpen, facturaData, onClose }: ModalFact
           </div>
 
           {/* Tabla de prendas */}
-          <table className="factura-tabla">
-            <thead>
-              <tr>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Valor Unitario</th>
-                <th>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {facturaData.prendas && Array.isArray(facturaData.prendas) && facturaData.prendas.length > 0 ? (
-                facturaData.prendas.map((prenda, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <strong>{prenda.tipo || 'Prenda'}</strong>
-                      <div className="prenda-arreglos">
-                        {prenda.arreglos && Array.isArray(prenda.arreglos) && prenda.arreglos.length > 0 ? (
-                          prenda.arreglos.map((arreglo: any, i: number) => {
-                            // Obtener el nombre del arreglo según su tipo
-                            let nombre = '';
-                            
-                            if (arreglo.tipo === 'combinacion') {
-                              nombre = arreglo.descripcion_combinacion?.trim() || 
-                                       `${arreglo.nombre_ajuste || ''} + ${arreglo.nombre_accion || ''}`.replace(/\s+/g, ' ').trim();
-                            } else if (arreglo.tipo === 'ajuste') {
-                              nombre = arreglo.nombre_ajuste || arreglo.descripcion_ajuste || 'Ajuste';
+          <div className="table-responsive-container">
+            <table className="factura-tabla">
+              <thead>
+                <tr>
+                  <th>Descripción</th>
+                  <th>Cantidad</th>
+                  <th>Valor Unitario</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {facturaData.prendas && Array.isArray(facturaData.prendas) && facturaData.prendas.length > 0 ? (
+                  facturaData.prendas.map((prenda, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        <strong>{prenda.tipo || 'Prenda'}</strong>
+                        <div className="prenda-arreglos">
+                          {prenda.arreglos && Array.isArray(prenda.arreglos) && prenda.arreglos.length > 0 ? (
+                            prenda.arreglos.map((arreglo: any, i: number) => {
+                              // Obtener el nombre del arreglo según su tipo
+                              let nombre = '';
+                              
+                              if (arreglo.tipo === 'combinacion') {
+                                nombre = arreglo.descripcion_combinacion?.trim() || 
+                                         `${arreglo.nombre_ajuste || ''} + ${arreglo.nombre_accion || ''}`.replace(/\s+/g, ' ').trim();
+                              } else if (arreglo.tipo === 'ajuste') {
+                                nombre = arreglo.nombre_ajuste || arreglo.descripcion_ajuste || 'Ajuste';
                             } else if (arreglo.tipo === 'accion') {
                               nombre = arreglo.nombre_accion || arreglo.descripcion_accion || 'Acción';
                             } else {
@@ -211,8 +212,9 @@ export default function ModalFactura({ isOpen, facturaData, onClose }: ModalFact
                   </td>
                 </tr>
               )}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
 
           {/* Resumen de totales */}
           <div className="factura-totales">

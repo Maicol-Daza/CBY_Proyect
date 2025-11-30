@@ -269,7 +269,7 @@ export const ControlAdministrador = () => {
           <div className="pestana-contenido">
             <h3>Gestión Avanzada de Usuarios</h3>
             {usuarios.length > 0 ? (
-              <div className="tabla-contenedor-admin">
+              <div className="tabla-contenedor-admin table-responsive-container">
                 <table className="tabla-admin">
                   <thead>
                     <tr>
@@ -304,7 +304,7 @@ export const ControlAdministrador = () => {
           <div className="pestana-contenido">
             <h3>Registro de Auditoría - Movimientos de Caja</h3>
             {movimientos.length > 0 ? (
-              <div className="tabla-contenedor">
+              <div className="tabla-contenedor table-responsive-container">
                 <table className="tabla-admin">
                   <thead>
                     <tr>

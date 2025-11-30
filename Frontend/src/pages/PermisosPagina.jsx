@@ -41,7 +41,7 @@ export const PermisosPagina = () => {
             Crear Permiso
             </button>
 
-            <div className="tabla-contenedor">
+            <div className="tabla-contenedor table-responsive-container">
             <table className="tabla">
                 <thead>
                 <tr>
