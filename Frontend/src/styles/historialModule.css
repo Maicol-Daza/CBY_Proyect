@@ -1445,3 +1445,204 @@
 .devolucion-seccion h3 {
   color: #d32f2f;
 }
+
+/* BOTÓN DE FACTURAS EN HISTORIAL */
+.btn-accion-facturas {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #ff9800;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-accion-facturas:hover {
+  background-color: #f57c00;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.btn-accion-facturas:active {
+  transform: scale(0.98);
+}
+
+/* ESTILOS PARA ModalFacturas */
+.modal-facturas {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #f0f0f0;
+  background-color: #f9f9f9;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.btn-cerrar {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-cerrar:hover {
+  color: #d32f2f;
+  transform: scale(1.1);
+}
+
+.btn-cerrar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-body {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.factura-seccion {
+  padding: 20px;
+  border-radius: 6px;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.factura-seccion:hover {
+  background-color: #fafafa;
+  border-color: #d0d0d0;
+}
+
+.factura-titulo {
+  margin-bottom: 15px;
+}
+
+.factura-titulo h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.factura-titulo p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.factura-botones {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 150px;
+  justify-content: center;
+}
+
+.btn-descargar {
+  background-color: #2196f3;
+  color: white;
+}
+
+.btn-descargar:hover {
+  background-color: #1976d2;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.btn-imprimir {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-imprimir:hover {
+  background-color: #388e3c;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-accion:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.modal-footer {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-cancelar {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+  background-color: #f5f5f5;
+  border-color: #999;
+}
+
+.btn-cancelar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  padding: 12px 16px;
+  background-color: #ffebee;
+  border-left: 4px solid #d32f2f;
+  color: #c62828;
+  border-radius: 4px;
+  font-size: 14px;
+}
+

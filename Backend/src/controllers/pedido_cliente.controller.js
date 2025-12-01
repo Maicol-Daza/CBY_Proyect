@@ -295,9 +295,17 @@ class PedidoClienteController {
           c.nombre AS cliente_nombre,
           c.nuip AS cliente_cedula,
           c.telefono AS cliente_telefono,
-          c.email AS cliente_email
+          c.email AS cliente_email,
+          ca.id_cajon,
+          ca.nombre_cajon
          FROM pedido_cliente p 
          LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+         LEFT JOIN (
+           SELECT DISTINCT c.id_pedido, caj.id_cajon, caj.nombre_cajon 
+           FROM codigos c
+           LEFT JOIN cajones caj ON c.id_cajon = caj.id_cajon
+           WHERE c.id_pedido IS NOT NULL
+         ) ca ON p.id_pedido = ca.id_pedido
          ORDER BY p.fecha_pedido DESC`
       );
       res.json(rows);
@@ -317,9 +325,17 @@ class PedidoClienteController {
           c.nuip AS cliente_cedula,
           c.direccion AS cliente_direccion,
           c.telefono AS cliente_telefono,
-          c.email AS cliente_email
+          c.email AS cliente_email,
+          ca.id_cajon,
+          ca.nombre_cajon
          FROM pedido_cliente p 
          LEFT JOIN clientes c ON p.id_cliente = c.id_cliente
+         LEFT JOIN (
+           SELECT DISTINCT c.id_pedido, caj.id_cajon, caj.nombre_cajon 
+           FROM codigos c
+           LEFT JOIN cajones caj ON c.id_cajon = caj.id_cajon
+           WHERE c.id_pedido IS NOT NULL
+         ) ca ON p.id_pedido = ca.id_pedido
          WHERE p.id_pedido = ?`,
         [id]
       );
@@ -339,13 +355,21 @@ class PedidoClienteController {
         const [arreglos] = await db.query(
           `SELECT 
             dp.id_detalle_combo,
-            dp.descripcion,
+            dp.descripcion AS descripcion_combinacion,
             dp.precio,
             dp.id_ajuste_accion,
             aa.id_ajuste,
             a.nombre_ajuste,
+            a.precio_ajuste,
             aa.id_accion,
-            ac.nombre_accion
+            ac.nombre_accion,
+            ac.precio_acciones,
+            CASE 
+              WHEN aa.id_ajuste_accion IS NOT NULL THEN 'combinacion'
+              WHEN a.id_ajuste IS NOT NULL AND ac.id_accion IS NULL THEN 'ajuste'
+              WHEN ac.id_accion IS NOT NULL AND a.id_ajuste IS NULL THEN 'accion'
+              ELSE 'combinacion'
+            END AS tipo
            FROM detalle_pedido_combo dp
            LEFT JOIN ajustes_accion aa ON dp.id_ajuste_accion = aa.id_ajuste_accion
            LEFT JOIN ajustes a ON aa.id_ajuste = a.id_ajuste
@@ -356,7 +380,7 @@ class PedidoClienteController {
         prenda.arreglos = arreglos;
         
         // Calcular subtotal por prenda
-        prenda.subtotal = arreglos.reduce((total, arreglo) => total + arreglo.precio, 0) * (prenda.cantidad || 1);
+        prenda.subtotal = arreglos.reduce((total, arreglo) => total + (arreglo.precio || 0), 0) * (prenda.cantidad || 1);
       }
 
       // Obtener códigos asignados al pedido

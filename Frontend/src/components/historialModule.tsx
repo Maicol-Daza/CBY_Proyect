@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/historialModule.css";
-import { FaEye, FaTimes, FaHistory, FaUndo } from "react-icons/fa";
+import { FaEye, FaTimes, FaHistory, FaUndo, FaFileInvoice } from "react-icons/fa";
 import { FaFileExcel, FaFilePdf } from "react-icons/fa6";
 import { obtenerCodigos } from "../services/codigosService";
 import { obtenerCajones } from "../services/cajonesService";
@@ -10,6 +10,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { InputMoneda } from './InputMoneda';
+import ModalFacturas from './ModalFacturas';
 
 export const HistorialModule = () => {
     const [pedidos, setPedidos] = useState<any[]>([]);
@@ -37,6 +38,8 @@ export const HistorialModule = () => {
       monto: 0
     });
     const [cargandoDevolucion, setCargandoDevolucion] = useState(false);
+    const [modalFacturasOpen, setModalFacturasOpen] = useState(false);
+    const [datosFactura, setDatosFactura] = useState<any>(null);
 
     useEffect(() => {
         cargarPedidos();
@@ -487,9 +490,49 @@ export const HistorialModule = () => {
       });
     };
 
+    // Función para abrir el modal de facturas
+    const handleAbrirFacturas = async (pedido: any) => {
+      try {
+        // Cargar detalles completos del pedido (incluyendo prendas)
+        const response = await fetch(`http://localhost:3000/api/pedidos/${pedido.id_pedido}`);
+        
+        if (!response.ok) {
+          throw new Error("Error al cargar detalles del pedido");
+        }
+
+        const datosCompletos = await response.json();
+
+        // Preparar datos para las facturas con todos los detalles
+        const datosParaFactura = {
+          id_pedido: datosCompletos.id_pedido,
+          cliente_nombre: datosCompletos.cliente_nombre || 'No especificado',
+          cliente_cedula: datosCompletos.cliente_cedula || 'N/A',
+          cliente_telefono: datosCompletos.cliente_telefono || 'N/A',
+          cliente_email: datosCompletos.cliente_email || 'N/A',
+          fecha_pedido: datosCompletos.fecha_pedido,
+          fecha_entrega: datosCompletos.fecha_entrega,
+          total_pedido: datosCompletos.total_pedido || 0,
+          abono: datosCompletos.abono || 0,
+          saldo: datosCompletos.saldo || 0,
+          prendas: datosCompletos.prendas || [],
+          nombre_cajon: datosCompletos.nombre_cajon,
+          id_cajon: datosCompletos.id_cajon
+        };
+        
+        setDatosFactura(datosParaFactura);
+        setModalFacturasOpen(true);
+      } catch (error) {
+        console.error("Error al abrir facturas:", error);
+        alert("❌ Error al cargar los datos del pedido para las facturas");
+      }
+    };
+
+    const handleCerrarFacturas = () => {
+      setModalFacturasOpen(false);
+      setDatosFactura(null);
+    };
 
 
-    // Función para guardar la devolución
     const handleGuardarDevolucion = async () => {
       //VALIDACIÓN: Verificar si la garantía está vencida
       if (!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)) {
@@ -667,6 +710,13 @@ export const HistorialModule = () => {
                                                 onClick={() => handleVerDetalles(pedido.id_pedido)}
                                             >
                                                 <FaEye /> Ver
+                                            </button>
+                                            <button
+                                                className="btn-accion-facturas"
+                                                title="Gestionar Facturas"
+                                                onClick={() => handleAbrirFacturas(pedido)}
+                                            >
+                                                <FaFileInvoice /> Facturas
                                             </button>
                                             <button
                                                 className="btn-accion-abono"
@@ -1199,6 +1249,13 @@ export const HistorialModule = () => {
     </div>
   </div>
 )}
+
+            {/* Modal de Facturas */}
+            <ModalFacturas
+              isOpen={modalFacturasOpen}
+              facturaData={datosFactura}
+              onClose={handleCerrarFacturas}
+            />
         </div>
     );
 };
