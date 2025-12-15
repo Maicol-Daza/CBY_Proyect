@@ -57,3 +57,68 @@ export async function obtenerMovimientosPorTipo(tipo: "entrada" | "salida") {
     throw error;
   }
 }
+
+// ============ FUNCIONES PARA BASE DE CAJA DIARIA ============
+
+const DESCRIPCION_BASE_DIARIA = "BASE_CAJA_DIARIA";
+
+// Formatear fecha local a string YYYY-MM-DD
+const formatearFechaLocal = (fecha: Date): string => {
+  const año = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const día = String(fecha.getDate()).padStart(2, '0');
+  return `${año}-${mes}-${día}`;
+};
+
+// Verificar si existe la base de caja para el día actual
+export async function verificarBaseDiaria(): Promise<{ existe: boolean; monto: number }> {
+  try {
+    const movimientos = await obtenerMovimientos();
+    const hoy = formatearFechaLocal(new Date());
+    
+    const baseDiaria = movimientos.find((mov: Movimiento) => {
+      const fechaMov = new Date(mov.fecha_movimiento);
+      const fechaMovStr = formatearFechaLocal(fechaMov);
+      return fechaMovStr === hoy && 
+             mov.tipo === "entrada" && 
+             mov.descripcion.includes(DESCRIPCION_BASE_DIARIA);
+    });
+    
+    return {
+      existe: !!baseDiaria,
+      monto: baseDiaria ? Number(baseDiaria.monto) : 0
+    };
+  } catch (error) {
+    console.error("Error al verificar base diaria:", error);
+    return { existe: false, monto: 0 };
+  }
+}
+
+// Crear la base de caja diaria (solo admin)
+export async function crearBaseDiaria(monto: number, id_usuario: number) {
+  try {
+    // Verificar si ya existe base para hoy
+    const { existe } = await verificarBaseDiaria();
+    if (existe) {
+      throw new Error("Ya existe una base de caja para el día de hoy");
+    }
+    
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: "entrada",
+        descripcion: `${DESCRIPCION_BASE_DIARIA} - Base inicial del día`,
+        monto: monto,
+        fecha_movimiento: new Date().toISOString(),
+        id_usuario: id_usuario
+      })
+    });
+    
+    if (!response.ok) throw new Error("Error al crear base diaria");
+    return await response.json();
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+}

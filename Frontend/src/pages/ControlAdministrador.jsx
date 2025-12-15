@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Layout } from "../components/layout/Layout";
-import { FaUsers, FaShoppingCart, FaReceipt, FaCog } from "react-icons/fa";
+import { FaUsers, FaShoppingCart, FaReceipt, FaCog, FaCashRegister, FaCheckCircle } from "react-icons/fa";
 import { leerUsuarios } from "../services/usuarioService";
 import { obtenerClientes } from "../services/clientesService";
-import { obtenerMovimientos } from "../services/movimientos_caja";
+import { obtenerMovimientos, verificarBaseDiaria, crearBaseDiaria } from "../services/movimientos_caja";
 import { obtenerAjustes } from "../services/ajustesService";
 import { obtenerAcciones } from "../services/accionesService";
 import { obtenerAjustesAccion } from "../services/ajustesAccionService";
 import { obtenerPedidos } from "../services/pedidosService";
+import { formatCOP } from "../utils/formatCurrency";
 import "./ControlAdministrador.css";
 
 export const ControlAdministrador = () => {
@@ -35,9 +36,26 @@ export const ControlAdministrador = () => {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
+  // Estados para base de caja diaria
+  const [baseDiariaExiste, setBaseDiariaExiste] = useState(false);
+  const [montoBaseDiaria, setMontoBaseDiaria] = useState(0);
+  const [nuevoMontoBase, setNuevoMontoBase] = useState("");
+  const [cargandoBase, setCargandoBase] = useState(false);
+
   useEffect(() => {
     cargarTodosLosDatos();
+    verificarBaseDelDia();
   }, []);
+
+  const verificarBaseDelDia = async () => {
+    try {
+      const { existe, monto } = await verificarBaseDiaria();
+      setBaseDiariaExiste(existe);
+      setMontoBaseDiaria(monto);
+    } catch (error) {
+      console.error("Error al verificar base diaria:", error);
+    }
+  };
 
   const cargarTodosLosDatos = async () => {
     try {
@@ -102,6 +120,34 @@ export const ControlAdministrador = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(monto);
+  };
+
+  // Función para ingresar la base de caja diaria
+  const handleCrearBaseDiaria = async () => {
+    const monto = parseFloat(nuevoMontoBase.replace(/[^\d]/g, ''));
+    
+    if (!monto || monto <= 0) {
+      alert("Por favor ingresa un monto válido para la base de caja");
+      return;
+    }
+
+    try {
+      setCargandoBase(true);
+      const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
+      const idUsuario = usuarioGuardado?.id_usuario || 1;
+      
+      await crearBaseDiaria(monto, idUsuario);
+      alert("✅ Base de caja del día registrada correctamente.\n\nLos empleados ahora pueden realizar movimientos de caja.");
+      setBaseDiariaExiste(true);
+      setMontoBaseDiaria(monto);
+      setNuevoMontoBase("");
+      cargarTodosLosDatos(); // Recargar datos
+    } catch (error) {
+      console.error("Error:", error);
+      alert(error.message || "Error al registrar la base de caja");
+    } finally {
+      setCargandoBase(false);
+    }
   };
 
   if (cargando) {
@@ -222,6 +268,57 @@ export const ControlAdministrador = () => {
                   <FaCog />
                 </div>
               </div>
+            </div>
+
+            {/* ========== SECCIÓN BASE DE CAJA DIARIA ========== */}
+            <div className="base-caja-section">
+              <h3><FaCashRegister style={{ marginRight: '10px' }} />Base de Caja del Día</h3>
+              
+              {baseDiariaExiste ? (
+                <div className="base-caja-configurada">
+                  <FaCheckCircle style={{ color: '#10b981', fontSize: '24px', marginRight: '15px' }} />
+                  <div>
+                    <strong>Base configurada para hoy</strong>
+                    <p>Monto: <span className="monto-base">{formatearMoneda(montoBaseDiaria)}</span></p>
+                    <p className="detalle-texto">Los empleados pueden realizar movimientos de caja normalmente.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="base-caja-formulario">
+                  <div className="alerta-base-pendiente">
+                    <strong>⚠️ Base de caja no configurada</strong>
+                    <p>Los empleados no pueden realizar movimientos de caja hasta que ingrese la base del día.</p>
+                  </div>
+                  
+                  <div className="formulario-base">
+                    <label>Ingrese el monto de la base para hoy:</label>
+                    <div className="input-base-container">
+                      <span className="prefijo-moneda">$</span>
+                      <input
+                        type="text"
+                        placeholder="Ej: 100000"
+                        value={nuevoMontoBase}
+                        onChange={(e) => {
+                          // Solo permitir números
+                          const valor = e.target.value.replace(/[^\d]/g, '');
+                          // Formatear con separadores de miles
+                          const valorFormateado = valor ? parseInt(valor).toLocaleString('es-CO') : '';
+                          setNuevoMontoBase(valorFormateado);
+                        }}
+                        className="input-monto-base"
+                        disabled={cargandoBase}
+                      />
+                    </div>
+                    <button 
+                      onClick={handleCrearBaseDiaria}
+                      className="btn-registrar-base"
+                      disabled={cargandoBase || !nuevoMontoBase}
+                    >
+                      {cargandoBase ? "Registrando..." : "Registrar Base del Día"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Estado del Sistema */}

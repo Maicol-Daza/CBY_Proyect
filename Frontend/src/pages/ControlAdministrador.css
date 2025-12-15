@@ -356,6 +356,150 @@
   font-size: 0.9rem;
 }
 
+/* ========== BASE DE CAJA DIARIA ========== */
+.base-caja-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+}
+
+.base-caja-section h3 {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  color: #1f2937;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.base-caja-configurada {
+  display: flex;
+  align-items: flex-start;
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.base-caja-configurada strong {
+  display: block;
+  font-size: 1.1rem;
+  color: #065f46;
+  margin-bottom: 0.5rem;
+}
+
+.base-caja-configurada p {
+  margin: 0.3rem 0;
+  color: #047857;
+  font-size: 0.95rem;
+}
+
+.base-caja-configurada .monto-base {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: #059669;
+}
+
+.base-caja-configurada .detalle-texto {
+  font-size: 0.85rem;
+  color: #065f46;
+  opacity: 0.8;
+}
+
+.base-caja-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.alerta-base-pendiente {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+}
+
+.alerta-base-pendiente strong {
+  display: block;
+  color: #92400e;
+  margin-bottom: 0.3rem;
+}
+
+.alerta-base-pendiente p {
+  margin: 0;
+  color: #78350f;
+  font-size: 0.9rem;
+}
+
+.formulario-base {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formulario-base label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.input-base-container {
+  display: flex;
+  align-items: center;
+  max-width: 350px;
+}
+
+.prefijo-moneda {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-right: none;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #374151;
+  border-radius: 8px 0 0 8px;
+}
+
+.input-monto-base {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0 8px 8px 0;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-monto-base:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-registrar-base {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.85rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  max-width: 250px;
+}
+
+.btn-registrar-base:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn-registrar-base:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .control-admin-container {

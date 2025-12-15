@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import "../styles/moduloCaja.css";
 import "../styles/inputMoneda.css";
-import { crearMovimiento, obtenerMovimientos, type Movimiento } from "../services/movimientos_caja";
+import { crearMovimiento, obtenerMovimientos, verificarBaseDiaria, type Movimiento } from "../services/movimientos_caja";
 import { formatCOP } from "../utils/formatCurrency";
-import { FaArrowTrendUp, FaArrowTrendDown, FaFileExcel, FaFilePdf, FaMoneyBillWave } from "react-icons/fa6";
+import { FaArrowTrendUp, FaArrowTrendDown, FaFileExcel, FaFilePdf, FaMoneyBillWave, FaLock } from "react-icons/fa6";
 import { VscChromeClose } from "react-icons/vsc";
 import { Icon } from "@iconify/react";
 import * as XLSX from "xlsx";
@@ -47,6 +47,11 @@ export const CajaModule = () => {
   const [totalAcumulado, setTotalAcumulado] = useState(0);
   const [chartData, setChartData] = useState<ChartData[]>([]);
 
+  // Estado para base diaria
+  const [baseDiariaExiste, setBaseDiariaExiste] = useState(false);
+  const [montoBaseDiaria, setMontoBaseDiaria] = useState(0);
+  const [verificandoBase, setVerificandoBase] = useState(true);
+
   // Estado para modal de nuevo movimiento
   const [mostrarModalMovimiento, setMostrarModalMovimiento] = useState(false);
   const [nuevoMovimiento, setNuevoMovimiento] = useState({
@@ -72,9 +77,34 @@ export const CajaModule = () => {
 
   useEffect(() => {
     cargarMovimientos();
-    const intervalo = setInterval(cargarMovimientos, 30000);
+    verificarBaseDelDia(true); // Primera vez: mostrar loading
+    const intervalo = setInterval(() => {
+      cargarMovimientos();
+      verificarBaseDelDia(false); // Actualizaciones silenciosas sin parpadeo
+    }, 30000);
     return () => clearInterval(intervalo);
   }, []);
+
+  // Verificar si existe la base de caja del día
+  const verificarBaseDelDia = async (esPrimeraVez = false) => {
+    try {
+      // Solo mostrar loading en la primera carga para evitar parpadeos
+      if (esPrimeraVez) setVerificandoBase(true);
+      const { existe, monto } = await verificarBaseDiaria();
+      setBaseDiariaExiste(existe);
+      setMontoBaseDiaria(monto);
+    } catch (error) {
+      console.error("Error al verificar base diaria:", error);
+    } finally {
+      if (esPrimeraVez) setVerificandoBase(false);
+    }
+  };
+
+  // Verificar si el usuario es administrador
+  const esAdmin = user?.rol === "Administrador";
+
+  // Verificar si el usuario puede hacer movimientos
+  const puedeHacerMovimientos = esAdmin || baseDiariaExiste;
 
   // Filtrar movimientos por rango de fechas y actualizar totales
   useEffect(() => {
@@ -316,11 +346,41 @@ export const CajaModule = () => {
         <h1>Caja y Movimientos</h1>
         <button 
           className="btn-nuevo"
-          onClick={() => setMostrarModalMovimiento(true)}
+          onClick={() => {
+            if (!puedeHacerMovimientos) {
+              alert("⚠️ No se puede registrar movimientos.\n\nEl administrador aún no ha ingresado la base de caja del día.\n\nContacte al administrador para habilitar los movimientos.");
+              return;
+            }
+            setMostrarModalMovimiento(true);
+          }}
+          style={!puedeHacerMovimientos ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
         >
+          {!puedeHacerMovimientos && <FaLock style={{ marginRight: '8px' }} />}
           + Nuevo Movimiento
         </button>
       </div>
+
+      {/* Alerta de base diaria no configurada */}
+      {!verificandoBase && !baseDiariaExiste && (
+        <div className="alerta-base-diaria">
+          <FaLock style={{ marginRight: '10px', fontSize: '20px' }} />
+          <div>
+            <strong>Base de caja no configurada</strong>
+            <p>
+              {esAdmin 
+                ? "Ingresa la base de caja del día desde el Panel de Control Administrador para habilitar los movimientos."
+                : "El administrador aún no ha ingresado la base de caja del día. Los movimientos están bloqueados hasta que se configure."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Indicador de base diaria configurada */}
+      {!verificandoBase && baseDiariaExiste && (
+        <div className="info-base-diaria">
+          <span>✓ Base del día configurada: <strong>{formatCOP(montoBaseDiaria)}</strong></span>
+        </div>
+      )}
 
       {/* Filtro de fechas y exportación */}
       <div className="filtro-fechas-section">

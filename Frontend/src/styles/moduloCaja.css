@@ -555,3 +555,44 @@
   font-size: 18px;
   color: #0066cc;
 }
+
+/* ======= ESTILOS PARA BASE DE CAJA DIARIA ======= */
+.alerta-base-diaria {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-left: 4px solid #f59e0b;
+  padding: 15px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  color: #92400e;
+}
+
+.alerta-base-diaria strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 5px;
+  color: #78350f;
+}
+
+.alerta-base-diaria p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.info-base-diaria {
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  border-left: 4px solid #10b981;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #065f46;
+  font-size: 14px;
+}
+
+.info-base-diaria strong {
+  color: #047857;
+}
