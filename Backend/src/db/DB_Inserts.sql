@@ -1,3 +1,4 @@
+-- Base de datos clinicabluyin
 Use clinicabluyin;
 -- Cajones 
 INSERT INTO cajones (nombre_cajon)
