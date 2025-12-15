@@ -560,9 +560,9 @@ class PedidoClienteController {
   }
   async cambiarEstado(req, res) {
   const { id } = req.params;
-  const { estado, abonoEntrega, id_usuario } = req.body;
+  const { estado, abonoEntrega, id_usuario, fecha_entrega } = req.body;
 
-  console.log("Datos Recibido:", { id, estado, abonoEntrega, id_usuario });
+  console.log("Datos Recibido:", { id, estado, abonoEntrega, id_usuario, fecha_entrega });
 
   if (!id || !estado) {
     return res.status(400).json({ error: "ID y estado son requeridos" });
@@ -661,11 +661,20 @@ class PedidoClienteController {
       console.log(`💾 Saldo actualizado: Abono: $${nuevoAbono}, Saldo: $${Math.max(0, nuevoSaldo)}`);
     }
 
-    // Actualizar estado del pedido
-    await connection.query(
-      `UPDATE pedido_cliente SET estado = ? WHERE id_pedido = ?`,
-      [estadoBD, id]
-    );
+    // Actualizar estado del pedido y fecha de entrega si corresponde
+    if (estadoBD === 'entregado' && fecha_entrega) {
+      // Si se entrega, actualizar también la fecha de entrega con la fecha real
+      await connection.query(
+        `UPDATE pedido_cliente SET estado = ?, fecha_entrega = ? WHERE id_pedido = ?`,
+        [estadoBD, fecha_entrega, id]
+      );
+      console.log(`📅 Fecha de entrega actualizada a: ${fecha_entrega}`);
+    } else {
+      await connection.query(
+        `UPDATE pedido_cliente SET estado = ? WHERE id_pedido = ?`,
+        [estadoBD, id]
+      );
+    }
 
     await connection.commit();
     

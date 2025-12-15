@@ -153,6 +153,9 @@ export default function ModalPrenda({
       }))
     ];
 
+    // Ordenar alfabéticamente por nombre
+    todosLosArreglos.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
     setArreglosFiltrados(todosLosArreglos);
   };
 
@@ -169,27 +172,30 @@ export default function ModalPrenda({
         nombre: combinacion.descripcion_combinacion && combinacion.descripcion_combinacion.trim().length > 0
                 ? combinacion.descripcion_combinacion
                 : `${(combinacion.nombre_ajuste ?? '').trim()} ${(combinacion.nombre_accion ?? '').trim()}`.trim(),
-        precio: combinacion.precio,
+        precio: parsePrecio(combinacion.precio),
         tipo: 'combinacion' as const,
         datos: combinacion
       })),
       ...ajustes.map(ajuste => ({
         id: `ajuste_${ajuste.id_ajuste}`,
         nombre: ajuste.nombre_ajuste,
-        precio: 0,
+        precio: parsePrecio((ajuste as any).precio_ajuste ?? (ajuste as any).precio ?? 0),
         tipo: 'ajuste' as const,
         datos: ajuste
       })),
       ...acciones.map(accion => ({
         id: `accion_${accion.id_accion}`,
         nombre: accion.nombre_accion,
-        precio: 0,
+        precio: parsePrecio((accion as any).precio_acciones ?? (accion as any).precio ?? 0),
         tipo: 'accion' as const,
         datos: accion
       }))
     ].filter(arreglo => 
       arreglo.nombre.toLowerCase().includes(termino)
     );
+
+    // Ordenar alfabéticamente por nombre
+    filtrados.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
     setArreglosFiltrados(filtrados);
   };

@@ -86,25 +86,95 @@ class HistorialAbonosController {
 
   // Crear un nuevo abono
   async crearAbono(req, res) {
-    const { id_pedido, abono, observaciones } = req.body;
+    const { id_pedido, abono, observaciones, id_usuario } = req.body;
+
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
 
     try {
       if (!id_pedido || !abono) {
+        await connection.rollback();
         return res.status(400).json({ error: 'El id_pedido y el abono son obligatorios' });
       }
 
-      await db.query(
-        `
-        INSERT INTO historial_abonos (id_pedido, abono, observaciones)
-        VALUES (?, ?, ?)
-        `,
-        [id_pedido, abono, observaciones || null]
+      const montoAbono = Number(abono);
+      if (montoAbono <= 0) {
+        await connection.rollback();
+        return res.status(400).json({ error: 'El monto del abono debe ser mayor a 0' });
+      }
+
+      // Obtener datos actuales del pedido
+      const [pedidoActual] = await connection.query(
+        `SELECT total_pedido, abono as abono_actual, saldo, estado FROM pedido_cliente WHERE id_pedido = ?`,
+        [id_pedido]
       );
 
-      res.json({ mensaje: 'Abono registrado correctamente' });
+      if (pedidoActual.length === 0) {
+        await connection.rollback();
+        return res.status(404).json({ error: 'Pedido no encontrado' });
+      }
+
+      const pedido = pedidoActual[0];
+
+      // Validar que el pedido esté en proceso
+      if (pedido.estado !== 'en_proceso') {
+        await connection.rollback();
+        return res.status(400).json({ 
+          error: 'Solo se pueden registrar abonos en pedidos con estado "En proceso"',
+          message: 'Solo se pueden registrar abonos en pedidos con estado "En proceso"'
+        });
+      }
+
+      const saldoActual = Number(pedido.saldo);
+
+      // Validar que el abono no sea mayor al saldo pendiente
+      if (montoAbono > saldoActual) {
+        await connection.rollback();
+        return res.status(400).json({ 
+          error: `El abono ($${montoAbono.toLocaleString()}) no puede ser mayor al saldo pendiente ($${saldoActual.toLocaleString()})`,
+          message: `El abono ($${montoAbono.toLocaleString()}) no puede ser mayor al saldo pendiente ($${saldoActual.toLocaleString()})`
+        });
+      }
+
+      // Insertar el abono en el historial
+      await connection.query(
+        `INSERT INTO historial_abonos (id_pedido, abono, observaciones)
+         VALUES (?, ?, ?)`,
+        [id_pedido, montoAbono, observaciones || null]
+      );
+
+      // Actualizar el abono y saldo en el pedido
+      const nuevoAbonoTotal = Number(pedido.abono_actual) + montoAbono;
+      const nuevoSaldo = saldoActual - montoAbono;
+
+      await connection.query(
+        `UPDATE pedido_cliente SET abono = ?, saldo = ? WHERE id_pedido = ?`,
+        [nuevoAbonoTotal, Math.max(0, nuevoSaldo), id_pedido]
+      );
+
+      // Registrar movimiento en caja
+      const usuarioMovimiento = id_usuario || 1;
+      await connection.query(
+        `INSERT INTO movimientos_caja (id_pedido, fecha_movimiento, tipo, descripcion, monto, id_usuario)
+         VALUES (?, CURRENT_TIMESTAMP, 'entrada', ?, ?, ?)`,
+        [id_pedido, `Abono al pedido #${id_pedido}`, montoAbono, usuarioMovimiento]
+      );
+
+      await connection.commit();
+
+      console.log(`✅ Abono registrado: Pedido #${id_pedido}, Monto: $${montoAbono}, Nuevo saldo: $${Math.max(0, nuevoSaldo)}`);
+
+      res.json({ 
+        mensaje: 'Abono registrado correctamente',
+        nuevo_abono_total: nuevoAbonoTotal,
+        nuevo_saldo: Math.max(0, nuevoSaldo)
+      });
     } catch (error) {
+      await connection.rollback();
       console.error(error);
       res.status(500).json({ error: 'Error al registrar el abono' });
+    } finally {
+      connection.release();
     }
   }
 

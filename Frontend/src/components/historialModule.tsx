@@ -29,6 +29,9 @@ export const HistorialModule = () => {
     const [abonosSoloModalOpen, setAbonosSoloModalOpen] = useState(false);
     const [loadingAbonosSolo, setLoadingAbonosSolo] = useState(false);
     const [abonosSolo, setAbonosSolo] = useState<any[]>([]);
+    const [pedidoAbonoActual, setPedidoAbonoActual] = useState<any>(null); // Pedido seleccionado para abonos
+    const [nuevoAbono, setNuevoAbono] = useState({ monto: 0, observaciones: "" });
+    const [guardandoAbono, setGuardandoAbono] = useState(false);
     const [modalDevolucionOpen, setModalDevolucionOpen] = useState(false);
     const [pedidoDevolucion, setPedidoDevolucion] = useState<any>(null);
     const [devolucionData, setDevolucionData] = useState({
@@ -193,10 +196,12 @@ export const HistorialModule = () => {
     };
 
     //función: obtener y mostrar solo los abonos de un pedido en modal separado
-    const verAbonosSolo = async (id_pedido: number) => {
+    const verAbonosSolo = async (id_pedido: number, pedido: any) => {
         try {
             setLoadingAbonosSolo(true);
             setAbonosSoloModalOpen(true);
+            setPedidoAbonoActual(pedido); // Guardar el pedido actual
+            setNuevoAbono({ monto: 0, observaciones: "" }); // Resetear formulario
             const resp = await fetch(`http://localhost:3000/api/historial_abonos/pedido/${id_pedido}`);
             if (!resp.ok) {
                 setAbonosSolo([]);
@@ -209,6 +214,85 @@ export const HistorialModule = () => {
             setAbonosSolo([]);
         } finally {
             setLoadingAbonosSolo(false);
+        }
+    };
+
+    // Función para cerrar el modal de abonos
+    const handleCerrarModalAbonos = () => {
+        setAbonosSoloModalOpen(false);
+        setPedidoAbonoActual(null);
+        setNuevoAbono({ monto: 0, observaciones: "" });
+        setAbonosSolo([]);
+    };
+
+    // Función para registrar un nuevo abono
+    const handleGuardarNuevoAbono = async () => {
+        if (!pedidoAbonoActual) return;
+
+        const montoAbono = Number(nuevoAbono.monto);
+        const saldoPendiente = Number(pedidoAbonoActual.saldo ?? pedidoAbonoActual.saldoPendiente ?? 0);
+
+        // Validaciones
+        if (montoAbono <= 0) {
+            alert("❌ El monto del abono debe ser mayor a 0");
+            return;
+        }
+
+        if (montoAbono > saldoPendiente) {
+            alert(`❌ El abono ($${montoAbono.toLocaleString()}) no puede ser mayor al saldo pendiente ($${saldoPendiente.toLocaleString()})`);
+            return;
+        }
+
+        const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
+        const idUsuario = usuarioGuardado?.id_usuario || 1;
+
+        setGuardandoAbono(true);
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/historial_abonos`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id_pedido: pedidoAbonoActual.id_pedido,
+                    abono: montoAbono,
+                    observaciones: nuevoAbono.observaciones || `Abono realizado desde historial`,
+                    id_usuario: idUsuario
+                })
+            });
+
+            if (response.ok) {
+                alert("✅ Abono registrado correctamente");
+                
+                // Recargar abonos del pedido
+                const respAbonos = await fetch(`http://localhost:3000/api/historial_abonos/pedido/${pedidoAbonoActual.id_pedido}`);
+                if (respAbonos.ok) {
+                    const dataAbonos = await respAbonos.json();
+                    setAbonosSolo(Array.isArray(dataAbonos) ? dataAbonos : []);
+                }
+
+                // Actualizar el pedido actual con nuevo saldo
+                const nuevoSaldo = saldoPendiente - montoAbono;
+                const nuevoAbonoTotal = Number(pedidoAbonoActual.abono ?? 0) + montoAbono;
+                setPedidoAbonoActual((prev: any) => ({
+                    ...prev,
+                    saldo: nuevoSaldo,
+                    abono: nuevoAbonoTotal
+                }));
+
+                // Recargar lista de pedidos para reflejar cambios
+                await cargarPedidos();
+
+                // Limpiar formulario
+                setNuevoAbono({ monto: 0, observaciones: "" });
+            } else {
+                const errorData = await response.json();
+                alert(`❌ Error: ${errorData.message || errorData.error || "No se pudo registrar el abono"}`);
+            }
+        } catch (error) {
+            console.error("Error al guardar abono:", error);
+            alert("❌ Error al conectar con el servidor");
+        } finally {
+            setGuardandoAbono(false);
         }
     };
 
@@ -720,8 +804,8 @@ export const HistorialModule = () => {
                                             </button>
                                             <button
                                                 className="btn-accion-abono"
-                                                title="Ver Abonos"
-                                                onClick={() => verAbonosSolo(pedido.id_pedido)}
+                                                title={pedido.estado === "en_proceso" ? "Ver y registrar abonos" : "Ver Abonos"}
+                                                onClick={() => verAbonosSolo(pedido.id_pedido, pedido)}
                                             >
                                                 <FaHistory /> Abonos
                                             </button>
@@ -729,7 +813,7 @@ export const HistorialModule = () => {
                                                 className="btn-accion-devolucion"
                                                 title={pedido.estado !== "entregado" ? "Solo se pueden devolver pedidos entregados" : "Registrar Devolución"}
                                                 onClick={() => handleAbrirDevolucion(pedido)}
-                                                disabled={pedido.estado !== "entregado"}  // ✅ DESHABILITAR BOTÓN
+                                                disabled={pedido.estado !== "entregado"}  //  DESHABILITAR BOTÓN
                                                 style={{
                                                     opacity: pedido.estado !== "entregado" ? 0.5 : 1,
                                                     cursor: pedido.estado !== "entregado" ? "not-allowed" : "pointer"
@@ -815,7 +899,7 @@ export const HistorialModule = () => {
                                           <p>{formatearFecha(pedidoSeleccionado.fecha_entrega)}</p>
                                         </div>
                                         
-                                        {/* ✅ NUEVA SECCIÓN: INFORMACIÓN DE GARANTÍA */}
+                                        {/*  NUEVA SECCIÓN: INFORMACIÓN DE GARANTÍA */}
                                         <div className="info-item">
                                           <label>Garantía:</label>
                                           <p>
@@ -1046,20 +1130,147 @@ export const HistorialModule = () => {
             )}
 
             {/* MODAL ABONOS SOLOS */}
-            {abonosSoloModalOpen && (
-                <div className="modal-overlay" onClick={() => setAbonosSoloModalOpen(false)}>
-                    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()}>
+            {abonosSoloModalOpen && pedidoAbonoActual && (
+                <div className="modal-overlay" onClick={handleCerrarModalAbonos}>
+                    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
                         <div className="modal-header">
-                            <h2>Abonos del Pedido</h2>
-                            <button className="btn-cerrar" onClick={() => setAbonosSoloModalOpen(false)}>✕</button>
+                            <h2>Abonos - Pedido #{pedidoAbonoActual.id_pedido}</h2>
+                            <button className="btn-cerrar" onClick={handleCerrarModalAbonos}>✕</button>
                         </div>
 
                         <div className="modal-body">
+                            {/* Información del pedido */}
+                            <div className="info-pedido-abonos" style={{ 
+                                background: '#f8f9fa', 
+                                padding: '12px 16px', 
+                                borderRadius: '8px', 
+                                marginBottom: '16px',
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '8px'
+                            }}>
+                                <div><strong>Cliente:</strong> {pedidoAbonoActual.cliente_nombre}</div>
+                                <div><strong>Estado:</strong> 
+                                    <span className={`estado-badge estado-${pedidoAbonoActual.estado}`} style={{ marginLeft: '8px' }}>
+                                        {pedidoAbonoActual.estado === "en_proceso" ? "En proceso" :
+                                         pedidoAbonoActual.estado === "entregado" ? "Entregado" : 
+                                         pedidoAbonoActual.estado}
+                                    </span>
+                                </div>
+                                <div><strong>Total:</strong> {formatCOP(pedidoAbonoActual.total_pedido ?? 0)}</div>
+                                <div><strong>Saldo Pendiente:</strong> 
+                                    <span style={{ color: Number(pedidoAbonoActual.saldo ?? 0) > 0 ? '#e74c3c' : '#27ae60', fontWeight: 'bold', marginLeft: '8px' }}>
+                                        {formatCOP(pedidoAbonoActual.saldo ?? 0)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Formulario para nuevo abono - SOLO SI ESTÁ EN PROCESO */}
+                            {pedidoAbonoActual.estado === "en_proceso" && Number(pedidoAbonoActual.saldo ?? 0) > 0 && (
+                                <div className="nuevo-abono-section" style={{
+                                    background: '#e8f3f5ff',
+                                    padding: '16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    border: '1px solid #a5c8d6ff'
+                                }}>
+                                    <h4 style={{ margin: '0 0 12px 0', color: '#647681ff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        Registrar Nuevo Abono
+                                    </h4>
+                                    <div style={{ display: 'grid', gap: '12px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500' }}>
+                                                Monto del Abono *
+                                            </label>
+                                            <InputMoneda
+                                                value={nuevoAbono.monto}
+                                                onChange={(val) => setNuevoAbono(prev => ({ ...prev, monto: val }))}
+                                                placeholder="Ingrese el monto"
+                                            />
+                                            <small style={{ color: '#666', fontSize: '12px' }}>
+                                                Máximo: {formatCOP(pedidoAbonoActual.saldo ?? 0)}
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500' }}>
+                                                Observaciones (opcional)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={nuevoAbono.observaciones}
+                                                onChange={(e) => setNuevoAbono(prev => ({ ...prev, observaciones: e.target.value }))}
+                                                placeholder="Ej: Abono parcial, pago en efectivo..."
+                                                style={{
+                                                    width: '95%',
+                                                    padding: '10px 12px',
+                                                    border: '1px solid #ddd',
+                                                    borderRadius: '6px',
+                                                    fontSize: '14px'
+                                                }}
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleGuardarNuevoAbono}
+                                            disabled={guardandoAbono || nuevoAbono.monto <= 0}
+                                            style={{
+                                                background: guardandoAbono ? '#ccc' : '#2771aeff',
+                                                color: 'white',
+                                                border: 'none',
+                                                padding: '12px 20px',
+                                                borderRadius: '6px',
+                                                cursor: guardandoAbono || nuevoAbono.monto <= 0 ? 'not-allowed' : 'pointer',
+                                                fontWeight: '600',
+                                                fontSize: '14px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px'
+                                            }}
+                                        >
+                                            {guardandoAbono ? "Guardando..." : "✓ Registrar Abono"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Mensaje si el pedido no permite abonos */}
+                            {pedidoAbonoActual.estado !== "en_proceso" && (
+                                <div style={{
+                                    background: '#fff3e0',
+                                    padding: '12px 16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    border: '1px solid #ffcc80',
+                                    color: '#e65100',
+                                    fontSize: '14px'
+                                }}>
+                                    Solo se pueden registrar abonos en pedidos con estado "En proceso"
+                                </div>
+                            )}
+
+                            {/* Mensaje si el saldo es 0 */}
+                            {pedidoAbonoActual.estado === "en_proceso" && Number(pedidoAbonoActual.saldo ?? 0) === 0 && (
+                                <div style={{
+                                    background: '#e8f5e9',
+                                    padding: '12px 16px',
+                                    borderRadius: '8px',
+                                    marginBottom: '16px',
+                                    border: '1px solid #a5d6a7',
+                                    color: '#2e7d32',
+                                    fontSize: '14px'
+                                }}>
+                                    Este pedido ya está completamente pagado
+                                </div>
+                            )}
+
+                            {/* Historial de abonos */}
+                            <h4 style={{ margin: '0 0 12px 0', color: '#333' }}>Historial de Abonos</h4>
                             {loadingAbonosSolo ? (
                                 <p className="cargando">Cargando abonos...</p>
                             ) : abonosSolo.length === 0 ? (
-                                <div className="sin-abonos">
-                                    <div className="icono">💳</div>
+                                <div className="sin-abonos" style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                                    <div className="icono" style={{ fontSize: '32px', marginBottom: '8px' }}>💳</div>
                                     <p>No se encontraron abonos para este pedido.</p>
                                 </div>
                             ) : (
@@ -1082,7 +1293,7 @@ export const HistorialModule = () => {
                                                         hour: '2-digit',
                                                         minute: '2-digit'
                                                     })}</td>
-                                                    <td>{formatCOP(Number(a.abono || 0))}</td>
+                                                    <td style={{ color: '#27ae60', fontWeight: '600' }}>{formatCOP(Number(a.abono || 0))}</td>
                                                     <td>{a.observaciones || '-'}</td>
                                                 </tr>
                                             ))}
@@ -1093,7 +1304,7 @@ export const HistorialModule = () => {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn-cancelar" onClick={() => setAbonosSoloModalOpen(false)}>
+                            <button className="btn-cancelar" onClick={handleCerrarModalAbonos}>
                                 Cerrar
                             </button>
                         </div>

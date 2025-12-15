@@ -868,7 +868,7 @@
 }
 
 .tabla-abonos thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg,  #1a69aa 100%);
 }
 
 .tabla-abonos th {
@@ -879,7 +879,7 @@
   color: white;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #5a67d8;
+  border-bottom: 2px solid #1a69aa;
 }
 
 .tabla-abonos tbody tr {

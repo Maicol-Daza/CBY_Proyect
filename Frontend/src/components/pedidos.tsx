@@ -104,6 +104,9 @@ export default function Pedidos() {
   const [mostrarModalFactura, setMostrarModalFactura] = useState(false);
   const [datosFactura, setDatosFactura] = useState<any>(null);
 
+  //ESTADO DE CONFIRMACIÓN DE ENTREGA
+  const [mostrarConfirmacionEntrega, setMostrarConfirmacionEntrega] = useState(false);
+
   //BÚSQUEDA DE CLIENTES
   const [clientesLista, setClientesLista] = useState<ClienteService[]>([]);
   const [busquedaCliente, setBusquedaCliente] = useState("");
@@ -309,10 +312,17 @@ export default function Pedidos() {
     }
   };
 
-  // Función para manejar la entrega del pedido 
-  const handleEntregarPedido = async () => {
+  // Función para mostrar modal de confirmación de entrega
+  const handleEntregarPedido = () => {
+    if (!pedidoSeleccionado) return;
+    setMostrarConfirmacionEntrega(true);
+  };
+
+  // Función para confirmar la entrega del pedido
+  const confirmarEntregaPedido = async () => {
     if (!pedidoSeleccionado) return;
 
+    setMostrarConfirmacionEntrega(false);
     setErrorEntrega("");
 
     const saldoPendiente = Number(pedidoSeleccionado.saldo);
@@ -335,14 +345,58 @@ export default function Pedidos() {
 
     try {
       setCargandoEntrega(true);
-      
+
+      // Si la entrega ocurre antes de la fecha prevista, usar la fecha actual.
+      // Parsear robustamente la fecha original (ISO 'YYYY-MM-DD' o 'DD/MM/YYYY').
+      const todayStr = getTodayString();
+      const todayDate = new Date(todayStr + "T00:00:00");
+      const fechaOriginalRaw = pedidoSeleccionado.fecha_entrega || "";
+
+      const parseToDate = (s: string): Date | null => {
+        if (!s) return null;
+        // Si contiene '-' intentar parseo ISO
+        if (s.includes("-")) {
+          const d = new Date(s);
+          if (!isNaN(d.getTime())) {
+            d.setHours(0,0,0,0);
+            return d;
+          }
+        }
+        // Si contiene '/', asumir formato DD/MM/YYYY
+        if (s.includes("/")) {
+          const parts = s.split('/').map(p => parseInt(p, 10));
+          if (parts.length === 3) {
+            const [d, m, y] = parts;
+            const dt = new Date(y, m - 1, d);
+            if (!isNaN(dt.getTime())) {
+              dt.setHours(0,0,0,0);
+              return dt;
+            }
+          }
+        }
+        // Fallback: try Date parse
+        const fallback = new Date(s);
+        if (!isNaN(fallback.getTime())) {
+          fallback.setHours(0,0,0,0);
+          return fallback;
+        }
+        return null;
+      };
+
+      const fechaOriginalDate = parseToDate(fechaOriginalRaw);
+
+      // SIEMPRE usar la fecha actual como fecha de entrega real
+      // La fecha de entrega es cuando realmente se entregó el pedido
+      let fechaEntregaEnviar = todayStr;
+
       const response = await fetch(`http://localhost:3000/api/pedidos/${pedidoSeleccionado.id_pedido}/estado`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           estado: "Entregado",
           abonoEntrega: abonoEntrega > 0 ? abonoEntrega : 0,
-          id_usuario: idUsuario
+          id_usuario: idUsuario,
+          fecha_entrega: fechaEntregaEnviar
         }),
       });
 
@@ -350,13 +404,31 @@ export default function Pedidos() {
         //OBTENER datos completos del pedido para la factura
         const responsePedido = await fetch(`http://localhost:3000/api/pedidos/${pedidoSeleccionado.id_pedido}`);
         const pedidoCompleto = await responsePedido.json();
+        // Forzar que la fecha de entrega mostrada en la factura sea la que enviamos
+        // (fechaEntregaEnviar viene del scope superior)
+        if (pedidoCompleto) {
+          pedidoCompleto.fecha_entrega = pedidoCompleto.fecha_entrega || fechaEntregaEnviar;
+        }
 
-        //Mostrar modal de factura
+        //Mostrar modal de factura usando la fecha de entrega enviada si es necesario
         setDatosFactura({
           ...pedidoSeleccionado,
           prendas: pedidoCompleto.prendas || [],
-          ...pedidoCompleto
+          ...pedidoCompleto,
+          fecha_entrega: pedidoCompleto.fecha_entrega || fechaEntregaEnviar
         });
+
+        // Actualizar la lista local de pedidos: marcar como Entregado y fijar fecha
+        setPedidosLista(prev => prev.map(p => {
+          if (p.id_pedido === pedidoSeleccionado.id_pedido) {
+            return {
+              ...p,
+              estado: 'Entregado',
+              fecha_entrega: pedidoCompleto.fecha_entrega || fechaEntregaEnviar
+            };
+          }
+          return p;
+        }).filter(p => p.estado !== 'entregado'));
         setMostrarModalFactura(true);
 
         // Cerrar modal de entrega
@@ -495,11 +567,13 @@ export default function Pedidos() {
       nuevosErrores.abonoInicial = `El abono (${formatCOP(abonoActual)}) no puede ser mayor al total del pedido (${formatCOP(totalActual)}).`;
     }
 
-    //VALIDACIÓN DE GARANTÍA
-    if (pedido.garantia) {
+    //VALIDACIÓN DE GARANTÍA - OBLIGATORIA
+    if (!pedido.garantia || pedido.garantia.toString().trim() === '') {
+      nuevosErrores.garantia = 'Debe especificar los días de garantía.';
+    } else {
       const garantiaNum = Number(pedido.garantia);
-      if (garantiaNum < 0 || garantiaNum > 30) {
-        nuevosErrores.garantia = 'La garantía debe ser entre 0 y 30 días.';
+      if (isNaN(garantiaNum) || garantiaNum < 1 || garantiaNum > 30) {
+        nuevosErrores.garantia = 'La garantía debe ser entre 1 y 30 días.';
       }
     }
 
@@ -1663,6 +1737,75 @@ export default function Pedidos() {
                 onClick={handleAplicarModificacionPrecio}
               >
                 Aplicar Cambio
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Entrega */}
+      {mostrarConfirmacionEntrega && pedidoSeleccionado && (
+        <div className="modal-overlay">
+          <div className="modal-confirmacion-entrega">
+            <div className="confirmacion-header">
+              <div className="confirmacion-icono">
+                <FaCheckCircle />
+              </div>
+              <h2>¿Confirmar Entrega?</h2>
+            </div>
+            
+            <div className="confirmacion-body">
+              <p className="confirmacion-pregunta">
+                ¿Está seguro que desea entregar este pedido?
+              </p>
+              
+              <div className="confirmacion-detalles">
+                <div className="confirmacion-item">
+                  <FaUser className="confirmacion-item-icon" />
+                  <div>
+                    <span className="confirmacion-label">Cliente</span>
+                    <span className="confirmacion-valor">{pedidoSeleccionado.cliente_nombre}</span>
+                  </div>
+                </div>
+                
+                <div className="confirmacion-item">
+                  <FaDollarSign className="confirmacion-item-icon" />
+                  <div>
+                    <span className="confirmacion-label">Total del pedido</span>
+                    <span className="confirmacion-valor">{formatCOP(pedidoSeleccionado.total_pedido)}</span>
+                  </div>
+                </div>
+                
+                <div className="confirmacion-item">
+                  <FaDollarSign className="confirmacion-item-icon saldo" />
+                  <div>
+                    <span className="confirmacion-label">Saldo pendiente</span>
+                    <span className="confirmacion-valor saldo">{formatCOP(pedidoSeleccionado.saldo)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="confirmacion-aviso">
+                <FaExclamationTriangle className="aviso-icono" />
+                <span>El pago se registrará automáticamente en <strong>EFECTIVO</strong></span>
+              </div>
+            </div>
+
+            <div className="confirmacion-actions">
+              <button 
+                type="button"
+                className="btn-cancelar-confirmacion"
+                onClick={() => setMostrarConfirmacionEntrega(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button"
+                className="btn-confirmar-entrega"
+                onClick={confirmarEntregaPedido}
+              >
+                <FaCheckCircle style={{ marginRight: "8px" }} />
+                Sí, Entregar Pedido
               </button>
             </div>
           </div>
