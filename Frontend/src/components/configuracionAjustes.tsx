@@ -296,7 +296,7 @@ export default function ConfiguracionAjustes() {
       <div className="combinaciones-section">
         <h2>Combinaciones Configuradas</h2>
         {combinaciones.length === 0 ? (
-          <div className="empty-state">
+          <div className="cfg-empty-state">
             <p>No hay ajustes configurados</p>
             <p>Haz clic en "Agregar combinación" para comenzar</p>
           </div>
@@ -315,9 +315,9 @@ export default function ConfiguracionAjustes() {
                   <tr key={comb.id_ajuste_accion}>
                     <td>{obtenerNombresCombinacion(comb)}</td>
                     <td>{formatCOP(Number(comb.precio))}</td>
-                    <td className="actions-cell">
-                      <div className="actions-group">
-                        <button className="btn-eliminar" onClick={() => handleEliminar(comb.id_ajuste_accion)} title="Eliminar">
+                    <td className="cfg-actions-cell">
+                      <div className="cfg-actions-group">
+                        <button className="cfg-btn-eliminar" onClick={() => handleEliminar(comb.id_ajuste_accion)} title="Eliminar">
                           <FaTrash /> Eliminar
                         </button>
                       </div>
@@ -379,20 +379,20 @@ export default function ConfiguracionAjustes() {
 
       {/* Modal Combinaciones */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content configuracion-ajustes-modal">
-            <div className="modal-header">
+        <div className="cfg-modal-overlay">
+          <div className="cfg-modal-content cfg-modal-lg">
+            <div className="cfg-modal-header">
               <h2>Nueva Combinación de Ajuste</h2>
-              <button className="btn-close" onClick={resetModal}>×</button>
+              <button className="cfg-btn-close" onClick={resetModal}>×</button>
             </div>
 
-            <div className="modal-body-ajustes">
-              <div className="selectors-container">
-                <div className="selector-group-ajustes">
+            <div className="cfg-modal-body">
+              <div className="cfg-selectors-container">
+                <div className="cfg-selector-group">
                   <h3>Ajustes ({selectedAjustes.length} seleccionados)</h3>
-                  <div className="checkboxes-list">
+                  <div className="cfg-checkboxes-list">
                     {ajustes.map((ajuste) => (
-                      <label key={ajuste.id_ajuste} className="checkbox-item">
+                      <label key={ajuste.id_ajuste} className="cfg-checkbox-item">
                         <input
                           type="checkbox"
                           checked={selectedAjustes.includes(ajuste.id_ajuste)}
@@ -406,11 +406,11 @@ export default function ConfiguracionAjustes() {
                   </div>
                 </div>
 
-                <div className="selector-group-ajustes">
+                <div className="cfg-selector-group">
                   <h3>Acciones ({selectedAcciones.length} seleccionadas)</h3>
-                  <div className="checkboxes-list">
+                  <div className="cfg-checkboxes-list">
                     {acciones.map((accion) => (
-                      <label key={accion.id_accion} className="checkbox-item">
+                      <label key={accion.id_accion} className="cfg-checkbox-item">
                         <input
                           type="checkbox"
                           checked={selectedAcciones.includes(accion.id_accion)}
@@ -425,7 +425,7 @@ export default function ConfiguracionAjustes() {
                 </div>
               </div>
 
-              <div className="precio-section">
+              <div className="cfg-precio-section">
                 <label htmlFor="precio">Precio para todas las combinaciones *</label>
                 <InputMoneda
                   value={precio}
@@ -434,7 +434,7 @@ export default function ConfiguracionAjustes() {
                 />
               </div>
 
-              <div className="resumen-section">
+              <div className="cfg-resumen-section">
                 <h4>Resumen de selecciones:</h4>
                 <p>Ajustes seleccionados: {selectedAjustes.length}</p>
                 <p>Acciones seleccionadas: {selectedAcciones.length}</p>
@@ -442,12 +442,12 @@ export default function ConfiguracionAjustes() {
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="btn-cancelar" onClick={resetModal}>
+            <div className="cfg-modal-footer">
+              <button className="cfg-btn-cancelar" onClick={resetModal}>
                 Cancelar
               </button>
               <button
-                className="btn-agregar-modal"
+                className="cfg-btn-primary"
                 onClick={handleAgregarCombinacion}
                 disabled={loading}
               >
@@ -460,15 +460,15 @@ export default function ConfiguracionAjustes() {
 
       {/* Modal Nuevo Ajuste */}
       {showModalAjuste && (
-        <div className="modal-overlay">
-          <div className="modal-content-ajustes modal-small configuracion-ajustes-modal">
-            <div className="modal-header">
+        <div className="cfg-modal-overlay">
+          <div className="cfg-modal-content cfg-modal-sm">
+            <div className="cfg-modal-header">
               <h2>{editandoAjuste ? 'Editar Ajuste' : 'Crear Nuevo Ajuste'}</h2>
-              <button className="btn-close" onClick={resetModalAjuste}>×</button>
+              <button className="cfg-btn-close" onClick={resetModalAjuste}>×</button>
             </div>
 
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="cfg-modal-body">
+              <div className="cfg-form-group">
                 <label htmlFor="nombreAjuste">Nombre del Ajuste *</label>
                 <input
                   id="nombreAjuste"
@@ -479,7 +479,7 @@ export default function ConfiguracionAjustes() {
                   onKeyPress={(e) => e.key === 'Enter' && handleAgregarAjuste()}
                 />
               </div>
-              <div className="form-group">
+              <div className="cfg-form-group">
                 <label htmlFor="precioAjuste">Precio *</label>
                 <InputMoneda
                   value={precioAjuste}
@@ -489,12 +489,12 @@ export default function ConfiguracionAjustes() {
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="btn-cancelar" onClick={resetModalAjuste}>
+            <div className="cfg-modal-footer">
+              <button className="cfg-btn-cancelar" onClick={resetModalAjuste}>
                 Cancelar
               </button>
               <button
-                className="btn-agregar-modal"
+                className="cfg-btn-primary"
                 onClick={handleAgregarAjuste}
                 disabled={loadingAjuste}
               >
@@ -507,15 +507,15 @@ export default function ConfiguracionAjustes() {
 
       {/* Modal Nueva Acción */}
       {showModalAccion && (
-        <div className="modal-overlay">
-          <div className="modal-content modal-small configuracion-ajustes-modal">
-            <div className="modal-header">
+        <div className="cfg-modal-overlay">
+          <div className="cfg-modal-content cfg-modal-sm">
+            <div className="cfg-modal-header">
               <h2>{editandoAccion ? 'Editar Acción' : 'Crear Nueva Acción'}</h2>
-              <button className="btn-close" onClick={resetModalAccion}>×</button>
+              <button className="cfg-btn-close" onClick={resetModalAccion}>×</button>
             </div>
 
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="cfg-modal-body">
+              <div className="cfg-form-group">
                 <label htmlFor="nombreAccion">Nombre de la Acción *</label>
                 <input
                   id="nombreAccion"
@@ -526,7 +526,7 @@ export default function ConfiguracionAjustes() {
                   onKeyPress={(e) => e.key === 'Enter' && handleAgregarAccion()}
                 />
               </div>
-              <div className="form-group">
+              <div className="cfg-form-group">
                 <label htmlFor="precioAccion">Precio *</label>
                 <InputMoneda
                   value={precioAccion}
@@ -536,12 +536,12 @@ export default function ConfiguracionAjustes() {
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="btn-cancelar" onClick={resetModalAccion}>
+            <div className="cfg-modal-footer">
+              <button className="cfg-btn-cancelar" onClick={resetModalAccion}>
                 Cancelar
               </button>
               <button
-                className="btn-agregar-modal"
+                className="cfg-btn-primary"
                 onClick={handleAgregarAccion}
                 disabled={loadingAccion}
               >

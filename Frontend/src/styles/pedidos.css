@@ -220,7 +220,7 @@
 
 .sugerencia-info { font-size: 0.9rem; }
 .sugerencia-meta { font-size: 0.8rem; color:#6b7280; }
-.btn-usar-cliente { padding:6px 10px; font-size:0.85rem; }
+.pedidos-btn-usar-cliente { padding:6px 10px; font-size:0.85rem; }
 
 .total-pedido {
   background: #f1f5f9;
@@ -251,8 +251,8 @@
   align-items: center;
 }
 
-.btn-editar,
-.btn-eliminar {
+.pedidos-btn-editar,
+.pedidos-btn-eliminar {
   background-color: transparent;
   border: 1px solid #ddd;
   padding: 6px 10px;
@@ -267,19 +267,19 @@
   gap: 5px;
 }
 
-.btn-editar:hover {
+.pedidos-btn-editar:hover {
   background-color: #1284cf;
   color: white;
   transform: translateY(-1px);
 }
 
-.btn-eliminar:hover {
+.pedidos-btn-eliminar:hover {
   background-color: #6c6e70;
   color: white;
   transform: translateY(-1px);
 }
 
-.btn-primary,
+.pedidos-btn-primary,
 .NuevoCliente {
   display: inline-block;
   padding: 9px 16px;
@@ -292,7 +292,7 @@
   cursor: pointer;
 }
 
-.pedido-form .prendas-section .btn-primary {
+.pedido-form .prendas-section .pedidos-btn-primary {
   background: #3b82f6;
   padding: 8px 14px;
   font-size: 0.85rem;
@@ -321,9 +321,44 @@
   padding: 9px 11px;
 }
 
-.btn-primary:hover,
+.pedidos-btn-primary:hover,
 .NuevoCliente:hover {
   background: #2563eb;
+}
+
+.pedidos-btn-secondary {
+  display: inline-block;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  background: #6b7280;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pedidos-btn-secondary:hover {
+  background: #4b5563;
+}
+
+.pedidos-btn-cancelar {
+  display: inline-block;
+  padding: 9px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pedidos-btn-cancelar:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
 }
 
 /* --- RESPONSIVE --- */
@@ -1650,7 +1685,7 @@
   margin-bottom: 12px;
 }
 
-.btn-modificar-precio {
+.pedidos-btn-modificar-precio {
   background: #6b7280;
   color: white;
   border: none;
@@ -1663,7 +1698,7 @@
   gap: 4px;
 }
 
-.btn-modificar-precio:hover {
+.pedidos-btn-modificar-precio:hover {
   background: #4b5563;
 }
 
@@ -1950,7 +1985,7 @@
   gap: 12px;
 }
 
-.btn-cancelar-confirmacion {
+.pedidos-btn-cancelar-confirmacion {
   flex: 1;
   padding: 12px 16px;
   border: 1px solid #ddd;
@@ -1963,12 +1998,12 @@
   transition: all 0.2s;
 }
 
-.btn-cancelar-confirmacion:hover {
+.pedidos-btn-cancelar-confirmacion:hover {
   background: #f5f5f5;
   border-color: #ccc;
 }
 
-.btn-confirmar-entrega {
+.pedidos-btn-confirmar-entrega {
   flex: 1.5;
   padding: 12px 16px;
   border: none;
@@ -1984,7 +2019,7 @@
   transition: all 0.2s;
 }
 
-.btn-confirmar-entrega:hover {
+.pedidos-btn-confirmar-entrega:hover {
   background: #059669;
 }
 
@@ -1993,8 +2028,8 @@
     flex-direction: column;
   }
 
-  .btn-cancelar-confirmacion,
-  .btn-confirmar-entrega {
+  .pedidos-btn-cancelar-confirmacion,
+  .pedidos-btn-confirmar-entrega {
     width: 100%;
   }
 }

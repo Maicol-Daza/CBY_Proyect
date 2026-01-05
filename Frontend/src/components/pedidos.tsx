@@ -1054,7 +1054,7 @@ export default function Pedidos() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <h1 style={{ margin: 0 }}>Gestión de Pedidos</h1>
         <button
-          className="btn-primary"
+          className="pedidos-btn-primary"
           onClick={() => setMostrarModalEntrega(true)}
           style={{
             padding: "12px 24px",
@@ -1076,7 +1076,7 @@ export default function Pedidos() {
               {clienteCargado && (
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="pedidos-btn-secondary"
                   onClick={() => {
                     setClienteCargado(false);
                     setCliente(getDefaultCliente());
@@ -1116,7 +1116,7 @@ export default function Pedidos() {
                         <div className="sugerencia-meta">{c.nuip} · {c.email} · {c.telefono} </div>
                       </div>
                       <div>
-                        <button type="button" className="btn-primary btn-usar-cliente" onClick={() => handleUsarCliente(c)}>Usar</button>
+                        <button type="button" className="pedidos-btn-primary pedidos-btn-usar-cliente" onClick={() => handleUsarCliente(c)}>Usar</button>
                       </div>
                     </div>
                   ))}
@@ -1283,14 +1283,14 @@ export default function Pedidos() {
                           <td>
                             <div className="acciones-prenda">
                               <button 
-                                className="btn-editar"
+                                className="pedidos-btn-editar"
                                 onClick={() => handleEditarPrenda(index)}
                                 title="Editar prenda"
                               >
                                 <FaEdit />
                               </button>
                               <button 
-                                className="btn-eliminar"
+                                className="pedidos-btn-eliminar"
                                 onClick={() => handleEliminarPrendaTemporal(index)}
                                 title="Eliminar prenda"
                               >
@@ -1313,7 +1313,7 @@ export default function Pedidos() {
             )}
             
             <button 
-              className="btn-primary" 
+              className="pedidos-btn-primary" 
               onClick={() => {
                 setPrendaEditando(null);
                 setMostrarModalPrenda(true);
@@ -1373,7 +1373,7 @@ export default function Pedidos() {
               <h3><FaDollarSign style={{ marginRight: "6px" }} /> Total del Pedido</h3>
               <button 
                 type="button"
-                className="btn-modificar-precio"
+                className="pedidos-btn-modificar-precio"
                 onClick={() => setMostrarModificarPrecio(true)}
               >
                 <FaEdit /> Modificar
@@ -1388,7 +1388,7 @@ export default function Pedidos() {
 
           <div style={{ display: "flex", gap: "10px", marginTop: 10 }}>
             <button
-              className="btn-primary"
+              className="pedidos-btn-primary"
               onClick={handleGuardar}
               disabled={cargando}
               style={{ flex: 1 }}
@@ -1397,7 +1397,7 @@ export default function Pedidos() {
             </button>
             
             <button
-              className="btn-cancelar"
+              className="pedidos-btn-cancelar"
               onClick={handleLimpiarTodo}
               style={{ flex: 1 }}
             >
@@ -1645,7 +1645,7 @@ export default function Pedidos() {
             <div className="modal-actions" style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
               <button 
                 type="button" 
-                className="btn-cancelar"
+                className="pedidos-btn-cancelar"
                 onClick={() => {
                   setMostrarModalEntrega(false);
                   setPedidoSeleccionado(null);
@@ -1659,7 +1659,7 @@ export default function Pedidos() {
               
               <button 
                 type="button" 
-                className="btn-primary"
+                className="pedidos-btn-primary"
                 onClick={handleEntregarPedido}
                 disabled={!pedidoSeleccionado || cargandoEntrega}
                 style={{ 
@@ -1753,7 +1753,7 @@ export default function Pedidos() {
             <div className="modal-actions">
               <button 
                 type="button"
-                className="btn-cancelar"
+                className="pedidos-btn-cancelar"
                 onClick={() => {
                   setMostrarModificarPrecio(false);
                   setPrecioModificado(calcularTotalPrendas());
@@ -1764,7 +1764,7 @@ export default function Pedidos() {
               </button>
               <button 
                 type="button"
-                className="btn-primary"
+                className="pedidos-btn-primary"
                 onClick={handleAplicarModificacionPrecio}
               >
                 Aplicar Cambio
@@ -1825,14 +1825,14 @@ export default function Pedidos() {
             <div className="confirmacion-actions">
               <button 
                 type="button"
-                className="btn-cancelar-confirmacion"
+                className="pedidos-btn-cancelar-confirmacion"
                 onClick={() => setMostrarConfirmacionEntrega(false)}
               >
                 Cancelar
               </button>
               <button 
                 type="button"
-                className="btn-confirmar-entrega"
+                className="pedidos-btn-confirmar-entrega"
                 onClick={confirmarEntregaPedido}
               >
                 <FaCheckCircle style={{ marginRight: "8px" }} />
