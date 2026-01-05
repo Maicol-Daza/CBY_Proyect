@@ -1,4 +1,6 @@
 // src/services/ajustesAccionService.ts
+import { emitDataEvent, DATA_EVENTS } from '../utils/eventEmitter';
+
 const API_URL = "http://localhost:3000/api/ajustes_accion";
 
 export interface AjusteAccion {
@@ -35,7 +37,9 @@ export async function crearAjusteAccion(
       body: JSON.stringify({ id_ajuste, id_accion, precio, descripcion_combinacion }),
     });
     if (!response.ok) throw new Error('Error al crear combinación');
-    return await response.json();
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.COMBINACIONES_UPDATED, result);
+    return result;
   } catch (error) {
     console.error("Error en crearAjusteAccion:", error);
     throw error;
@@ -48,7 +52,9 @@ export async function eliminarAjusteAccion(id: number): Promise<any> {
       method: "DELETE",
     });
     if (!response.ok) throw new Error('Error al eliminar combinación');
-    return await response.json();
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.COMBINACIONES_UPDATED, { id });
+    return result;
   } catch (error) {
     console.error("Error en eliminarAjusteAccion:", error);
     throw error;

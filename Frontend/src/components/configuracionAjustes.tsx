@@ -19,6 +19,8 @@ import { obtenerAjustesAccion, crearAjusteAccion, eliminarAjusteAccion, AjusteAc
 import { FaEdit, FaTrash, } from 'react-icons/fa';
 import { formatCOP } from '../utils/formatCurrency';
 import { InputMoneda } from './InputMoneda';
+import { useDataRefresh } from '../hooks/useDataRefresh';
+import { DATA_EVENTS } from '../utils/eventEmitter';
 
 export default function ConfiguracionAjustes() {
   const [ajustes, setAjustes] = useState<Ajuste[]>([]);
@@ -60,6 +62,18 @@ export default function ConfiguracionAjustes() {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  // Suscribirse a eventos de actualización de ajustes, acciones y combinaciones
+  useDataRefresh(
+    [
+      DATA_EVENTS.AJUSTES_UPDATED,
+      DATA_EVENTS.ACCIONES_UPDATED,
+      DATA_EVENTS.COMBINACIONES_UPDATED
+    ],
+    () => {
+      cargarDatos();
+    }
+  );
 
   const cargarDatos = async () => {
     try {
@@ -366,7 +380,7 @@ export default function ConfiguracionAjustes() {
       {/* Modal Combinaciones */}
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="modal-content configuracion-ajustes-modal">
             <div className="modal-header">
               <h2>Nueva Combinación de Ajuste</h2>
               <button className="btn-close" onClick={resetModal}>×</button>
@@ -447,28 +461,32 @@ export default function ConfiguracionAjustes() {
       {/* Modal Nuevo Ajuste */}
       {showModalAjuste && (
         <div className="modal-overlay">
-          <div className="modal-content-ajustes modal-small">
+          <div className="modal-content-ajustes modal-small configuracion-ajustes-modal">
             <div className="modal-header">
               <h2>{editandoAjuste ? 'Editar Ajuste' : 'Crear Nuevo Ajuste'}</h2>
               <button className="btn-close" onClick={resetModalAjuste}>×</button>
             </div>
 
             <div className="modal-body">
-              <label htmlFor="nombreAjuste">Nombre del Ajuste *</label>
-              <input
-                id="nombreAjuste"
-                type="text"
-                value={nuevoAjuste}
-                onChange={(e) => setNuevoAjuste(e.target.value)}
-                placeholder="Ej: Color Azul"
-                onKeyPress={(e) => e.key === 'Enter' && handleAgregarAjuste()}
-              />
-              <label htmlFor="precioAjuste">Precio *</label>
-              <InputMoneda
-                value={precioAjuste}
-                onChange={(valor) => setPrecioAjuste(valor)}
-                placeholder="Ingrese el precio del ajuste"
-              />
+              <div className="form-group">
+                <label htmlFor="nombreAjuste">Nombre del Ajuste *</label>
+                <input
+                  id="nombreAjuste"
+                  type="text"
+                  value={nuevoAjuste}
+                  onChange={(e) => setNuevoAjuste(e.target.value)}
+                  placeholder="Ej: Color Azul"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAgregarAjuste()}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="precioAjuste">Precio *</label>
+                <InputMoneda
+                  value={precioAjuste}
+                  onChange={(valor) => setPrecioAjuste(valor)}
+                  placeholder="Ingrese el precio del ajuste"
+                />
+              </div>
             </div>
 
             <div className="modal-footer">
@@ -490,28 +508,32 @@ export default function ConfiguracionAjustes() {
       {/* Modal Nueva Acción */}
       {showModalAccion && (
         <div className="modal-overlay">
-          <div className="modal-content modal-small">
+          <div className="modal-content modal-small configuracion-ajustes-modal">
             <div className="modal-header">
               <h2>{editandoAccion ? 'Editar Acción' : 'Crear Nueva Acción'}</h2>
               <button className="btn-close" onClick={resetModalAccion}>×</button>
             </div>
 
             <div className="modal-body">
-              <label htmlFor="nombreAccion">Nombre de la Acción *</label>
-              <input
-                id="nombreAccion"
-                type="text"
-                value={nuevaAccion}
-                onChange={(e) => setNuevaAccion(e.target.value)}
-                placeholder="Ej: Envío Gratis"
-                onKeyPress={(e) => e.key === 'Enter' && handleAgregarAccion()}
-              />
-              <label htmlFor="precioAccion">Precio *</label>
-              <InputMoneda
-                value={precioAccion}
-                onChange={(valor) => setPrecioAccion(valor)}
-                placeholder="Ingrese el precio de la acción"
-              />
+              <div className="form-group">
+                <label htmlFor="nombreAccion">Nombre de la Acción *</label>
+                <input
+                  id="nombreAccion"
+                  type="text"
+                  value={nuevaAccion}
+                  onChange={(e) => setNuevaAccion(e.target.value)}
+                  placeholder="Ej: Envío Gratis"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAgregarAccion()}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="precioAccion">Precio *</label>
+                <InputMoneda
+                  value={precioAccion}
+                  onChange={(valor) => setPrecioAccion(valor)}
+                  placeholder="Ingrese el precio de la acción"
+                />
+              </div>
             </div>
 
             <div className="modal-footer">

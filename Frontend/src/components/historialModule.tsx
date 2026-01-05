@@ -11,6 +11,8 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { InputMoneda } from './InputMoneda';
 import ModalFacturas from './ModalFacturas';
+import { useDataRefresh } from "../hooks/useDataRefresh";
+import { DATA_EVENTS, emitDataEvent } from "../utils/eventEmitter";
 
 export const HistorialModule = () => {
     const [pedidos, setPedidos] = useState<any[]>([]);
@@ -47,6 +49,21 @@ export const HistorialModule = () => {
     useEffect(() => {
         cargarPedidos();
     }, []);
+
+    // Suscribirse a eventos de actualización de pedidos y abonos
+    useDataRefresh(
+        [
+            DATA_EVENTS.PEDIDOS_UPDATED, 
+            DATA_EVENTS.PEDIDO_CREATED, 
+            DATA_EVENTS.PEDIDO_DELETED,
+            DATA_EVENTS.PEDIDO_ENTREGADO,
+            DATA_EVENTS.ABONOS_UPDATED,
+            DATA_EVENTS.ABONO_CREATED
+        ],
+        () => {
+            cargarPedidos();
+        }
+    );
 
     const cargarPedidos = async () => {
         try {
@@ -262,6 +279,12 @@ export const HistorialModule = () => {
 
             if (response.ok) {
                 alert("✅ Abono registrado correctamente");
+                
+                // Emitir eventos de actualización
+                emitDataEvent(DATA_EVENTS.ABONO_CREATED);
+                emitDataEvent(DATA_EVENTS.ABONOS_UPDATED);
+                emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
+                emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED);
                 
                 // Recargar abonos del pedido
                 const respAbonos = await fetch(`http://localhost:3000/api/historial_abonos/pedido/${pedidoAbonoActual.id_pedido}`);
@@ -653,6 +676,12 @@ export const HistorialModule = () => {
         }
 
         alert("✓ Devolución registrada correctamente");
+        
+        // Emitir eventos de actualización
+        emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
+        emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED);
+        emitDataEvent(DATA_EVENTS.CODIGOS_UPDATED); // Libera códigos si aplica
+        emitDataEvent(DATA_EVENTS.CAJONES_UPDATED);
         
         await cargarPedidos();
         handleCerrarDevolucion();

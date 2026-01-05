@@ -1,4 +1,6 @@
 // src/services/pedidosService.ts
+import { emitDataEvent, DATA_EVENTS } from '../utils/eventEmitter';
+
 const API_URL = "http://localhost:3000/api/pedidos"; // backend Express
 
 export interface Cliente {
@@ -47,6 +49,10 @@ export async function crearPedido(cliente: Cliente, pedido: Pedido) {
       throw new Error(data.message || "Error al guardar el pedido");
     }
 
+    // Emitir eventos de actualización
+    emitDataEvent(DATA_EVENTS.PEDIDO_CREATED, data);
+    emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
+    emitDataEvent(DATA_EVENTS.CLIENTES_UPDATED); // También puede crear cliente
     return data;
   } catch (error) {
     console.error("Error en crearPedido:", error);
@@ -69,7 +75,13 @@ export async function crearPedidoCompleto(pedidoData: PedidoCompleto & { id_usua
       throw new Error(error.message || "Error al crear pedido");
     }
 
-    return await response.json();
+    const result = await response.json();
+    // Emitir eventos de actualización
+    emitDataEvent(DATA_EVENTS.PEDIDO_CREATED, result);
+    emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
+    emitDataEvent(DATA_EVENTS.CLIENTES_UPDATED); // También puede crear cliente
+    emitDataEvent(DATA_EVENTS.CODIGOS_UPDATED); // Actualiza códigos disponibles
+    return result;
   } catch (error) {
     console.error("Error:", error);
     throw error;

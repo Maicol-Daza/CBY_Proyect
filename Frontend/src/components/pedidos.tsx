@@ -14,6 +14,8 @@ import { FaEdit, FaTrash, FaBox, FaSearch, FaUser, FaIdCard, FaPhone, FaMapMarke
 import { obtenerClientes, type Cliente as ClienteService } from "../services/clientesService";
 import { formatCOP } from '../utils/formatCurrency';
 import { InputMoneda } from "./InputMoneda";
+import { emitDataEvent, DATA_EVENTS } from "../utils/eventEmitter";
+import { useDataRefresh } from "../hooks/useDataRefresh";
 
 interface Pedido {
   fechaInicio: string;
@@ -74,9 +76,15 @@ export default function Pedidos() {
   //ESTADO DE PEDIDO
   const [pedido, setPedido] = useState<Pedido>(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
+    const hoy = new Date().toISOString().slice(0, 10);
     if (guardado) {
       const datos = JSON.parse(guardado);
-      return datos.pedido || getDefaultPedido();
+      const pedidoGuardado = datos.pedido || getDefaultPedido();
+      // Siempre asegurar que fechaInicio tenga la fecha de hoy si está vacía
+      if (!pedidoGuardado.fechaInicio) {
+        pedidoGuardado.fechaInicio = hoy;
+      }
+      return pedidoGuardado;
     }
     return getDefaultPedido();
   });
@@ -184,7 +192,7 @@ export default function Pedidos() {
   //FUNCIONES AUXILIARES
   function getDefaultPedido(): Pedido {
     return {
-      fechaInicio: "",
+      fechaInicio: new Date().toISOString().slice(0, 10),
       fechaEntrega: "",
       estado: "En proceso",
       observaciones: "",
@@ -229,6 +237,24 @@ export default function Pedidos() {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  // Suscribirse a eventos de actualización para refrescar datos dinámicamente
+  useDataRefresh(
+    [
+      DATA_EVENTS.CODIGOS_UPDATED,
+      DATA_EVENTS.CAJONES_UPDATED,
+      DATA_EVENTS.AJUSTES_UPDATED,
+      DATA_EVENTS.ACCIONES_UPDATED,
+      DATA_EVENTS.COMBINACIONES_UPDATED,
+      DATA_EVENTS.CLIENTES_UPDATED,
+      DATA_EVENTS.PEDIDO_ENTREGADO,
+      DATA_EVENTS.PEDIDOS_UPDATED
+    ],
+    () => {
+      console.log('[Pedidos] Evento recibido, recargando datos...');
+      cargarDatos();
+    }
+  );
 
   // Guardar en localStorage cada vez que cambien los datos importantes
   useEffect(() => {
@@ -438,6 +464,16 @@ export default function Pedidos() {
         setBusquedaPedido("");
         setErrorEntrega("");
         
+        // Emitir eventos de actualización
+        emitDataEvent(DATA_EVENTS.PEDIDO_ENTREGADO, pedidoCompleto);
+        emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
+        emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED); // Actualiza caja si hay abono
+        emitDataEvent(DATA_EVENTS.CODIGOS_UPDATED); // Libera los códigos del cajón
+        emitDataEvent(DATA_EVENTS.CAJONES_UPDATED); // Actualiza estado de cajones
+        
+        // Recargar datos localmente también
+        cargarDatos();
+        
         cargarPedidosParaEntrega();
       } else {
         const error = await response.json();
@@ -567,15 +603,7 @@ export default function Pedidos() {
       nuevosErrores.abonoInicial = `El abono (${formatCOP(abonoActual)}) no puede ser mayor al total del pedido (${formatCOP(totalActual)}).`;
     }
 
-    //VALIDACIÓN DE GARANTÍA - OBLIGATORIA
-    if (!pedido.garantia || pedido.garantia.toString().trim() === '') {
-      nuevosErrores.garantia = 'Debe especificar los días de garantía.';
-    } else {
-      const garantiaNum = Number(pedido.garantia);
-      if (isNaN(garantiaNum) || garantiaNum < 1 || garantiaNum > 30) {
-        nuevosErrores.garantia = 'La garantía debe ser entre 1 y 30 días.';
-      }
-    }
+    // Garantía es opcional, no se valida
 
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
@@ -900,6 +928,12 @@ export default function Pedidos() {
       alert("✓ Pedido guardado exitosamente.");
       console.log("Respuesta del servidor:", data);
 
+      // Emitir eventos de actualización
+      emitDataEvent(DATA_EVENTS.PEDIDO_CREATED, data);
+      emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
+      emitDataEvent(DATA_EVENTS.CLIENTES_UPDATED);
+      emitDataEvent(DATA_EVENTS.CODIGOS_UPDATED);
+
       // Resetear formularios y limpiar localStorage
       setCliente({
         nombre: "",
@@ -1164,7 +1198,7 @@ export default function Pedidos() {
             {errores.estado && <p className="pedido-error">{errores.estado}</p>}
           </div>
 
-          {/* NUEVO CAMPO DE GARANTÍA */}
+          {/* CAMPO DE GARANTÍA (OPCIONAL) */}
           <div className="field">
             <label><FaCheckCircle style={{ marginRight: "6px" }} /> Garantía (Plazo en días):</label>
             <input
@@ -1179,7 +1213,7 @@ export default function Pedidos() {
                     garantia: ""
                   }));
                 } else {
-                  const num = Math.max(0, Math.min(30, Number(valor)));
+                  const num = Math.max(0, Number(valor));
                   setPedido(prev => ({
                     ...prev,
                     garantia: num.toString()
@@ -1188,15 +1222,11 @@ export default function Pedidos() {
               }}
               placeholder="Ej: 30"
               min="0"
-              max="30"
               step="1"
               className="input-garantia"
             />
-            {errores.garantia && (
-              <p className="pedido-error">{errores.garantia}</p>
-            )}
             <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
-              Máximo 30 días (Ej: 5, 15, 30)
+              Campo opcional (Ej: 5, 15, 30 días)
             </small>
           </div>
 
@@ -1463,6 +1493,7 @@ export default function Pedidos() {
         acciones={acciones}
         combinaciones={combinaciones}
         prendaEditando={prendaEditando !== null ? prendasTemporales[prendaEditando] : null}
+        onArreglosUpdated={cargarDatos}
       />
 
       {/* Modal de Entrega de Pedidos */}

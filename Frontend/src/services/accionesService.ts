@@ -1,4 +1,6 @@
 // src/services/accionesService.ts
+import { emitDataEvent, DATA_EVENTS } from '../utils/eventEmitter';
+
 const API_URL = "http://localhost:3000/api/acciones";
 
 export interface Accion {
@@ -26,7 +28,9 @@ export async function crearAccion(nombre_accion: string, precio_acciones: number
       body: JSON.stringify({ nombre_accion, precio_acciones }),
     });
     if (!response.ok) throw new Error('Error al crear acción');
-    return await response.json();
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.ACCIONES_UPDATED, result);
+    return result;
   } catch (error) {
     console.error("Error en crearAccion:", error);
     throw error;
@@ -41,7 +45,9 @@ export async function actualizarAccion(id_accion: number, nombre_accion: string,
       body: JSON.stringify({ nombre_accion, precio_acciones }),
     });
     if (!response.ok) throw new Error('Error al actualizar acción');
-    return await response.json();
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.ACCIONES_UPDATED, result);
+    return result;
   } catch (error) {
     console.error("Error en actualizarAccion:", error);
     throw error;
@@ -54,7 +60,9 @@ export async function eliminarAccion(id_accion: number): Promise<any> {
       method: "DELETE",
     });
     if (!response.ok) throw new Error('Error al eliminar acción');
-    return await response.json();
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.ACCIONES_UPDATED, { id_accion });
+    return result;
   } catch (error) {
     console.error("Error en eliminarAccion:", error);
     throw error;

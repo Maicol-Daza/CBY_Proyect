@@ -676,6 +676,16 @@
   padding: 0;
 }
 
+.prenda-modal-content .search-box-container {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.prenda-modal-content .search-box-container .search-box {
+  flex: 1;
+}
+
 .prenda-modal-content .search-box input {
   width: 100%;
   padding: 10px 12px;
@@ -683,6 +693,245 @@
   border-radius: 6px;
   font-size: 14px;
   background: #fbfdff;
+}
+
+/* Botón crear rápido */
+.prenda-modal-content .btn-crear-rapido {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  background: #ffc107;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.prenda-modal-content .btn-crear-rapido:hover {
+  background: #e6ad00;
+  transform: scale(1.05);
+}
+
+/* Formulario de creación rápida */
+.prenda-modal-content .form-crear-rapido {
+  background: #f8fafc;
+  border: 1px solid #e0e6ef;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 12px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.prenda-modal-content .form-crear-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.prenda-modal-content .form-crear-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.prenda-modal-content .btn-cerrar-crear {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  line-height: 1;
+}
+
+.prenda-modal-content .btn-cerrar-crear:hover {
+  color: #dc2626;
+}
+
+.prenda-modal-content .form-crear-tipo {
+  margin-bottom: 12px;
+}
+
+.prenda-modal-content .form-crear-tipo label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.prenda-modal-content .tipo-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.prenda-modal-content .btn-tipo {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e0e6ef;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+}
+
+.prenda-modal-content .btn-tipo:hover {
+  border-color: #ffc107;
+  background: #fffbeb;
+}
+
+.prenda-modal-content .btn-tipo.active {
+  background: #ffc107;
+  border-color: #ffc107;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.prenda-modal-content .form-crear-campos {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.prenda-modal-content .form-crear-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.prenda-modal-content .form-group-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prenda-modal-content .form-group-mini label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #555;
+}
+
+.prenda-modal-content .form-group-mini input,
+.prenda-modal-content .form-group-mini select {
+  padding: 8px 10px;
+  border: 1px solid #e0e6ef;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+}
+
+.prenda-modal-content .form-group-mini select {
+  cursor: pointer;
+}
+
+/* Checkboxes para combinaciones múltiples */
+.prenda-modal-content .form-crear-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.prenda-modal-content .checkbox-group-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prenda-modal-content .checkbox-group-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.prenda-modal-content .checkboxes-list-mini {
+  max-height: 120px;
+  overflow-y: auto;
+  border: 1px solid #e0e6ef;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fff;
+}
+
+.prenda-modal-content .checkboxes-list-mini::-webkit-scrollbar {
+  width: 4px;
+}
+
+.prenda-modal-content .checkboxes-list-mini::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.prenda-modal-content .checkbox-item-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+  font-size: 12px;
+}
+
+.prenda-modal-content .checkbox-item-mini:hover {
+  background: #f8fafc;
+}
+
+.prenda-modal-content .checkbox-item-mini input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #ffc107;
+}
+
+.prenda-modal-content .checkbox-item-mini span {
+  flex: 1;
+  color: #333;
+}
+
+.prenda-modal-content .btn-guardar-rapido {
+  width: 100%;
+  padding: 10px 16px;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prenda-modal-content .btn-guardar-rapido:hover:not(:disabled) {
+  background: #059669;
+}
+
+.prenda-modal-content .btn-guardar-rapido:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
 }
 
 /* Lista de arreglos dentro del modal (scoped) */

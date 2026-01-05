@@ -1,3 +1,5 @@
+import { emitDataEvent, DATA_EVENTS } from '../utils/eventEmitter';
+
 const API_URL = "http://localhost:3000/api/movimientos_caja"; // Cambia 3000 si es otro puerto
 
 export interface Movimiento {
@@ -40,7 +42,11 @@ export async function crearMovimiento(movimiento: {
       })
     });
     if (!response.ok) throw new Error("Error al crear movimiento");
-    return await response.json();
+    const result = await response.json();
+    // Emitir eventos de actualización
+    emitDataEvent(DATA_EVENTS.MOVIMIENTO_CREATED, result);
+    emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED);
+    return result;
   } catch (error) {
     console.error("Error:", error);
     throw error;
@@ -116,7 +122,11 @@ export async function crearBaseDiaria(monto: number, id_usuario: number) {
     });
     
     if (!response.ok) throw new Error("Error al crear base diaria");
-    return await response.json();
+    const result = await response.json();
+    // Emitir eventos de actualización
+    emitDataEvent(DATA_EVENTS.BASE_DIARIA_CREATED, result);
+    emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED);
+    return result;
   } catch (error) {
     console.error("Error:", error);
     throw error;

@@ -1,11 +1,12 @@
 // src/components/ModalPrenda.tsx (MODIFICADO)
 import { useState, useEffect } from "react";
-import { type Ajuste } from "../services/ajustesService";
-import { type Accion } from "../services/accionesService";
-import { type AjusteAccion } from "../services/ajustesAccionService";
+import { type Ajuste, crearAjuste } from "../services/ajustesService";
+import { type Accion, crearAccion } from "../services/accionesService";
+import { type AjusteAccion, crearAjusteAccion } from "../services/ajustesAccionService";
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
-import { FaTrash  } from 'react-icons/fa';
+import { FaTrash, FaPlus } from 'react-icons/fa';
 import { formatCOP } from '../utils/formatCurrency';
+import { InputMoneda } from './InputMoneda';
 
 
 interface ModalPrendaProps {
@@ -16,6 +17,7 @@ interface ModalPrendaProps {
   acciones: Accion[];
   combinaciones: AjusteAccion[];
   prendaEditando?: Prenda | null;
+  onArreglosUpdated?: () => void; // Para refrescar datos después de crear
 }
 
 // Tipos de prenda predefinidos
@@ -49,7 +51,8 @@ export default function ModalPrenda({
   ajustes,
   acciones,
   combinaciones,
-  prendaEditando = null
+  prendaEditando = null,
+  onArreglosUpdated
 }: ModalPrendaProps) {
   // Helper: convertir cualquier valor de precio a número seguro
   const parsePrecio = (v: any): number => {
@@ -74,6 +77,16 @@ export default function ModalPrenda({
 
   // Estados para los arreglos disponibles
   const [arreglosFiltrados, setArreglosFiltrados] = useState<any[]>([]);
+
+  // Estados para creación rápida de arreglos
+  const [mostrarFormCrear, setMostrarFormCrear] = useState(false);
+  const [tipoCrear, setTipoCrear] = useState<'ajuste' | 'accion' | 'combinacion'>('ajuste');
+  const [nombreCrear, setNombreCrear] = useState("");
+  const [precioCrear, setPrecioCrear] = useState<number>(0);
+  const [loadingCrear, setLoadingCrear] = useState(false);
+  // Para combinación: selección múltiple de ajustes y acciones
+  const [ajustesSeleccionadosCrear, setAjustesSeleccionadosCrear] = useState<number[]>([]);
+  const [accionesSeleccionadasCrear, setAccionesSeleccionadasCrear] = useState<number[]>([]);
 
   // Cargar datos si estamos editando
   useEffect(() => {
@@ -198,6 +211,101 @@ export default function ModalPrenda({
     filtrados.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
     setArreglosFiltrados(filtrados);
+  };
+
+  // Funciones para creación rápida de arreglos
+  const resetFormCrear = () => {
+    setMostrarFormCrear(false);
+    setNombreCrear("");
+    setPrecioCrear(0);
+    setAjustesSeleccionadosCrear([]);
+    setAccionesSeleccionadasCrear([]);
+    setTipoCrear('ajuste');
+  };
+
+  // Handlers para selección múltiple en combinaciones
+  const handleAjusteCrearChange = (id: number, checked: boolean) => {
+    setAjustesSeleccionadosCrear(prev =>
+      checked ? [...prev, id] : prev.filter(a => a !== id)
+    );
+  };
+
+  const handleAccionCrearChange = (id: number, checked: boolean) => {
+    setAccionesSeleccionadasCrear(prev =>
+      checked ? [...prev, id] : prev.filter(a => a !== id)
+    );
+  };
+
+  const handleCrearArregloRapido = async () => {
+    if (tipoCrear === 'combinacion') {
+      // Para combinación necesitamos al menos un ajuste y una acción seleccionados
+      if (ajustesSeleccionadosCrear.length === 0 || accionesSeleccionadasCrear.length === 0) {
+        alert('Selecciona al menos un ajuste y una acción para la combinación');
+        return;
+      }
+      if (precioCrear <= 0) {
+        alert('Ingresa un precio válido');
+        return;
+      }
+      
+      setLoadingCrear(true);
+      try {
+        // Generar descripción automática con todos los seleccionados
+        const nombresAjustes = ajustesSeleccionadosCrear
+          .map(id => ajustes.find(a => a.id_ajuste === id)?.nombre_ajuste)
+          .filter(Boolean)
+          .join(' + ');
+        const nombresAcciones = accionesSeleccionadasCrear
+          .map(id => acciones.find(a => a.id_accion === id)?.nombre_accion)
+          .filter(Boolean)
+          .join(' + ');
+        const descripcionComb = nombreCrear.trim() || `${nombresAjustes} / ${nombresAcciones}`.trim();
+        
+        // Crear la combinación usando el primer ajuste y primera acción (igual que en configuracionAjustes)
+        await crearAjusteAccion(
+          ajustesSeleccionadosCrear[0], 
+          accionesSeleccionadasCrear[0], 
+          precioCrear, 
+          descripcionComb
+        );
+        alert('Combinación creada correctamente');
+        resetFormCrear();
+        if (onArreglosUpdated) onArreglosUpdated();
+      } catch (error) {
+        console.error('Error al crear combinación:', error);
+        alert('Error al crear la combinación');
+      } finally {
+        setLoadingCrear(false);
+      }
+    } else {
+      // Para ajuste o acción
+      if (!nombreCrear.trim()) {
+        alert(`Ingresa un nombre para ${tipoCrear === 'ajuste' ? 'el ajuste' : 'la acción'}`);
+        return;
+      }
+      if (precioCrear <= 0) {
+        alert('Ingresa un precio válido');
+        return;
+      }
+
+      setLoadingCrear(true);
+      try {
+        if (tipoCrear === 'ajuste') {
+          await crearAjuste(nombreCrear.trim(), precioCrear);
+          alert('Ajuste creado correctamente');
+        } else {
+          await crearAccion(nombreCrear.trim(), precioCrear);
+          alert('Acción creada correctamente');
+        }
+        resetFormCrear();
+        if (onArreglosUpdated) onArreglosUpdated();
+      } catch (error) {
+        console.error(`Error al crear ${tipoCrear}:`, error);
+        alert(`Error al crear ${tipoCrear === 'ajuste' ? 'el ajuste' : 'la acción'}`);
+      } finally {
+        setLoadingCrear(false);
+      }
+    }
   };
 
   const handleSeleccionarSugerencia = (sugerencia: string) => {
@@ -403,14 +511,152 @@ export default function ModalPrenda({
         {/* Búsqueda de arreglos */}
         <div className="busqueda-arreglos">
           <h3>Buscar Arreglos</h3>
-          <div className="search-box">
-            <input
-              type="text"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Busque por palabra clave (ej: entallar, ruedo, cintura...)"
-            />
+          <div className="search-box-container">
+            <div className="search-box">
+              <input
+                type="text"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Busque por palabra clave (ej: entallar, ruedo, cintura...)"
+              />
+            </div>
+            <button 
+              type="button" 
+              className="btn-crear-rapido"
+              onClick={() => setMostrarFormCrear(!mostrarFormCrear)}
+              title="Crear nuevo arreglo rápido"
+            >
+              <FaPlus />
+            </button>
           </div>
+
+          {/* Formulario de creación rápida */}
+          {mostrarFormCrear && (
+            <div className="form-crear-rapido">
+              <div className="form-crear-header">
+                <h4>Crear Arreglo Rápido</h4>
+                <button 
+                  type="button" 
+                  className="btn-cerrar-crear"
+                  onClick={resetFormCrear}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="form-crear-tipo">
+                <label>Tipo:</label>
+                <div className="tipo-buttons">
+                  <button 
+                    type="button"
+                    className={`btn-tipo ${tipoCrear === 'ajuste' ? 'active' : ''}`}
+                    onClick={() => setTipoCrear('ajuste')}
+                  >
+                    Ajuste
+                  </button>
+                  <button 
+                    type="button"
+                    className={`btn-tipo ${tipoCrear === 'accion' ? 'active' : ''}`}
+                    onClick={() => setTipoCrear('accion')}
+                  >
+                    Acción
+                  </button>
+                  <button 
+                    type="button"
+                    className={`btn-tipo ${tipoCrear === 'combinacion' ? 'active' : ''}`}
+                    onClick={() => setTipoCrear('combinacion')}
+                  >
+                    Combinación
+                  </button>
+                </div>
+              </div>
+
+              {tipoCrear === 'combinacion' ? (
+                <>
+                  <div className="form-crear-checkboxes">
+                    <div className="checkbox-group-mini">
+                      <label className="checkbox-group-title">Ajustes ({ajustesSeleccionadosCrear.length} seleccionados):</label>
+                      <div className="checkboxes-list-mini">
+                        {ajustes.map(ajuste => (
+                          <label key={ajuste.id_ajuste} className="checkbox-item-mini">
+                            <input
+                              type="checkbox"
+                              checked={ajustesSeleccionadosCrear.includes(ajuste.id_ajuste)}
+                              onChange={(e) => handleAjusteCrearChange(ajuste.id_ajuste, e.target.checked)}
+                            />
+                            <span>{ajuste.nombre_ajuste}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="checkbox-group-mini">
+                      <label className="checkbox-group-title">Acciones ({accionesSeleccionadasCrear.length} seleccionadas):</label>
+                      <div className="checkboxes-list-mini">
+                        {acciones.map(accion => (
+                          <label key={accion.id_accion} className="checkbox-item-mini">
+                            <input
+                              type="checkbox"
+                              checked={accionesSeleccionadasCrear.includes(accion.id_accion)}
+                              onChange={(e) => handleAccionCrearChange(accion.id_accion, e.target.checked)}
+                            />
+                            <span>{accion.nombre_accion}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="form-crear-campos">
+                    <div className="form-group-mini">
+                      <label>Descripción (opcional):</label>
+                      <input
+                        type="text"
+                        value={nombreCrear}
+                        onChange={(e) => setNombreCrear(e.target.value)}
+                        placeholder="Ej: Ruedo + Puño / Subir + Bajar"
+                      />
+                    </div>
+                    <div className="form-group-mini">
+                      <label>Precio:</label>
+                      <InputMoneda
+                        value={precioCrear}
+                        onChange={setPrecioCrear}
+                        placeholder="$ 0"
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="form-crear-campos">
+                  <div className="form-group-mini">
+                    <label>Nombre:</label>
+                    <input
+                      type="text"
+                      value={nombreCrear}
+                      onChange={(e) => setNombreCrear(e.target.value)}
+                      placeholder={tipoCrear === 'ajuste' ? 'Ej: Entallar' : 'Ej: Cintura'}
+                    />
+                  </div>
+                  <div className="form-group-mini">
+                    <label>Precio:</label>
+                    <InputMoneda
+                      value={precioCrear}
+                      onChange={setPrecioCrear}
+                      placeholder="$ 0"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button 
+                type="button"
+                className="btn-guardar-rapido"
+                onClick={handleCrearArregloRapido}
+                disabled={loadingCrear}
+              >
+                {loadingCrear ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Lista de arreglos disponibles */}

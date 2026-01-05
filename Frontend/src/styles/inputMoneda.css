@@ -7,11 +7,11 @@
 
 .currency-symbol {
   position: absolute;
-  left: 12px;
-  font-weight: bold;
-  color: #666;
+  left: 14px;
+  font-weight: 600;
+  color: #5f6368;
   pointer-events: none;
-  font-size: 1rem;
+  font-size: 15px;
   line-height: 1;
   top: 50%;
   transform: translateY(-50%);
@@ -21,28 +21,31 @@
 }
 
 .input-moneda {
-  padding-left: 42px;
-  padding-right: 12px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-left: 44px;
+  padding-right: 16px;
+  padding-top: 14px;
+  padding-bottom: 14px;
   width: 100%;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 15px;
   line-height: 1.5;
   box-sizing: border-box;
   font-family: inherit;
   text-indent: 0;
+  background: #fafbfc;
+  transition: all 0.2s ease;
 }
 
 .input-moneda:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #007bff;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
 }
 
 .input-moneda::placeholder {
-  color: #999;
+  color: #adb5bd;
 }
 
 .input-moneda:disabled {

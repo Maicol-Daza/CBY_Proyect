@@ -23,6 +23,8 @@ import {
   ResponsiveContainer
 } from "recharts";
 import { InputMoneda } from "./InputMoneda";
+import { useDataRefresh } from "../hooks/useDataRefresh";
+import { DATA_EVENTS } from "../utils/eventEmitter";
 
 interface ChartData {
   fecha: string;
@@ -84,6 +86,21 @@ export const CajaModule = () => {
     }, 30000);
     return () => clearInterval(intervalo);
   }, []);
+
+  // Suscribirse a eventos de actualización de movimientos
+  useDataRefresh(
+    [
+      DATA_EVENTS.MOVIMIENTOS_UPDATED,
+      DATA_EVENTS.MOVIMIENTO_CREATED,
+      DATA_EVENTS.BASE_DIARIA_CREATED,
+      DATA_EVENTS.PEDIDO_ENTREGADO,
+      DATA_EVENTS.ABONO_CREATED
+    ],
+    () => {
+      cargarMovimientos();
+      verificarBaseDelDia(false);
+    }
+  );
 
   // Verificar si existe la base de caja del día
   const verificarBaseDelDia = async (esPrimeraVez = false) => {

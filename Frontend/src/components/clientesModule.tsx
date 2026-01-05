@@ -3,6 +3,8 @@ import "../styles/clIentesModule.css";
 import { Cliente, obtenerClientes, eliminarCliente, actualizarCliente } from "../services/clientesService";
 import { FaClipboardList, FaEdit, FaTrash, } from 'react-icons/fa';
 import { CgAdd } from "react-icons/cg";
+import { useDataRefresh } from "../hooks/useDataRefresh";
+import { DATA_EVENTS } from "../utils/eventEmitter";
 
 export const ClientesModule = () => {
     const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -26,6 +28,14 @@ export const ClientesModule = () => {
     useEffect(() => {
         cargarClientesDelServidor();
     }, []);
+
+    // Suscribirse a eventos de actualización de clientes
+    useDataRefresh(
+        [DATA_EVENTS.CLIENTES_UPDATED, DATA_EVENTS.CLIENTE_CREATED, DATA_EVENTS.CLIENTE_DELETED],
+        () => {
+            cargarClientesDelServidor();
+        }
+    );
 
     const cargarClientesDelServidor = async () => {
         try {

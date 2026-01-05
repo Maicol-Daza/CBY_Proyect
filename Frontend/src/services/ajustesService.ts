@@ -1,4 +1,6 @@
 // src/services/ajustesService.ts
+import { emitDataEvent, DATA_EVENTS } from '../utils/eventEmitter';
+
 const API_URL = "http://localhost:3000/api/ajustes";
 
 export interface Ajuste {
@@ -26,7 +28,9 @@ export async function crearAjuste(nombre_ajuste: string, precio_ajuste: number):
       body: JSON.stringify({ nombre_ajuste, precio_ajuste }),
     });
     if (!response.ok) throw new Error('Error al crear ajuste');
-    return await response.json();
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.AJUSTES_UPDATED, result);
+    return result;
   } catch (error) {
     console.error("Error en crearAjuste:", error);
     throw error;
@@ -41,7 +45,9 @@ export async function actualizarAjuste(id_ajuste: number, nombre_ajuste: string,
       body: JSON.stringify({ nombre_ajuste, precio_ajuste }),
     });
     if (!response.ok) throw new Error('Error al actualizar ajuste');
-    return await response.json();
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.AJUSTES_UPDATED, result);
+    return result;
   } catch (error) {
     console.error("Error en actualizarAjuste:", error);
     throw error;
@@ -54,7 +60,9 @@ export async function eliminarAjuste(id_ajuste: number): Promise<any> {
       method: "DELETE",
     });
     if (!response.ok) throw new Error('Error al eliminar ajuste');
-    return await response.json();
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.AJUSTES_UPDATED, { id_ajuste });
+    return result;
   } catch (error) {
     console.error("Error en eliminarAjuste:", error);
     throw error;

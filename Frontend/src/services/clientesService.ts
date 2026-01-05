@@ -1,3 +1,5 @@
+import { emitDataEvent, DATA_EVENTS } from '../utils/eventEmitter';
+
 // Define la interfaz para el cliente
 export interface Cliente {
     id_cliente: string;
@@ -44,7 +46,11 @@ export const agregarCliente = async (cliente: Cliente) => {
         throw new Error(errorData.message || "Error al agregar el cliente");
     }
 
-    return await response.json();
+    const result = await response.json();
+    // Emitir evento de actualización
+    emitDataEvent(DATA_EVENTS.CLIENTE_CREATED, result);
+    emitDataEvent(DATA_EVENTS.CLIENTES_UPDATED);
+    return result;
 };
 
 // Función para eliminar un cliente
@@ -61,7 +67,11 @@ export const eliminarCliente = async (id: string) => {
         throw new Error(errorData.message || "Error al eliminar el cliente");
     }
 
-    return await response.json();
+    const result = await response.json();
+    // Emitir evento de actualización
+    emitDataEvent(DATA_EVENTS.CLIENTE_DELETED, { id });
+    emitDataEvent(DATA_EVENTS.CLIENTES_UPDATED);
+    return result;
 };
 
 // Función para actualizar un cliente
@@ -79,5 +89,8 @@ export const actualizarCliente = async (id: string, cliente: Cliente) => {
         throw new Error(errorData.message || "Error al actualizar el cliente");
     }
 
-    return await response.json();
+    const result = await response.json();
+    // Emitir evento de actualización
+    emitDataEvent(DATA_EVENTS.CLIENTES_UPDATED, result);
+    return result;
 };
