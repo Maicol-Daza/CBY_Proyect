@@ -1445,7 +1445,7 @@ export default function Pedidos() {
           {cajonSeleccionado && (
             <div className="codigos-section card">
               <h2>
-                <FaSearch style={{ marginRight: "6px" }} /> Códigos Disponibles - {getInfoCajon(cajonSeleccionado).nombre}
+                <FaSearch style={{ marginRight: "6px" }} /> Códigos Disponibles -  {getInfoCajon(cajonSeleccionado).nombre}
               </h2>
               {errores.codigos && <p className="pedido-error">{errores.codigos}</p>}
               

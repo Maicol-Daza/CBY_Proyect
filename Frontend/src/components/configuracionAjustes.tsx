@@ -16,7 +16,7 @@ import {
   eliminarAccion 
 } from '../services/accionesService';
 import { obtenerAjustesAccion, crearAjusteAccion, eliminarAjusteAccion, AjusteAccion } from '../services/ajustesAccionService';
-import { FaEdit, FaTrash, } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import { formatCOP } from '../utils/formatCurrency';
 import { InputMoneda } from './InputMoneda';
 import { useDataRefresh } from '../hooks/useDataRefresh';
@@ -48,6 +48,18 @@ export default function ConfiguracionAjustes() {
   const [precioAccion, setPrecioAccion] = useState<number>(0);
   const [loadingAccion, setLoadingAccion] = useState(false);
   const [editandoAccion, setEditandoAccion] = useState<number | null>(null);
+
+  // Estados para búsqueda/filtro
+  const [busquedaAjuste, setBusquedaAjuste] = useState('');
+  const [busquedaAccion, setBusquedaAccion] = useState('');
+
+  // Filtrar ajustes y acciones
+  const ajustesFiltrados = ajustes.filter(ajuste =>
+    ajuste.nombre_ajuste.toLowerCase().includes(busquedaAjuste.toLowerCase())
+  );
+  const accionesFiltradas = acciones.filter(accion =>
+    accion.nombre_accion.toLowerCase().includes(busquedaAccion.toLowerCase())
+  );
 
   const parsePrecio = (v: any): number => {
     if (v === null || v === undefined) return 0;
@@ -338,8 +350,18 @@ export default function ConfiguracionAjustes() {
           <button className="btn-crear" onClick={() => { setEditandoAjuste(null); setNuevoAjuste(''); setShowModalAjuste(true); }}>
             + Nuevo Ajuste
           </button>
+          <div className="search-filter">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Buscar ajuste..."
+              value={busquedaAjuste}
+              onChange={(e) => setBusquedaAjuste(e.target.value)}
+              className="search-input"
+            />
+          </div>
           <div className="lista-items">
-            {ajustes.map((ajuste) => (
+            {ajustesFiltrados.map((ajuste) => (
               <div key={ajuste.id_ajuste} className="item-badge-container">
                 <div className="item-badge">
                   {ajuste.nombre_ajuste}
@@ -360,8 +382,18 @@ export default function ConfiguracionAjustes() {
           <button className="btn-crear" onClick={() => { setEditandoAccion(null); setNuevaAccion(''); setShowModalAccion(true); }}>
             + Nueva Acción
           </button>
+          <div className="search-filter">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Buscar acción..."
+              value={busquedaAccion}
+              onChange={(e) => setBusquedaAccion(e.target.value)}
+              className="search-input"
+            />
+          </div>
           <div className="lista-items">
-            {acciones.map((accion) => (
+            {accionesFiltradas.map((accion) => (
               <div key={accion.id_accion} className="item-badge-container">
                 <div className="item-badge">
                   {accion.nombre_accion}

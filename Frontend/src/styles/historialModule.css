@@ -365,8 +365,8 @@
   background: white;
   border-radius: 8px;
   max-width: 900px;
-  width: 100%;
-  max-height: 90vh;
+  width: 500%;
+  max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -374,6 +374,27 @@
   margin: auto;
   display: flex;
   flex-direction: column;
+  /* Scrollbar pequeño y estilizado */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.modal-content-detalle::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content-detalle::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.modal-content-detalle::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.modal-content-detalle::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .modal-content-detalle .modal-header {
@@ -1360,14 +1381,14 @@
 .form-group {
   margin-bottom: 18px;
 }
-
+/* 
 .form-group label {
   display: block;
   margin-bottom: 8px;
   font-size: 0.95rem;
   color: #333;
   font-weight: 600;
-}
+} */
 
 .input-devolucion {
   width: 100%;
@@ -1478,8 +1499,6 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   max-width: 600px;
   width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
 }
 
 .modal-header {
@@ -1526,7 +1545,6 @@
   padding: 30px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
 }
 
 .factura-seccion {

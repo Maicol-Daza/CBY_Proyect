@@ -9,7 +9,7 @@ export interface Prenda {
 }
 
 export interface ArregloSeleccionado {
-  descripcion_combinacion: string;
+  descripcion_combinacion?: string;
   precio: number;
   tipo: 'combinacion' | 'ajuste' | 'accion';
   id_ajuste_accion?: number;

@@ -1,10 +1,10 @@
 // src/components/ModalPrenda.tsx (MODIFICADO)
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { type Ajuste, crearAjuste } from "../services/ajustesService";
 import { type Accion, crearAccion } from "../services/accionesService";
 import { type AjusteAccion, crearAjusteAccion } from "../services/ajustesAccionService";
 import { type Prenda, type ArregloSeleccionado } from "../services/prendasService";
-import { FaTrash, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaTshirt } from 'react-icons/fa';
 import { formatCOP } from '../utils/formatCurrency';
 import { InputMoneda } from './InputMoneda';
 
@@ -74,6 +74,9 @@ export default function ModalPrenda({
   const [arreglosSeleccionados, setArreglosSeleccionados] = useState<ArregloSeleccionado[]>([]);
   const [sugerencias, setSugerencias] = useState<string[]>([]);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+  const [indiceSugerencia, setIndiceSugerencia] = useState(-1);
+  const sugerenciasRef = useRef<HTMLDivElement>(null);
+  const inputTipoPrendaRef = useRef<HTMLInputElement>(null);
 
   // Estados para los arreglos disponibles
   const [arreglosFiltrados, setArreglosFiltrados] = useState<any[]>([]);
@@ -130,12 +133,33 @@ export default function ModalPrenda({
         tipo.toLowerCase().includes(tipoPrenda.toLowerCase())
       );
       setSugerencias(filtradas);
-      setMostrarSugerencias(filtradas.length > 0);
+      // Solo mantener abierto si hay sugerencias diferentes al valor actual
+      const hayDiferentes = filtradas.some(s => s.toLowerCase() !== tipoPrenda.toLowerCase());
+      if (mostrarSugerencias && !hayDiferentes && filtradas.length === 1) {
+        setMostrarSugerencias(false);
+      }
     } else {
-      setSugerencias([]);
-      setMostrarSugerencias(false);
+      // Mostrar todas las sugerencias cuando está vacío
+      setSugerencias(TIPOS_PRENDA_PREDEFINIDOS);
     }
+    setIndiceSugerencia(-1);
   }, [tipoPrenda]);
+
+  // Cerrar sugerencias al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sugerenciasRef.current &&
+        !sugerenciasRef.current.contains(event.target as Node) &&
+        inputTipoPrendaRef.current &&
+        !inputTipoPrendaRef.current.contains(event.target as Node)
+      ) {
+        setMostrarSugerencias(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const cargarArreglosDisponibles = () => {
     const todosLosArreglos = [
@@ -311,27 +335,77 @@ export default function ModalPrenda({
   const handleSeleccionarSugerencia = (sugerencia: string) => {
     setTipoPrenda(sugerencia);
     setMostrarSugerencias(false);
+    setIndiceSugerencia(-1);
+  };
+
+  // Manejador de teclado para navegación en sugerencias
+  const handleKeyDownSugerencias = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!mostrarSugerencias || sugerencias.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setIndiceSugerencia(prev => 
+          prev < sugerencias.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setIndiceSugerencia(prev => 
+          prev > 0 ? prev - 1 : sugerencias.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (indiceSugerencia >= 0 && indiceSugerencia < sugerencias.length) {
+          handleSeleccionarSugerencia(sugerencias[indiceSugerencia]);
+        }
+        break;
+      case 'Escape':
+        setMostrarSugerencias(false);
+        setIndiceSugerencia(-1);
+        break;
+    }
+  };
+
+  // Resaltar texto coincidente en sugerencias
+  const resaltarCoincidencia = (texto: string, busqueda: string) => {
+    if (!busqueda.trim()) return texto;
+    const regex = new RegExp(`(${busqueda.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const partes = texto.split(regex);
+    return partes.map((parte, i) => 
+      regex.test(parte) ? <strong key={i} className="sugerencia-match">{parte}</strong> : parte
+    );
   };
 
   const handleSeleccionarArreglo = (arreglo: any) => {
     const precioNum = parsePrecio(arreglo.precio);
-    const arregloSeleccionado: ArregloSeleccionado = {
-      precio: precioNum,
-      tipo: arreglo.tipo,
-      // Para combinaciones guardamos también la descripcion si existe
-      ...(arreglo.tipo === 'combinacion' && {
+    
+    // Construir el arreglo seleccionado según el tipo
+    let arregloSeleccionado: ArregloSeleccionado;
+    
+    if (arreglo.tipo === 'combinacion') {
+      arregloSeleccionado = {
+        precio: precioNum,
+        tipo: 'combinacion',
         id_ajuste_accion: arreglo.datos.id_ajuste_accion,
         nombre_ajuste: arreglo.datos.nombre_ajuste ?? '',
         nombre_accion: arreglo.datos.nombre_accion ?? '',
-        descripcion_combinacion: arreglo.datos.descripcion_combinacion ?? arreglo.nombre // guardamos la descripcion para mostrar
-      }),
-      ...(arreglo.tipo === 'ajuste' && {
+        descripcion_combinacion: arreglo.datos.descripcion_combinacion ?? arreglo.nombre
+      };
+    } else if (arreglo.tipo === 'ajuste') {
+      arregloSeleccionado = {
+        precio: precioNum,
+        tipo: 'ajuste',
         nombre_ajuste: arreglo.datos.nombre_ajuste
-      }),
-      ...(arreglo.tipo === 'accion' && {
+      };
+    } else {
+      arregloSeleccionado = {
+        precio: precioNum,
+        tipo: 'accion',
         nombre_accion: arreglo.datos.nombre_accion
-      })
-    };
+      };
+    }
 
     setArreglosSeleccionados(prev => {
       const existe = prev.some(a => 
@@ -452,38 +526,66 @@ export default function ModalPrenda({
           <div className="form-group">
             <label>Tipo de Prenda *</label>
             <div className="tipo-prenda-container">
-              <input
-                type="text"
-                value={tipoPrenda}
-                onChange={(e) => setTipoPrenda(e.target.value)}
-                onFocus={() => setMostrarSugerencias(true)}
-                placeholder="Escriba o seleccione un tipo de prenda"
-                list="tipos-prenda-sugerencias"
-              />
+              <div className="tipo-prenda-input-wrapper">
+                <input
+                  ref={inputTipoPrendaRef}
+                  type="text"
+                  value={tipoPrenda}
+                  onChange={(e) => setTipoPrenda(e.target.value)}
+                  onFocus={() => setMostrarSugerencias(true)}
+                  onKeyDown={handleKeyDownSugerencias}
+                  placeholder="Escriba o seleccione un tipo de prenda"
+                  autoComplete="off"
+                  className="tipo-prenda-input"
+                />
+                {tipoPrenda && (
+                  <button 
+                    type="button"
+                    className="tipo-prenda-clear"
+                    onClick={() => {
+                      setTipoPrenda('');
+                      inputTipoPrendaRef.current?.focus();
+                      setMostrarSugerencias(true);
+                    }}
+                    title="Limpiar"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
               
               {mostrarSugerencias && sugerencias.length > 0 && (
-                <div className="sugerencias-lista">
-                  {sugerencias.map((sugerencia, index) => (
-                    <div
-                      key={index}
-                      className="sugerencia-item"
-                      onClick={() => handleSeleccionarSugerencia(sugerencia)}
-                    >
-                      {sugerencia}
-                    </div>
-                  ))}
+                <div className="sugerencias-lista" ref={sugerenciasRef}>
+                  <div className="sugerencias-header">
+                    <span>Selecciona un tipo de prenda</span>
+                    <span className="sugerencias-count">{sugerencias.length} opciones</span>
+                  </div>
+                  <div className="sugerencias-items">
+                    {sugerencias.map((sugerencia, index) => (
+                      <div
+                        key={index}
+                        className={`sugerencia-item ${indiceSugerencia === index ? 'sugerencia-item-activo' : ''}`}
+                        onClick={() => handleSeleccionarSugerencia(sugerencia)}
+                        onMouseEnter={() => setIndiceSugerencia(index)}
+                      >
+                        <FaTshirt className="sugerencia-icono" />
+                        <span className="sugerencia-texto">
+                          {resaltarCoincidencia(sugerencia, tipoPrenda)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="sugerencias-footer">
+                    <span>↑↓ navegar</span>
+                    <span>Enter seleccionar</span>
+                    <span>Esc cerrar</span>
+                  </div>
                 </div>
               )}
-              
-              <datalist id="tipos-prenda-sugerencias">
-                {TIPOS_PRENDA_PREDEFINIDOS.map((tipo, index) => (
-                  <option key={index} value={tipo} />
-                ))}
-              </datalist>
             </div>
-            <small className="texto-ayuda">
-              Escriba el tipo de prenda o seleccione de las sugerencias
-            </small>
+            {/* <small className="texto-ayuda">
+              Escriba para filtrar o use las flechas del teclado para navegar
+            </small> */}
           </div>
 
           <div className="form-group">
