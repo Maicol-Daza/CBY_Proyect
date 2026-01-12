@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import "../styles/historialModule.css";
 import { FaEye, FaTimes, FaHistory, FaUndo, FaFileInvoice } from "react-icons/fa";
 import { FaFileExcel, FaFilePdf } from "react-icons/fa6";
@@ -225,7 +226,19 @@ export const HistorialModule = () => {
                 return;
             }
             const data = await resp.json();
-            setAbonosSolo(Array.isArray(data) ? data : []);
+            // Manejar diferentes formatos de respuesta de la API
+            let abonosArray: any[] = [];
+            if (Array.isArray(data)) {
+                abonosArray = data;
+            } else if (data && Array.isArray(data.value)) {
+                abonosArray = data.value;
+            } else if (data && Array.isArray(data.data)) {
+                abonosArray = data.data;
+            } else if (data && Array.isArray(data.abonos)) {
+                abonosArray = data.abonos;
+            }
+            console.log("Abonos cargados:", abonosArray);
+            setAbonosSolo(abonosArray);
         } catch (err) {
             console.error("Error al cargar abonos (solo):", err);
             setAbonosSolo([]);
@@ -1158,187 +1171,145 @@ export const HistorialModule = () => {
                 </div>
             )}
 
-            {/* MODAL ABONOS SOLOS */}
-            {abonosSoloModalOpen && pedidoAbonoActual && (
-                <div className="modal-overlay" onClick={handleCerrarModalAbonos}>
-                    <div className="modal-content compact-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-                        <div className="modal-header">
-                            <h2>Abonos - Pedido #{pedidoAbonoActual.id_pedido}</h2>
-                            <button className="btn-cerrar" onClick={handleCerrarModalAbonos}>✕</button>
+            {/* MODAL ABONOS - REDISEÑADO */}
+            {abonosSoloModalOpen && pedidoAbonoActual && ReactDOM.createPortal(
+                <div className="abonos-modal-overlay" onClick={handleCerrarModalAbonos}>
+                    <div className="abonos-modal-container" onClick={(e) => e.stopPropagation()}>
+                        {/* Header del modal */}
+                        <div className="abonos-modal-header">
+                            <div className="abonos-modal-title">
+                                <FaHistory style={{ marginRight: '10px' }} />
+                                <span>Gestión de Abonos</span>
+                            </div>
+                            <div className="abonos-modal-pedido-info">
+                                Pedido #{pedidoAbonoActual.id_pedido} - {pedidoAbonoActual.cliente_nombre}
+                            </div>
+                            <button className="abonos-modal-close" onClick={handleCerrarModalAbonos}>
+                                <FaTimes />
+                            </button>
                         </div>
 
-                        <div className="modal-body">
-                            {/* Información del pedido */}
-                            <div className="info-pedido-abonos" style={{ 
-                                background: '#f8f9fa', 
-                                padding: '12px 16px', 
-                                borderRadius: '8px', 
-                                marginBottom: '16px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                            }}>
-                                <div><strong>Cliente:</strong> {pedidoAbonoActual.cliente_nombre}</div>
-                                <div><strong>Estado:</strong> 
-                                    <span className={`estado-badge estado-${pedidoAbonoActual.estado}`} style={{ marginLeft: '8px' }}>
-                                        {pedidoAbonoActual.estado === "en_proceso" ? "En proceso" :
-                                         pedidoAbonoActual.estado === "entregado" ? "Entregado" : 
-                                         pedidoAbonoActual.estado}
-                                    </span>
+                        {/* Contenido principal con scroll */}
+                        <div className="abonos-modal-content">
+                            {/* Tarjetas de resumen */}
+                            <div className="abonos-resumen-cards">
+                                <div className="abonos-card total">
+                                    <span className="abonos-card-label">Total Pedido</span>
+                                    <span className="abonos-card-value">{formatCOP(pedidoAbonoActual.total_pedido ?? 0)}</span>
                                 </div>
-                                <div><strong>Total:</strong> {formatCOP(pedidoAbonoActual.total_pedido ?? 0)}</div>
-                                <div><strong>Saldo Pendiente:</strong> 
-                                    <span style={{ color: Number(pedidoAbonoActual.saldo ?? 0) > 0 ? '#e74c3c' : '#27ae60', fontWeight: 'bold', marginLeft: '8px' }}>
-                                        {formatCOP(pedidoAbonoActual.saldo ?? 0)}
-                                    </span>
+                                <div className="abonos-card abonado">
+                                    <span className="abonos-card-label">Total Abonado</span>
+                                    <span className="abonos-card-value">{formatCOP((pedidoAbonoActual.total_pedido ?? 0) - (pedidoAbonoActual.saldo ?? 0))}</span>
+                                </div>
+                                <div className={`abonos-card saldo ${Number(pedidoAbonoActual.saldo ?? 0) === 0 ? 'pagado' : 'pendiente'}`}>
+                                    <span className="abonos-card-label">Saldo Pendiente</span>
+                                    <span className="abonos-card-value">{formatCOP(pedidoAbonoActual.saldo ?? 0)}</span>
                                 </div>
                             </div>
 
                             {/* Formulario para nuevo abono - SOLO SI ESTÁ EN PROCESO */}
                             {pedidoAbonoActual.estado === "en_proceso" && Number(pedidoAbonoActual.saldo ?? 0) > 0 && (
-                                <div className="nuevo-abono-section" style={{
-                                    background: '#e8f3f5ff',
-                                    padding: '16px',
-                                    borderRadius: '8px',
-                                    marginBottom: '16px',
-                                    border: '1px solid #a5c8d6ff'
-                                }}>
-                                    <h4 style={{ margin: '0 0 12px 0', color: '#647681ff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        Registrar Nuevo Abono
-                                    </h4>
-                                    <div style={{ display: 'grid', gap: '12px' }}>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500' }}>
-                                                Monto del Abono *
-                                            </label>
+                                <div className="abonos-nuevo-form">
+                                    <h4 className="abonos-section-title">Registrar Nuevo Abono</h4>
+                                    <div className="abonos-form-grid">
+                                        <div className="abonos-form-group">
+                                            <label>Monto del Abono *</label>
                                             <InputMoneda
                                                 value={nuevoAbono.monto}
                                                 onChange={(val) => setNuevoAbono(prev => ({ ...prev, monto: val }))}
                                                 placeholder="Ingrese el monto"
                                             />
-                                            <small style={{ color: '#666', fontSize: '12px' }}>
-                                                Máximo: {formatCOP(pedidoAbonoActual.saldo ?? 0)}
-                                            </small>
+                                            <small>Máximo: {formatCOP(pedidoAbonoActual.saldo ?? 0)}</small>
                                         </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500' }}>
-                                                Observaciones (opcional)
-                                            </label>
+                                        <div className="abonos-form-group">
+                                            <label>Observaciones (opcional)</label>
                                             <input
                                                 type="text"
                                                 value={nuevoAbono.observaciones}
                                                 onChange={(e) => setNuevoAbono(prev => ({ ...prev, observaciones: e.target.value }))}
-                                                placeholder="Ej: Abono parcial, pago en efectivo..."
-                                                style={{
-                                                    width: '95%',
-                                                    padding: '10px 12px',
-                                                    border: '1px solid #ddd',
-                                                    borderRadius: '6px',
-                                                    fontSize: '14px'
-                                                }}
+                                                placeholder="Ej: Pago en efectivo, transferencia..."
                                             />
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleGuardarNuevoAbono}
-                                            disabled={guardandoAbono || nuevoAbono.monto <= 0}
-                                            style={{
-                                                background: guardandoAbono ? '#ccc' : '#2771aeff',
-                                                color: 'white',
-                                                border: 'none',
-                                                padding: '12px 20px',
-                                                borderRadius: '6px',
-                                                cursor: guardandoAbono || nuevoAbono.monto <= 0 ? 'not-allowed' : 'pointer',
-                                                fontWeight: '600',
-                                                fontSize: '14px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '8px'
-                                            }}
-                                        >
-                                            {guardandoAbono ? "Guardando..." : "✓ Registrar Abono"}
-                                        </button>
                                     </div>
+                                    <button
+                                        type="button"
+                                        className="abonos-btn-guardar"
+                                        onClick={handleGuardarNuevoAbono}
+                                        disabled={guardandoAbono || nuevoAbono.monto <= 0}
+                                    >
+                                        {guardandoAbono ? "Guardando..." : "✓ Registrar Abono"}
+                                    </button>
                                 </div>
                             )}
 
-                            {/* Mensaje si el pedido no permite abonos */}
+                            {/* Mensajes de estado */}
                             {pedidoAbonoActual.estado !== "en_proceso" && (
-                                <div style={{
-                                    background: '#fff3e0',
-                                    padding: '12px 16px',
-                                    borderRadius: '8px',
-                                    marginBottom: '16px',
-                                    border: '1px solid #ffcc80',
-                                    color: '#e65100',
-                                    fontSize: '14px'
-                                }}>
-                                    Solo se pueden registrar abonos en pedidos con estado "En proceso"
+                                <div className="abonos-mensaje warning">
+                                    ⚠️ Solo se pueden registrar abonos en pedidos con estado "En proceso"
                                 </div>
                             )}
-
-                            {/* Mensaje si el saldo es 0 */}
                             {pedidoAbonoActual.estado === "en_proceso" && Number(pedidoAbonoActual.saldo ?? 0) === 0 && (
-                                <div style={{
-                                    background: '#e8f5e9',
-                                    padding: '12px 16px',
-                                    borderRadius: '8px',
-                                    marginBottom: '16px',
-                                    border: '1px solid #a5d6a7',
-                                    color: '#2e7d32',
-                                    fontSize: '14px'
-                                }}>
+                                <div className="abonos-mensaje success">
                                     Este pedido ya está completamente pagado
                                 </div>
                             )}
 
                             {/* Historial de abonos */}
-                            <h4 style={{ margin: '0 0 12px 0', color: '#333' }}>Historial de Abonos</h4>
-                            {loadingAbonosSolo ? (
-                                <p className="cargando">Cargando abonos...</p>
-                            ) : abonosSolo.length === 0 ? (
-                                <div className="sin-abonos" style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-                                    <div className="icono" style={{ fontSize: '32px', marginBottom: '8px' }}>💳</div>
-                                    <p>No se encontraron abonos para este pedido.</p>
-                                </div>
-                            ) : (
-                                <div className="table-responsive-container">
-                                    <table className="tabla-abonos">
-                                        <thead>
-                                            <tr>
-                                                <th>Fecha</th>
-                                                <th>Monto</th>
-                                                <th>Observaciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {abonosSolo.map((a) => (
-                                                <tr key={a.id_historial_abono}>
-                                                    <td>{new Date(a.fecha_abono).toLocaleDateString('es-CO', {
-                                                        year: 'numeric',
-                                                        month: '2-digit',
-                                                        day: '2-digit',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })}</td>
-                                                    <td style={{ color: '#27ae60', fontWeight: '600' }}>{formatCOP(Number(a.abono || 0))}</td>
-                                                    <td>{a.observaciones || '-'}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+                            <div className="abonos-historial-section">
+                                <h4 className="abonos-section-title">Historial de Abonos</h4>
+                                {loadingAbonosSolo ? (
+                                    <div className="abonos-loading">
+                                        <div className="spinner"></div>
+                                        <span>Cargando abonos...</span>
+                                    </div>
+                                ) : abonosSolo.length === 0 ? (
+                                    <div className="abonos-empty">
+                                        <span className="abonos-empty-icon">💳</span>
+                                        <p>No hay abonos registrados para este pedido.</p>
+                                    </div>
+                                ) : (
+                                    <div className="abonos-lista">
+                                        {abonosSolo.map((abono, index) => (
+                                            <div key={abono.id_historial_abono} className="abono-item">
+                                                <div className="abono-numero">{abonosSolo.length - index}</div>
+                                                <div className="abono-info">
+                                                    <div className="abono-fecha">
+                                                        {new Date(abono.fecha_abono).toLocaleDateString('es-CO', {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </div>
+                                                    <div className="abono-observacion">{abono.observaciones || 'Sin observaciones'}</div>
+                                                </div>
+                                                <div className="abono-monto">
+                                                    {formatCOP(Number(abono.abono || 0))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {/* Total de abonos */}
+                                        <div className="abonos-total-row">
+                                            <span>Total Abonado ({abonosSolo.length} abono{abonosSolo.length !== 1 ? 's' : ''}):</span>
+                                            <span className="abonos-total-monto">
+                                                {formatCOP(abonosSolo.reduce((sum, a) => sum + Number(a.abono || 0), 0))}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="modal-footer">
-                            <button className="btn-cancelar" onClick={handleCerrarModalAbonos}>
+                        {/* Footer del modal */}
+                        <div className="abonos-modal-footer">
+                            <button className="abonos-btn-cerrar" onClick={handleCerrarModalAbonos}>
                                 Cerrar
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* MODAL REGISTRAR DEVOLUCIÓN - SIMPLIFICADO */}

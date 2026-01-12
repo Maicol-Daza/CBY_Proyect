@@ -370,6 +370,18 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
+  animation: modalFadeSlideIn 0.3s ease;
+}
+
+@keyframes modalFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header {
@@ -576,6 +588,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: modalFadeSlideIn 0.3s ease;
 }
 
 .preview-content {

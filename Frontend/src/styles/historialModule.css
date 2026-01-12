@@ -1664,3 +1664,430 @@
   font-size: 14px;
 }
 
+/* ==========================================
+   MODAL DE ABONOS - REDISEÑADO
+   ========================================== */
+
+.abonos-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.abonos-modal-container {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  animation: abonosModalSlideIn 0.25s ease;
+  overflow: hidden;
+}
+
+@keyframes abonosModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header del modal */
+.abonos-modal-header {
+  background: #fff;
+  color: #333;
+  padding: 20px 24px 16px;
+  position: relative;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.abonos-modal-title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.abonos-modal-title svg {
+  color: #666;
+}
+
+.abonos-modal-pedido-info {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.abonos-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.abonos-modal-close:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+  color: #333;
+}
+
+/* Contenido con scroll */
+.abonos-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  min-height: 0;
+}
+
+/* Tarjetas de resumen */
+.abonos-resumen-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.abonos-card {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 14px 12px;
+  text-align: center;
+  border: 1px solid #eee;
+}
+
+.abonos-card-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+}
+
+.abonos-card-value {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.abonos-card.total .abonos-card-value {
+  color: #333;
+}
+
+.abonos-card.abonado .abonos-card-value {
+  color: #2e7d32;
+}
+
+.abonos-card.saldo.pendiente .abonos-card-value {
+  color: #c62828;
+}
+
+.abonos-card.saldo.pagado .abonos-card-value {
+  color: #2e7d32;
+}
+
+/* Formulario nuevo abono */
+.abonos-nuevo-form {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.abonos-section-title {
+  margin: 0 0 14px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.abonos-form-grid {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.abonos-form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.abonos-form-group input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.abonos-form-group input[type="text"]:focus {
+  outline: none;
+  border-color: #999;
+}
+
+.abonos-form-group small {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.abonos-btn-guardar {
+  width: 100%;
+  padding: 11px 20px;
+  background: #0043a3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.abonos-btn-guardar:hover:not(:disabled) {
+  background: #0044a3d8;
+}
+
+.abonos-btn-guardar:disabled {
+  background: #759cd3;
+  cursor: not-allowed;
+}
+
+/* Mensajes */
+.abonos-mensaje {
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  border: 1px solid;
+}
+
+.abonos-mensaje.warning {
+  background: #fffbf5;
+  border-color: #e0d5c5;
+  color: #8a6d3b;
+}
+
+.abonos-mensaje.success {
+  background: #f6faf6;
+  border-color: #c3e0c3;
+  color: #3c763d;
+}
+
+/* Historial de abonos */
+.abonos-historial-section {
+  margin-top: 10px;
+}
+
+.abonos-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  color: #888;
+}
+
+.abonos-loading .spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #eee;
+  border-top-color: #666;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.abonos-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: #888;
+}
+
+.abonos-empty-icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.abonos-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Lista de abonos */
+.abonos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.abono-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px 14px;
+  transition: all 0.15s;
+}
+
+.abono-item:hover {
+  border-color: #ddd;
+  background: #fafafa;
+}
+
+.abono-numero {
+  width: 28px;
+  height: 28px;
+  background: #f0f0f0;
+  color: #666;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.abono-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.abono-fecha {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+}
+
+.abono-observacion {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.abono-monto {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2e7d32;
+  flex-shrink: 0;
+}
+
+/* Total de abonos */
+.abonos-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.abonos-total-row span:first-child {
+  color: #555;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.abonos-total-monto {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+/* Footer del modal */
+.abonos-modal-footer {
+  padding: 16px 24px;
+  background: #fafafa;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.abonos-btn-cerrar {
+  padding: 10px 20px;
+  background: #fff;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.abonos-btn-cerrar:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .abonos-modal-container {
+    max-height: 95vh;
+  }
+  
+  .abonos-resumen-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .abono-item {
+    flex-wrap: wrap;
+  }
+  
+  .abono-monto {
+    width: 100%;
+    text-align: right;
+    margin-top: 8px;
+  }
+}
