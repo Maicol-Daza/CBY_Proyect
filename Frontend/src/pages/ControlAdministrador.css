@@ -1162,38 +1162,41 @@
 
 .botones-exportar {
   display: flex;
-  gap: 0.5rem;
+  gap: 10px;
   margin-left: auto;
 }
 
 .btn-exportar {
   display: flex;
   align-items: center;
-  padding: 0.5rem 1rem;
+  gap: 8px;
+  padding: 10px 16px;
   border: none;
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .btn-exportar.excel {
-  background: #10b981;
+  background-color: #21a366;
   color: white;
 }
 
 .btn-exportar.excel:hover {
-  background: #059669;
+  background-color: #1a7d52;
+  box-shadow: 0 4px 12px rgba(33, 163, 102, 0.3);
 }
 
 .btn-exportar.pdf {
-  background: #dc2626;
+  background-color: #d32f2f;
   color: white;
 }
 
 .btn-exportar.pdf:hover {
-  background: #b91c1c;
+  background-color: #b71c1c;
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
 }
 
 .resumen-filtro-auditoria {

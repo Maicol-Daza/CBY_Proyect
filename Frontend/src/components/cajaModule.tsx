@@ -674,7 +674,7 @@ export const CajaModule = () => {
 
               <div className="modal-actions">
                 <button 
-                  className="btn-cancelar"
+                  className="btn-cancelar-caja"
                   onClick={() => setMostrarModalMovimiento(false)}
                   disabled={cargando}
                 >

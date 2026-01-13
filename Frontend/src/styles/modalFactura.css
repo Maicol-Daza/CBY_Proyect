@@ -359,21 +359,47 @@
   }
 }
 
-/* Estilos para ModalFacturas */
-.modal-facturas {
+/* Estilos para ModalFacturas - Clases únicas */
+.facturas-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: facturasOverlayFadeIn 0.2s ease;
+}
+
+@keyframes facturasOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.facturas-modal-container {
   background: white;
   border-radius: 12px;
   padding: 0;
   max-width: 700px;
+  width: 100%;
   max-height: 90vh;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  animation: modalFadeSlideIn 0.3s ease;
+  animation: facturasModalSlideIn 0.3s ease;
 }
 
-@keyframes modalFadeSlideIn {
+@keyframes facturasModalSlideIn {
   from {
     opacity: 0;
     transform: translateY(-30px) scale(0.95);
@@ -384,49 +410,57 @@
   }
 }
 
-.modal-header {
+.facturas-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 2px solid #e5e7eb;
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-  color: white;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  background: white;
+  color: #333;
   border-radius: 12px 12px 0 0;
 }
 
-.modal-header h2 {
+.facturas-modal-header h2 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
 }
 
-.btn-cerrar {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+.facturas-btn-cerrar {
+  background: none;
+  color: #999;
   border: none;
-  border-radius: 6px;
-  padding: 8px 12px;
+  border-radius: 0;
+  padding: 0;
   cursor: pointer;
-  font-size: 1.2rem;
-  transition: all 0.2s;
+  font-size: 1.5rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
 }
 
-.btn-cerrar:hover {
-  background: rgba(255, 255, 255, 0.3);
+.facturas-btn-cerrar:hover {
+  background: transparent;
+  color: #d32f2f;
 }
 
-.btn-cerrar:disabled {
+.facturas-btn-cerrar:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.modal-body {
+.facturas-modal-body {
   flex: 1;
   padding: 30px;
   overflow-y: auto;
 }
 
-.error-message {
+.facturas-error-message {
   background-color: #fee;
   color: #c62828;
   padding: 12px;
@@ -435,7 +469,7 @@
   border-left: 4px solid #c62828;
 }
 
-.factura-seccion {
+.facturas-seccion {
   margin-bottom: 30px;
   padding: 20px;
   background: #f9fafb;
@@ -443,11 +477,11 @@
   border-left: 4px solid #1976d2;
 }
 
-.factura-titulo {
+.facturas-titulo {
   margin-bottom: 15px;
 }
 
-.factura-titulo h3 {
+.facturas-titulo h3 {
   margin: 0 0 5px 0;
   font-size: 1.1rem;
   color: #1f2937;
@@ -456,19 +490,19 @@
   gap: 8px;
 }
 
-.factura-titulo p {
+.facturas-titulo p {
   margin: 0;
   font-size: 0.9rem;
   color: #6b7280;
 }
 
-.factura-botones {
+.facturas-botones {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.btn-accion {
+.facturas-btn-accion {
   flex: 1;
   min-width: 150px;
   padding: 10px 16px;
@@ -484,46 +518,46 @@
   gap: 8px;
 }
 
-.btn-descargar {
+.facturas-btn-descargar {
   background: #10b981;
   color: white;
 }
 
-.btn-descargar:hover:not(:disabled) {
+.facturas-btn-descargar:hover:not(:disabled) {
   background: #059669;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-.btn-preview {
+.facturas-btn-preview {
   background: #8b5cf6;
   color: white;
 }
 
-.btn-preview:hover:not(:disabled) {
+.facturas-btn-preview:hover:not(:disabled) {
   background: #7c3aed;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
-.btn-imprimir {
+.facturas-btn-imprimir {
   background: #3b82f6;
   color: white;
 }
 
-.btn-imprimir:hover:not(:disabled) {
+.facturas-btn-imprimir:hover:not(:disabled) {
   background: #2563eb;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.btn-accion:disabled {
+.facturas-btn-accion:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-.modal-footer {
+.facturas-modal-footer {
   padding: 20px;
   border-top: 2px solid #e5e7eb;
   background: #f9fafb;
@@ -532,7 +566,7 @@
   border-radius: 0 0 12px 12px;
 }
 
-.btn-cancelar {
+.facturas-btn-cancelar {
   padding: 10px 20px;
   background: #ef4444;
   color: white;
@@ -544,40 +578,19 @@
   transition: all 0.2s;
 }
 
-.btn-cancelar:hover:not(:disabled) {
+.facturas-btn-cancelar:hover:not(:disabled) {
   background: #dc2626;
   transform: translateY(-2px);
 }
 
-.btn-cancelar:disabled {
+.facturas-btn-cancelar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Estilos para botón en historial */
-.btn-accion-facturas {
-  background: #8b5cf6;
-  color: white;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-}
-
-.btn-accion-facturas:hover {
-  background: #7c3aed;
-  transform: translateY(-1px);
-}
-
-/* Modal de Vista Previa */
-.modal-preview {
+/* Modal de Vista Previa - Clases únicas */
+.facturas-modal-preview {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -588,10 +601,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: modalFadeSlideIn 0.3s ease;
+  animation: facturasModalSlideIn 0.3s ease;
 }
 
-.preview-content {
+.facturas-preview-content {
   flex: 1;
   overflow: hidden;
   padding: 10px;
@@ -600,7 +613,7 @@
   margin: 10px;
 }
 
-.preview-content iframe {
+.facturas-preview-content iframe {
   background-color: white;
   border-radius: 4px;
   width: 100%;
@@ -609,34 +622,34 @@
 }
 
 @media (max-width: 1200px) {
-  .modal-preview {
+  .facturas-modal-preview {
     width: 90vw;
   }
 }
 
 @media (max-width: 768px) {
-  .modal-facturas {
+  .facturas-modal-container {
     max-width: 95vw;
   }
 
-  .modal-preview {
+  .facturas-modal-preview {
     width: 95vw;
     height: 85vh;
   }
 
-  .modal-body {
+  .facturas-modal-body {
     padding: 20px;
   }
 
-  .factura-seccion {
+  .facturas-seccion {
     margin-bottom: 20px;
   }
 
-  .factura-botones {
+  .facturas-botones {
     flex-direction: column;
   }
 
-  .btn-accion {
+  .facturas-btn-accion {
     width: 100%;
     min-width: unset;
   }

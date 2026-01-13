@@ -318,7 +318,7 @@
   margin-top: 25px;
 }
 
-.btn-cancelar {
+.btn-cancelar-caja {
   padding: 12px;
   border: 1px solid #d1d5db;
   background: white;
@@ -329,7 +329,7 @@
   transition: all 0.2s;
 }
 
-.btn-cancelar:hover {
+.btn-cancelar-caja:hover {
   background: #f3f4f6;
 }
 
@@ -404,41 +404,40 @@
 
 .botones-filtro {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .btn-exportar {
-  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: 700;
-  font-size: 13px;
+  font-weight: 500;
+  font-size: 14px;
   transition: all 0.3s ease;
-  white-space: nowrap;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .btn-exportar.excel {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background-color: #21a366;
   color: white;
 }
 
 .btn-exportar.excel:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  background-color: #1a7d52;
+  box-shadow: 0 4px 12px rgba(33, 163, 102, 0.3);
 }
 
 .btn-exportar.pdf {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background-color: #d32f2f;
   color: white;
 }
 
 .btn-exportar.pdf:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  background-color: #b71c1c;
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
 }
 
 .resumen-filtro {
@@ -475,7 +474,7 @@
   margin-top: 25px;
 }
 
-.btn-cancelar {
+.btn-cancelar-caja {
   padding: 12px;
   border: 1px solid #d5d5db;
   background: white;
@@ -486,7 +485,7 @@
   transition: all 0.2s;
 }
 
-.btn-cancelar:hover {
+.btn-cancelar-caja:hover {
   background: #f3f4f6;
 }
 

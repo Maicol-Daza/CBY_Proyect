@@ -7,7 +7,7 @@ import { obtenerAjustes, type Ajuste } from "../services/ajustesService";
 import { obtenerAcciones, type Accion } from "../services/accionesService";
 import { obtenerAjustesAccion, type AjusteAccion } from "../services/ajustesAccionService";
 import ModalPrenda from "../components/ModalPrenda";
-import ModalFactura from "../components/ModalFactura";
+import ModalFacturasUnificado from "../components/ModalFacturasUnificado";
 import validators from '../utils/validators';
 import { type Prenda } from "../services/prendasService";
 import { FaEdit, FaTrash, FaBox, FaSearch, FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEnvelope, FaCalendarAlt, FaClock, FaCheckCircle, FaDollarSign, FaExclamationTriangle, FaShoppingCart, FaFileInvoice, FaPercent } from "react-icons/fa";
@@ -1677,7 +1677,7 @@ export default function Pedidos() {
       )}
 
       {/* Modal de Factura */}
-      <ModalFactura
+      <ModalFacturasUnificado
         isOpen={mostrarModalFactura}
         facturaData={datosFactura}
         onClose={() => {

@@ -361,7 +361,7 @@ export const generarHTMLFactura = (data: FacturaData, tipo: 'cliente' | 'bodega'
         <div class="factura-empresa">
           <h3>CLÍNICA BLUYIN</h3>
           <p>Servicios de Arreglos y Confecciones</p>
-          <p>NIT: 123456789-0</p>
+          <p>NIT: 89233887-9</p>
           <p>Dirección: Calle Principal, Ciudad</p>
         </div>
 

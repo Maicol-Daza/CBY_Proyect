@@ -11,7 +11,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { InputMoneda } from './InputMoneda';
-import ModalFacturas from './ModalFacturas';
+import ModalFacturasUnificado from './ModalFacturasUnificado';
 import { useDataRefresh } from "../hooks/useDataRefresh";
 import { DATA_EVENTS, emitDataEvent } from "../utils/eventEmitter";
 
@@ -835,7 +835,7 @@ export const HistorialModule = () => {
                                                 type="button"
                                                 onClick={() => handleVerDetalles(pedido.id_pedido)}
                                             >
-                                                <FaEye /> Ver
+                                                <FaEye /> Ver detalles
                                             </button>
                                             <button
                                                 className="btn-accion-facturas"
@@ -1245,7 +1245,7 @@ export const HistorialModule = () => {
                             {/* Mensajes de estado */}
                             {pedidoAbonoActual.estado !== "en_proceso" && (
                                 <div className="abonos-mensaje warning">
-                                    ⚠️ Solo se pueden registrar abonos en pedidos con estado "En proceso"
+                                Solo se pueden registrar abonos en pedidos con estado "En proceso"
                                 </div>
                             )}
                             {pedidoAbonoActual.estado === "en_proceso" && Number(pedidoAbonoActual.saldo ?? 0) === 0 && (
@@ -1462,7 +1462,7 @@ export const HistorialModule = () => {
 )}
 
             {/* Modal de Facturas */}
-            <ModalFacturas
+            <ModalFacturasUnificado
               isOpen={modalFacturasOpen}
               facturaData={datosFactura}
               onClose={handleCerrarFacturas}
