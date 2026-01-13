@@ -138,110 +138,111 @@ export const generarHTMLFactura = (data: FacturaData, tipo: 'cliente' | 'bodega'
         }
         body {
           font-family: Arial, sans-serif;
-          padding: 15px;
+          padding: 10px;
           background-color: white;
-          line-height: 1.4;
+          line-height: 1.3;
         }
         .factura-container {
-          max-width: 900px;
+          max-width: 480px;
           margin: 0 auto;
-          padding: 20px;
+          padding: 12px;
           background: white;
           color: #333;
         }
         .factura-header {
           text-align: center;
-          margin-bottom: 25px;
-          border-bottom: 3px solid #1976d2;
-          padding-bottom: 15px;
+          margin-bottom: 12px;
+          border-bottom: 2px solid #1976d2;
+          padding-bottom: 8px;
         }
         .factura-header h1 {
-          margin: 0 0 10px 0;
-          font-size: 26px;
+          margin: 0 0 5px 0;
+          font-size: 18px;
           color: #1976d2;
           text-transform: uppercase;
         }
         .factura-header p {
-          margin: 3px 0;
+          margin: 2px 0;
           color: #666;
-          font-size: 13px;
+          font-size: 11px;
         }
         .factura-numero {
-          font-size: 13px;
-          margin-top: 8px;
+          font-size: 11px;
+          margin-top: 4px;
           color: #666;
         }
         .factura-empresa {
-          margin-bottom: 20px;
-          padding: 12px;
+          margin-bottom: 10px;
+          padding: 8px;
           background-color: #f5f5f5;
-          border-radius: 4px;
+          border-radius: 3px;
           text-align: center;
         }
         .factura-empresa h3 {
-          margin: 0 0 8px 0;
+          margin: 0 0 4px 0;
           color: #1976d2;
-          font-size: 16px;
+          font-size: 13px;
         }
         .factura-empresa p {
-          margin: 3px 0;
-          font-size: 12px;
+          margin: 2px 0;
+          font-size: 10px;
           color: #666;
         }
         .factura-fechas {
-          margin: 15px 0;
-          padding: 12px;
+          margin: 8px 0;
+          padding: 8px;
           background-color: #ecf0f1;
-          border-radius: 4px;
+          border-radius: 3px;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 15px;
-          font-size: 13px;
+          gap: 8px;
+          font-size: 11px;
         }
         .factura-fechas strong {
           display: block;
-          margin-bottom: 4px;
+          margin-bottom: 2px;
           color: #333;
           font-weight: bold;
+          font-size: 10px;
         }
         .factura-fechas p {
           margin: 0;
           color: #666;
         }
         .info-cliente {
-          margin-bottom: 20px;
-          padding: 12px;
+          margin-bottom: 10px;
+          padding: 8px;
           background-color: #f9f9f9;
-          border-left: 4px solid #1976d2;
-          border-radius: 4px;
+          border-left: 3px solid #1976d2;
+          border-radius: 3px;
         }
         .info-cliente h4 {
-          margin: 0 0 8px 0;
-          font-size: 14px;
+          margin: 0 0 4px 0;
+          font-size: 11px;
           color: #333;
         }
         .info-cliente p {
-          margin: 3px 0;
-          font-size: 12px;
+          margin: 2px 0;
+          font-size: 10px;
           color: #666;
         }
         table {
           width: 100%;
-          margin: 20px 0;
+          margin: 10px 0;
           border-collapse: collapse;
-          font-size: 12px;
+          font-size: 10px;
         }
         th {
           background-color: #1976d2;
           color: white;
-          padding: 10px;
+          padding: 6px 4px;
           text-align: left;
           font-weight: bold;
-          font-size: 13px;
+          font-size: 10px;
           border: 1px solid #1565c0;
         }
         td {
-          padding: 8px 10px;
+          padding: 5px 4px;
           border: 1px solid #e0e0e0;
           vertical-align: top;
         }
@@ -266,31 +267,32 @@ export const generarHTMLFactura = (data: FacturaData, tipo: 'cliente' | 'bodega'
         }
         .prenda-nombre {
           font-weight: bold;
-          margin-bottom: 3px;
+          margin-bottom: 2px;
+          font-size: 10px;
         }
         .arreglo-item {
-          margin: 2px 0;
+          margin: 1px 0;
           color: #555;
-          font-size: 11px;
-          padding-left: 10px;
+          font-size: 9px;
+          padding-left: 6px;
         }
         .sin-prendas {
           text-align: center;
           color: #999;
-          padding: 20px;
+          padding: 12px;
           font-style: italic;
         }
         .totales {
-          margin-top: 20px;
-          padding: 15px;
+          margin-top: 10px;
+          padding: 10px;
           background-color: #f5f5f5;
-          border-radius: 4px;
-          font-size: 13px;
+          border-radius: 3px;
+          font-size: 11px;
         }
         .total-fila {
           display: flex;
           justify-content: space-between;
-          padding: 6px 0;
+          padding: 4px 0;
           border-bottom: 1px solid #ddd;
         }
         .total-fila span:first-child {
@@ -298,21 +300,21 @@ export const generarHTMLFactura = (data: FacturaData, tipo: 'cliente' | 'bodega'
         }
         .total-fila span:last-child {
           text-align: right;
-          min-width: 100px;
+          min-width: 80px;
         }
         .total-fila.total-principal {
           border: none;
-          font-size: 15px;
+          font-size: 13px;
           font-weight: bold;
-          padding: 10px 0;
-          margin-top: 8px;
+          padding: 6px 0;
+          margin-top: 5px;
           border-top: 2px solid #1976d2;
           color: #1976d2;
         }
         .total-fila.saldo-pendiente {
           background-color: #ffebee;
-          padding: 8px;
-          margin-top: 8px;
+          padding: 5px;
+          margin-top: 5px;
           border-radius: 3px;
           border: 1px solid #ef5350;
           font-weight: bold;
@@ -320,21 +322,21 @@ export const generarHTMLFactura = (data: FacturaData, tipo: 'cliente' | 'bodega'
         }
         .footer {
           text-align: center;
-          margin-top: 30px;
-          padding-top: 15px;
+          margin-top: 15px;
+          padding-top: 10px;
           border-top: 1px solid #ddd;
           color: #999;
-          font-size: 11px;
+          font-size: 9px;
         }
         .tipo-factura {
           text-align: center;
           background-color: #e3f2fd;
-          padding: 8px;
-          border-radius: 4px;
-          margin-bottom: 15px;
+          padding: 5px;
+          border-radius: 3px;
+          margin-bottom: 8px;
           font-weight: bold;
           color: #1976d2;
-          font-size: 13px;
+          font-size: 11px;
         }
         @media print {
           body {
@@ -438,6 +440,7 @@ export const descargarFacturaPDF = async (data: FacturaData, tipo: 'cliente' | '
     tempDiv.style.position = 'fixed';
     tempDiv.style.left = '-10000px';
     tempDiv.style.top = '-10000px';
+    tempDiv.style.width = '500px';
     document.body.appendChild(tempDiv);
 
     const canvas = await html2canvas(tempDiv, {
@@ -446,7 +449,7 @@ export const descargarFacturaPDF = async (data: FacturaData, tipo: 'cliente' | '
       backgroundColor: '#fff',
       useCORS: true,
       allowTaint: true,
-      width: tempDiv.scrollWidth,
+      width: 500,
       height: tempDiv.scrollHeight
     });
 

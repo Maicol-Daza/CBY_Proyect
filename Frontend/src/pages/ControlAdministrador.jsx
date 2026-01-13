@@ -265,40 +265,53 @@ export const ControlAdministrador = () => {
     setAcumuladoFiltrado(ingFilt - egrFilt);
   }, [todosLosMovimientos, fechaInicio, fechaFin]);
 
-  // Generar datos para gráficos
-  const generarDatosGrafico = (datos) => {
-    const hoy = new Date();
-    const ultimos7Dias = {};
+  // Regenerar gráficos cuando cambien las fechas de filtro
+  useEffect(() => {
+    if (todosLosMovimientos.length > 0) {
+      generarDatosGrafico(todosLosMovimientos);
+    }
+  }, [fechaInicio, fechaFin, todosLosMovimientos]);
 
-    for (let i = 6; i >= 0; i--) {
-      const fecha = new Date(hoy);
-      fecha.setDate(fecha.getDate() - i);
-      const fechaStr = formatearFechaLocal(fecha);
+  // Generar datos para gráficos usando rango de fechas dinámico
+  const generarDatosGrafico = (datos) => {
+    // Usar el rango de fechas seleccionado dinámicamente
+    const fechaInicioDate = new Date(fechaInicio);
+    const fechaFinDate = new Date(fechaFin);
+    const rangoFechas = {};
+
+    // Generar todas las fechas en el rango seleccionado
+    const fechaActual = new Date(fechaInicioDate);
+    while (fechaActual <= fechaFinDate) {
+      const fechaStr = formatearFechaLocal(fechaActual);
       
-      ultimos7Dias[fechaStr] = {
+      rangoFechas[fechaStr] = {
         fecha: fechaStr,
         ingresos: 0,
         egresos: 0,
         neto: 0
       };
+      
+      fechaActual.setDate(fechaActual.getDate() + 1);
     }
 
+    // Llenar con datos de movimientos filtrados por rango de fechas
     datos.forEach((mov) => {
       const fechaMov = new Date(mov.fecha_movimiento);
       const fechaMovStr = formatearFechaLocal(fechaMov);
       const monto = Number(mov.monto) || 0;
 
-      if (ultimos7Dias[fechaMovStr]) {
+      // Solo incluir movimientos dentro del rango de fechas
+      if (rangoFechas[fechaMovStr]) {
         if (mov.tipo === "entrada") {
-          ultimos7Dias[fechaMovStr].ingresos += monto;
+          rangoFechas[fechaMovStr].ingresos += monto;
         } else if (mov.tipo === "salida") {
-          ultimos7Dias[fechaMovStr].egresos += monto;
+          rangoFechas[fechaMovStr].egresos += monto;
         }
-        ultimos7Dias[fechaMovStr].neto = ultimos7Dias[fechaMovStr].ingresos - ultimos7Dias[fechaMovStr].egresos;
+        rangoFechas[fechaMovStr].neto = rangoFechas[fechaMovStr].ingresos - rangoFechas[fechaMovStr].egresos;
       }
     });
 
-    setChartData(Object.values(ultimos7Dias));
+    setChartData(Object.values(rangoFechas));
   };
 
   // Exportar a Excel
@@ -893,7 +906,7 @@ export const ControlAdministrador = () => {
             {/* ========== GRÁFICOS ========== */}
             <div className="charts-auditoria-section">
               <div className="chart-box-auditoria">
-                <h3>Flujo de Caja (Últimos 7 días)</h3>
+                <h3>Flujo de Caja (Filtrado por fechas)</h3>
                 {chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={chartData}>

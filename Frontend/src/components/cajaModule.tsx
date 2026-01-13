@@ -148,6 +148,13 @@ export const CajaModule = () => {
     setAcumuladoFiltrado(ingFilt - egrFilt);
   }, [movimientos, fechaInicio, fechaFin]);
 
+  // Regenerar gráficos cuando cambien las fechas de filtro
+  useEffect(() => {
+    if (movimientos.length > 0) {
+      generarDatosGrafico(movimientos);
+    }
+  }, [fechaInicio, fechaFin, movimientos]);
+
   const cargarMovimientos = async () => {
     try {
       const datos = await obtenerMovimientos();
@@ -191,40 +198,44 @@ export const CajaModule = () => {
   };
 
   const generarDatosGrafico = (datos: Movimiento[]) => {
-    // Obtener últimos 7 días
-    const hoy = new Date();
-    const ultimos7Dias: { [key: string]: ChartData } = {};
+    // Usar el rango de fechas seleccionado dinámicamente
+    const fechaInicioDate = new Date(fechaInicio);
+    const fechaFinDate = new Date(fechaFin);
+    const rangoFechas: { [key: string]: ChartData } = {};
 
-    for (let i = 6; i >= 0; i--) {
-      const fecha = new Date(hoy);
-      fecha.setDate(fecha.getDate() - i);
-      const fechaStr = formatearFechaLocal(fecha);
+    // Generar todas las fechas en el rango seleccionado
+    const fechaActual = new Date(fechaInicioDate);
+    while (fechaActual <= fechaFinDate) {
+      const fechaStr = formatearFechaLocal(fechaActual);
       
-      ultimos7Dias[fechaStr] = {
+      rangoFechas[fechaStr] = {
         fecha: fechaStr,
         ingresos: 0,
         egresos: 0,
         neto: 0
       };
+      
+      fechaActual.setDate(fechaActual.getDate() + 1);
     }
 
-    // Llenar con datos de movimientos
+    // Llenar con datos de movimientos filtrados por rango de fechas
     datos.forEach((mov) => {
       const fechaMov = new Date(mov.fecha_movimiento);
       const fechaMovStr = formatearFechaLocal(fechaMov);
       const monto = Number(mov.monto) || 0;
 
-      if (ultimos7Dias[fechaMovStr]) {
+      // Solo incluir movimientos dentro del rango de fechas
+      if (rangoFechas[fechaMovStr]) {
         if (mov.tipo === "entrada") {
-          ultimos7Dias[fechaMovStr].ingresos += monto;
+          rangoFechas[fechaMovStr].ingresos += monto;
         } else if (mov.tipo === "salida") {
-          ultimos7Dias[fechaMovStr].egresos += monto;
+          rangoFechas[fechaMovStr].egresos += monto;
         }
-        ultimos7Dias[fechaMovStr].neto = ultimos7Dias[fechaMovStr].ingresos - ultimos7Dias[fechaMovStr].egresos;
+        rangoFechas[fechaMovStr].neto = rangoFechas[fechaMovStr].ingresos - rangoFechas[fechaMovStr].egresos;
       }
     });
 
-    setChartData(Object.values(ultimos7Dias));
+    setChartData(Object.values(rangoFechas));
   };
 
   // Exportar a Excel
@@ -475,7 +486,7 @@ export const CajaModule = () => {
 
       <div className="charts-section">
         <div className="chart-box">
-          <h3>Flujo de Caja (Últimos 7 días)</h3>
+          <h3>Flujo de Caja (Filtrado por fechas)</h3>
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
@@ -599,13 +610,14 @@ export const CajaModule = () => {
               </button>
             </div>
 
-            {/* INDICADOR DE SALDO DISPONIBLE */}
-            <div className="saldo-info">
-              <span><FaMoneyBillWave style={{ marginRight: "8px" }} />Saldo disponible:</span>
-              <strong>{formatCOP(totalAcumulado)}</strong>
-            </div>
+            <div className="modal-caja-body">
+              {/* INDICADOR DE SALDO DISPONIBLE */}
+              <div className="saldo-info">
+                <span><FaMoneyBillWave style={{ marginRight: "8px" }} />Saldo disponible:</span>
+                <strong>{formatCOP(totalAcumulado)}</strong>
+              </div>
 
-            <div className="form-movimiento">
+              <div className="form-movimiento">
               <div className="field">
                 <label>Tipo de Movimiento *</label>
                 <select 
@@ -642,7 +654,7 @@ export const CajaModule = () => {
                     descripcion: e.target.value
                   })}
                   placeholder="Ej: Pago a proveedores, devolución de cliente, cambio, etc."
-                  rows={4}
+                  rows={3}
                   className="textarea-descripcion"
                 />
               </div>
@@ -688,6 +700,7 @@ export const CajaModule = () => {
                   {cargando ? "Registrando..." : "Registrar Movimiento"}
                 </button>
               </div>
+            </div>
             </div>
           </div>
         </div>
