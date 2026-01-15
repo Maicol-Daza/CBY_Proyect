@@ -1,0 +1,197 @@
+/* ========================================
+   SISTEMA DE ALERTAS PERSONALIZADAS GLOBALES
+   Clínica Bluyin - Estilo Notificaciones Modernas
+   ======================================== */
+
+/* Container principal de alertas */
+.alert-container-global {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+  width: calc(100% - 40px);
+  pointer-events: none;
+}
+
+/* Estilo base de cada alerta */
+.alert-custom {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  animation: alertSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+  border-left: 5px solid;
+  position: relative;
+}
+
+.alert-custom:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Animación de entrada */
+@keyframes alertSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Icono de la alerta */
+.alert-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+/* Contenido de la alerta */
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-message {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-line;
+  color: white;
+}
+
+/* Botón de cerrar */
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: white;
+}
+
+.alert-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ========== TIPOS DE ALERTAS ========== */
+
+/* Éxito - Verde */
+.alert-success {
+  background: #1e7e34;
+  border-left-color: #155724;
+}
+
+.alert-success .alert-icon {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Error - Rojo */
+.alert-error {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  border-left-color: #721c24;
+}
+
+.alert-error .alert-icon {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Advertencia - Amarillo/Naranja */
+.alert-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+  border-left-color: #856404;
+}
+
+.alert-warning .alert-message,
+.alert-warning .alert-close,
+.alert-warning .alert-icon {
+  color: #1a1a1a;
+}
+
+.alert-warning .alert-icon {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Info - Azul */
+.alert-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  border-left-color: #0c5460;
+}
+
+.alert-info .alert-icon {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 480px) {
+  .alert-container-global {
+    top: 70px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: none;
+  }
+
+  .alert-custom {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .alert-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+  }
+
+  .alert-message {
+    font-size: 0.85rem;
+  }
+}
+
+/* Animación de salida */
+.alert-custom.closing {
+  animation: alertSlideOut 0.3s ease forwards;
+}
+
+@keyframes alertSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}

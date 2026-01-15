@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAlert } from "../context/AlertContext";
 import { Layout } from "../components/layout/Layout";
 import { FaUsers, FaShoppingCart, FaReceipt, FaCog, FaCashRegister, FaCheckCircle, FaBox, FaPlus, FaTrash, FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { FaArrowTrendUp, FaArrowTrendDown, FaFileExcel, FaFilePdf } from "react-icons/fa6";
@@ -33,6 +34,7 @@ import html2canvas from "html2canvas";
 import "./ControlAdministrador.css";
 
 export const ControlAdministrador = () => {
+  const { success, error: showError, warning, info } = useAlert();
   const [pestanaActiva, setPestanaActiva] = useState("dashboard");
   
   // Estados para estadísticas
@@ -317,7 +319,7 @@ export const ControlAdministrador = () => {
   // Exportar a Excel
   const exportarExcel = () => {
     if (movimientosFiltrados.length === 0) {
-      alert("No hay datos para exportar");
+      warning("No hay datos para exportar");
       return;
     }
 
@@ -343,7 +345,7 @@ export const ControlAdministrador = () => {
   // Exportar a PDF
   const exportarPDF = async () => {
     if (movimientosFiltrados.length === 0) {
-      alert("No hay datos para exportar");
+      warning("No hay datos para exportar");
       return;
     }
 
@@ -377,7 +379,7 @@ export const ControlAdministrador = () => {
       pdf.save(`Auditoria_Caja_${fechaInicio}_a_${fechaFin}.pdf`);
     } catch (error) {
       console.error("Error al exportar PDF:", error);
-      alert("Error al exportar PDF");
+      showError("Error al exportar PDF");
     }
   };
 
@@ -386,7 +388,7 @@ export const ControlAdministrador = () => {
     const monto = parseFloat(nuevoMontoBase.replace(/[^\d]/g, ''));
     
     if (!monto || monto <= 0) {
-      alert("Por favor ingresa un monto válido para la base de caja");
+      warning("Por favor ingresa un monto válido para la base de caja");
       return;
     }
 
@@ -396,14 +398,14 @@ export const ControlAdministrador = () => {
       const idUsuario = usuarioGuardado?.id_usuario || 1;
       
       await crearBaseDiaria(monto, idUsuario);
-      alert("✅ Base de caja del día registrada correctamente.\n\nLos empleados ahora pueden realizar movimientos de caja.");
+      success("Base de caja del día registrada correctamente. Los empleados ahora pueden realizar movimientos de caja.");
       setBaseDiariaExiste(true);
       setMontoBaseDiaria(monto);
       setNuevoMontoBase("");
       cargarTodosLosDatos(true); // Actualización silenciosa
     } catch (error) {
       console.error("Error:", error);
-      alert(error.message || "Error al registrar la base de caja");
+      showError(error.message || "Error al registrar la base de caja");
     } finally {
       setCargandoBase(false);
     }
@@ -426,11 +428,11 @@ export const ControlAdministrador = () => {
   // Crear nuevo cajón con códigos
   const handleCrearCajon = async () => {
     if (!nombreNuevoCajon.trim()) {
-      alert("Por favor ingresa un nombre para el cajón");
+      warning("Por favor ingresa un nombre para el cajón");
       return;
     }
     if (cantidadCodigosNuevos < 1 || cantidadCodigosNuevos > 100) {
-      alert("La cantidad de códigos debe estar entre 1 y 100");
+      warning("La cantidad de códigos debe estar entre 1 y 100");
       return;
     }
 
@@ -461,14 +463,14 @@ export const ControlAdministrador = () => {
         }
       }
 
-      alert(`✅ Cajón "${nombreNuevoCajon}" creado con ${cantidadCodigosNuevos} códigos`);
+      success(`Cajón "${nombreNuevoCajon}" creado con ${cantidadCodigosNuevos} códigos`);
       setNombreNuevoCajon("");
       setCantidadCodigosNuevos(26);
       setMostrarModalCajon(false);
       cargarTodosLosDatos(true); // Actualización silenciosa
     } catch (error) {
       console.error("Error al crear cajón:", error);
-      alert("Error al crear el cajón");
+      showError("Error al crear el cajón");
     } finally {
       setCargandoCajones(false);
     }
@@ -480,7 +482,7 @@ export const ControlAdministrador = () => {
     const codigosDisponibles = codigosCajon.filter(c => c.estado === 'disponible' || !c.estado);
     
     if (codigosDisponibles.length < cantidadEliminar) {
-      alert(`Solo hay ${codigosDisponibles.length} códigos disponibles para eliminar. Los códigos ocupados no se pueden eliminar.`);
+      warning(`Solo hay ${codigosDisponibles.length} códigos disponibles para eliminar. Los códigos ocupados no se pueden eliminar.`);
       return;
     }
 
@@ -495,11 +497,11 @@ export const ControlAdministrador = () => {
       for (const codigo of codigosAEliminar) {
         await eliminarCodigo(codigo.id_codigo);
       }
-      alert(`✅ Se eliminaron ${cantidadEliminar} código(s)`);
+      success(`Se eliminaron ${cantidadEliminar} código(s)`);
       cargarTodosLosDatos(true); // Actualización silenciosa
     } catch (error) {
       console.error("Error al eliminar códigos:", error);
-      alert("Error al eliminar códigos");
+      showError("Error al eliminar códigos");
     } finally {
       setCargandoCajones(false);
     }
@@ -508,7 +510,7 @@ export const ControlAdministrador = () => {
   // Agregar códigos a un cajón existente
   const handleAgregarCodigosCajon = async (idCajon, cantidadAgregar) => {
     if (cantidadAgregar < 1) {
-      alert("Ingresa una cantidad válida");
+      warning("Ingresa una cantidad válida");
       return;
     }
 
@@ -530,11 +532,11 @@ export const ControlAdministrador = () => {
         await crearCodigo(nuevoNumero.toString(), idCajon);
       }
 
-      alert(`✅ Se agregaron ${cantidadAgregar} código(s) al cajón`);
+      success(`Se agregaron ${cantidadAgregar} código(s) al cajón`);
       cargarTodosLosDatos(true); // Actualización silenciosa
     } catch (error) {
       console.error("Error al agregar códigos:", error);
-      alert("Error al agregar códigos");
+      showError("Error al agregar códigos");
     } finally {
       setCargandoCajones(false);
     }
@@ -544,7 +546,7 @@ export const ControlAdministrador = () => {
   const handleEliminarCajon = async (idCajon) => {
     const stats = obtenerEstadisticasCajon(idCajon);
     if (stats.ocupados > 0) {
-      alert(`No se puede eliminar el cajón porque tiene ${stats.ocupados} código(s) ocupado(s) con pedidos activos.`);
+      warning(`No se puede eliminar el cajón porque tiene ${stats.ocupados} código(s) ocupado(s) con pedidos activos.`);
       return;
     }
 
@@ -561,11 +563,11 @@ export const ControlAdministrador = () => {
       }
       // Luego eliminar el cajón
       await eliminarCajon(idCajon);
-      alert("✅ Cajón eliminado correctamente");
+      success("Cajón eliminado correctamente");
       cargarTodosLosDatos(true); // Actualización silenciosa
     } catch (error) {
       console.error("Error al eliminar cajón:", error);
-      alert("Error al eliminar el cajón");
+      showError("Error al eliminar el cajón");
     } finally {
       setCargandoCajones(false);
     }
@@ -630,22 +632,16 @@ export const ControlAdministrador = () => {
             Dashboard
           </button>
           <button
-            className={`pestana-admin ${pestanaActiva === "usuarios" ? "activa" : ""}`}
-            onClick={() => setPestanaActiva("usuarios")}
+            className={`pestana-admin ${pestanaActiva === "configuracion" ? "activa" : ""}`}
+            onClick={() => setPestanaActiva("configuracion")}
           >
-            Usuarios
+            Configuración
           </button>
           <button
             className={`pestana-admin ${pestanaActiva === "auditoria" ? "activa" : ""}`}
             onClick={() => setPestanaActiva("auditoria")}
           >
             Auditoría
-          </button>
-          <button
-            className={`pestana-admin ${pestanaActiva === "configuracion" ? "activa" : ""}`}
-            onClick={() => setPestanaActiva("configuracion")}
-          >
-            Configuración
           </button>
         </div>
 

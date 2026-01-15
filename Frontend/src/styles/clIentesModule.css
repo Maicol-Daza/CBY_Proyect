@@ -1,3 +1,21 @@
+.cm-btn-cancelar {
+    display: inline-block;
+    padding: 9px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #6b7280;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 120px;
+}
+.cm-btn-cancelar:hover {
+    background: #4b5563;
+    border-color: #4b5563;
+}
 .cm-clientes-container {
     padding: 20px;
     background-color: #f5f5f5;
@@ -225,8 +243,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 6px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, white 100%);
     border-bottom: 1px solid #dee2e6;
     border-radius: 8px 8px 0 0;
 }
@@ -239,23 +257,23 @@
 }
 
 .cm-compact-modal .cm-btn-cerrar {
-    background: rgba(0, 0, 0, 0.1);
+    background: none;
     border: none;
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    color: #6c757d;
+    font-size: 32px;
+    color: #23272b;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: color 0.15s;
 }
 
 .cm-compact-modal .cm-btn-cerrar:hover {
-    background: rgba(0, 0, 0, 0.15);
-    color: #495057;
+    background: none;
+    color: #dc3545;
 }
 
 .cm-compact-modal .cm-modal-body-clientes {
@@ -324,43 +342,27 @@
     border-radius: 0 0 8px 8px;
 }
 
+/* Botón azul igual a pedidos-btn-primary */
 .cm-compact-modal .cm-btn-actualizar {
-    background: linear-gradient(135deg, #3b82f6);
-    color: white;
+    display: inline-block;
+    padding: 9px 16px;
     border: none;
-    padding: 8px 16px;
     border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
     min-width: 120px;
     flex: 1;
 }
 
+/* Sin efecto de elevación al pasar el cursor */
 .cm-compact-modal .cm-btn-actualizar:hover {
-    transform: translateY(-1px);
+    background: #2563eb;
 }
 
-.cm-compact-modal .cm-btn-cancelar {
-    background: white;
-    color: #6c757d;
-    border: 1.5px solid #e9ecef;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    min-width: 80px;
-}
-
-.cm-compact-modal .cm-btn-cancelar:hover {
-    background: #f8f9fa;
-    border-color: #dc3545;
-    color: #dc3545;
-    transform: translateY(-1px);
-}
 
 .cm-sin-resultados {
     text-align: center;
@@ -437,36 +439,37 @@
 }
 
 .cm-btn-confirm {
-    background: linear-gradient(90deg, #0066ff, #0047c3);
-    color: #fff;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 700;
-    box-shadow: 0 8px 20px rgba(0, 102, 255, 0.18);
-    transition: all 0.2s;
+     background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .cm-btn-confirm:hover {
-    transform: translateY(-1px);
+    background-color: #0056b3;
 }
 
 .cm-btn-cancel {
-    background: #fff;
-    border: 1px solid #e6e9ef;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #334;
-    font-weight: 600;
-    box-shadow: none;
-    transition: all 0.2s;
+     display: inline-block;
+  padding: 9px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #6b7280;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  min-width: 120px;
 }
 
 .cm-btn-cancel:hover {
-    background: #f6f8fb;
-    transform: translateY(-1px);
+      background: #4b5563;
+  border-color: #4b5563;
 }
 
 .cm-confirm-cliente-info {

@@ -43,8 +43,11 @@ const validarCliente = (req, res, next) => {
     return res.status(400).json({ message: 'Cliente inválido o ausente' });
   }
 
+  // Aceptar tanto 'cedula' como 'nuip' para compatibilidad
+  const cedula = cliente.cedula || cliente.nuip;
+
   if (!cliente.nombre || !isValidName(cliente.nombre)) errores.nombre = ERR.nombre;
-  if (!cliente.cedula || !isValidCedula(cliente.cedula)) errores.cedula = ERR.cedula;
+  if (!cedula || !isValidCedula(cedula)) errores.cedula = ERR.cedula;
   if (!cliente.telefono || !isValidTelefono(cliente.telefono, 10)) errores.telefono = ERR.telefono;
   if (cliente.email && !isValidEmail(cliente.email)) errores.email = ERR.email;
   if (cliente.direccion && !isValidDireccion(cliente.direccion)) errores.direccion = ERR.direccion;

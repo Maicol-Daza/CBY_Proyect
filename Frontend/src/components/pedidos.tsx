@@ -1,4 +1,5 @@
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import { useAlert } from "../context/AlertContext";
 import "../styles/pedidos.css";
 import "../styles/inputMoneda.css";
 import { obtenerCajones, type Cajon } from "../services/cajonesService";
@@ -10,7 +11,7 @@ import ModalPrenda from "../components/ModalPrenda";
 import ModalFacturasUnificado from "../components/ModalFacturasUnificado";
 import validators from '../utils/validators';
 import { type Prenda } from "../services/prendasService";
-import { FaEdit, FaTrash, FaBox, FaSearch, FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEnvelope, FaCalendarAlt, FaClock, FaCheckCircle, FaDollarSign, FaExclamationTriangle, FaShoppingCart, FaFileInvoice, FaPercent } from "react-icons/fa";
+import { FaEdit,FaTshirt, FaTrash, FaBox, FaSearch, FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEnvelope, FaCalendarAlt, FaClock, FaCheckCircle, FaDollarSign, FaExclamationTriangle, FaShoppingCart, FaFileInvoice, FaPercent } from "react-icons/fa";
 import { obtenerClientes, type Cliente as ClienteService } from "../services/clientesService";
 import { formatCOP } from '../utils/formatCurrency';
 import { InputMoneda } from "./InputMoneda";
@@ -73,6 +74,7 @@ const CONFIG_CAJONES = [
 const PEDIDO_STORAGE_KEY = "pedido_en_proceso";
 
 export default function Pedidos() {
+  const { success, error: showError, warning, info } = useAlert();
   //ESTADO DE PEDIDO
   const [pedido, setPedido] = useState<Pedido>(() => {
     const guardado = localStorage.getItem(PEDIDO_STORAGE_KEY);
@@ -312,7 +314,7 @@ export default function Pedidos() {
       setCombinaciones(combinacionesData);
     } catch (error) {
       console.error("Error al cargar datos:", error);
-      alert("Error al cargar los datos");
+      showError("Error al cargar los datos");
     } finally {
       setCargandoCajones(false);
       setCargandoCodigos(false);
@@ -334,7 +336,7 @@ export default function Pedidos() {
       }
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
-      alert("Error al cargar los pedidos");
+      showError("Error al cargar los pedidos");
     }
   };
 
@@ -848,7 +850,7 @@ export default function Pedidos() {
   // Aplicar modificación de precio
   const handleAplicarModificacionPrecio = () => {
     if (precioModificado < 0) {
-      alert("El precio no puede ser negativo");
+      warning("El precio no puede ser negativo");
       return;
     }
 
@@ -883,7 +885,7 @@ export default function Pedidos() {
   const handleGuardar = async (e: FormEvent) => {
     e.preventDefault();
     if (!validarCampos()) {
-      alert("⚠ Completa todos los campos antes de guardar.");
+      warning("Completa todos los campos antes de guardar.");
       return;
     }
 
@@ -925,7 +927,7 @@ export default function Pedidos() {
     const data = await respuesta.json();
 
     if (respuesta.ok) {
-      alert("✓ Pedido guardado exitosamente.");
+      success("Pedido guardado exitosamente.");
       console.log("Respuesta del servidor:", data);
 
       // Emitir eventos de actualización
@@ -969,11 +971,11 @@ export default function Pedidos() {
       // Recargar datos para actualizar estados de cajones y códigos
       cargarDatos();
     } else {
-      alert(`Error: ${data.message || "No se pudo guardar el pedido."}`);
+      showError(`Error: ${data.message || "No se pudo guardar el pedido."}`);
     }
   } catch (error) {
     console.error("Error al guardar pedido:", error);
-    alert("Error al conectar con el servidor.");
+    showError("Error al conectar con el servidor.");
   } finally {
     setCargando(false);
   }
@@ -1009,7 +1011,7 @@ export default function Pedidos() {
       setImagenPreview(null);
       setClienteCargado(false); //Resetear estado de cliente cargado
       localStorage.removeItem(PEDIDO_STORAGE_KEY);
-      alert("✓ Formulario limpiado correctamente");
+      success("Formulario limpiado correctamente");
     }
   };
 
@@ -1232,7 +1234,7 @@ export default function Pedidos() {
 
           {/* Sección de prendas */}
           <div className="prendas-section card">
-            <h2><FaShoppingCart style={{ marginRight: "8px" }} /> Gestión de Prendas</h2>
+            <h2><FaTshirt style={{ marginRight: "8px" }} /> Gestión de Prendas</h2>
             {errores.prendas && <p className="pedido-error">{errores.prendas}</p>}
             
             {/* Lista de prendas temporales */}
@@ -1499,7 +1501,21 @@ export default function Pedidos() {
       {/* Modal de Entrega de Pedidos */}
       {mostrarModalEntrega && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "800px" }}>
+          <div className="modal-content" style={{ maxWidth: "800px", position: "relative" }}>
+            <button
+              className="modal-close-consistente"
+              onClick={() => {
+                setMostrarModalEntrega(false);
+                setPedidoSeleccionado(null);
+                setAbonoEntrega(0);
+                setBusquedaPedido("");
+              }}
+              aria-label="Cerrar"
+              type="button"
+              style={{ fontFamily: 'inherit', fontWeight: 700, position: 'absolute', top: 18, right: 24, zIndex: 10 }}
+            >
+              &times;
+            </button>
             <h2><FaBox style={{ marginRight: "8px" }} /> Entrega de Pedidos</h2>
             
             {/* Barra de búsqueda */}

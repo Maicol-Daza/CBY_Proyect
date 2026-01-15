@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAlert } from '../context/AlertContext';
 import '../styles/configuracionAjustes.css';
 import '../styles/inputMoneda.css';
 import { 
@@ -23,6 +24,7 @@ import { useDataRefresh } from '../hooks/useDataRefresh';
 import { DATA_EVENTS } from '../utils/eventEmitter';
 
 export default function ConfiguracionAjustes() {
+  const { success, error: showError, warning } = useAlert();
   const [ajustes, setAjustes] = useState<Ajuste[]>([]);
   const [acciones, setAcciones] = useState<Accion[]>([]);
   const [combinaciones, setCombinaciones] = useState<AjusteAccion[]>([]);
@@ -116,7 +118,7 @@ export default function ConfiguracionAjustes() {
 
   const handleAgregarCombinacion = async () => {
     if (selectedAjustes.length === 0 || selectedAcciones.length === 0 || precio <= 0) {
-      alert('Selecciona al menos un ajuste y una acción, e ingresa un precio válido');
+      warning('Selecciona al menos un ajuste y una acción, e ingresa un precio válido');
       return;
     }
 
@@ -139,12 +141,12 @@ export default function ConfiguracionAjustes() {
         descripcion
       );
 
-      alert('Combinación agregada correctamente');
+      success('Combinación agregada correctamente');
       resetModal();
       await cargarDatos();
     } catch (error) {
       console.error('Error al agregar combinación:', error);
-      alert('Error al agregar la combinación');
+      showError('Error al agregar la combinación');
     } finally {
       setLoading(false);
     }
@@ -152,11 +154,11 @@ export default function ConfiguracionAjustes() {
 
   const handleAgregarAjuste = async () => {
     if (nuevoAjuste.trim() === '') {
-      alert('Ingresa un nombre para el ajuste');
+      warning('Ingresa un nombre para el ajuste');
       return;
     }
     if (precioAjuste <= 0) {
-      alert('Ingresa un precio válido para el ajuste');
+      warning('Ingresa un precio válido para el ajuste');
       return;
     }
 
@@ -164,10 +166,10 @@ export default function ConfiguracionAjustes() {
     try {
       if (editandoAjuste) {
         await actualizarAjuste(editandoAjuste, nuevoAjuste, precioAjuste);
-        alert('Ajuste actualizado correctamente');
+        success('Ajuste actualizado correctamente');
       } else {
         await crearAjuste(nuevoAjuste, precioAjuste);
-        alert('Ajuste creado correctamente');
+        success('Ajuste creado correctamente');
       }
       setNuevoAjuste('');
       setPrecioAjuste(0);
@@ -176,7 +178,7 @@ export default function ConfiguracionAjustes() {
       await cargarDatos();
     } catch (error) {
       console.error('Error al guardar ajuste:', error);
-      alert(`Error al ${editandoAjuste ? 'actualizar' : 'crear'} el ajuste`);
+      showError(`Error al ${editandoAjuste ? 'actualizar' : 'crear'} el ajuste`);
     } finally {
       setLoadingAjuste(false);
     }
@@ -184,11 +186,11 @@ export default function ConfiguracionAjustes() {
 
   const handleAgregarAccion = async () => {
     if (nuevaAccion.trim() === '') {
-      alert('Ingresa un nombre para la acción');
+      warning('Ingresa un nombre para la acción');
       return;
     }
     if (precioAccion <= 0) {
-      alert('Ingresa un precio válido para la acción');
+      warning('Ingresa un precio válido para la acción');
       return;
     }
 
@@ -197,11 +199,11 @@ export default function ConfiguracionAjustes() {
       if (editandoAccion) {
         // Modo edición
         await actualizarAccion(editandoAccion, nuevaAccion, precioAccion);
-        alert('Acción actualizada correctamente');
+        success('Acción actualizada correctamente');
       } else {
         // Modo creación
         await crearAccion(nuevaAccion, precioAccion);
-        alert('Acción creada correctamente');
+        success('Acción creada correctamente');
       }
       setNuevaAccion('');
       setPrecioAccion(0);
@@ -210,7 +212,7 @@ export default function ConfiguracionAjustes() {
       await cargarDatos();
     } catch (error) {
       console.error('Error al guardar acción:', error);
-      alert(`Error al ${editandoAccion ? 'actualizar' : 'crear'} la acción`);
+      showError(`Error al ${editandoAccion ? 'actualizar' : 'crear'} la acción`);
     } finally {
       setLoadingAccion(false);
     }
@@ -227,11 +229,11 @@ export default function ConfiguracionAjustes() {
     if (window.confirm('¿Estás seguro de que deseas eliminar este ajuste?')) {
       try {
         await eliminarAjuste(id);
-        alert('Ajuste eliminado correctamente');
+        success('Ajuste eliminado correctamente');
         await cargarDatos();
       } catch (error) {
         console.error('Error al eliminar ajuste:', error);
-        alert('Error al eliminar el ajuste');
+        showError('Error al eliminar el ajuste');
       }
     }
   };
@@ -247,11 +249,11 @@ export default function ConfiguracionAjustes() {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta acción?')) {
       try {
         await eliminarAccion(id);
-        alert('Acción eliminada correctamente');
+        success('Acción eliminada correctamente');
         await cargarDatos();
       } catch (error) {
         console.error('Error al eliminar la acción:', error);
-        alert('Error al eliminar la acción');
+        showError('Error al eliminar la acción');
       }
     }
   };
@@ -260,11 +262,11 @@ export default function ConfiguracionAjustes() {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta combinación?')) {
       try {
         await eliminarAjusteAccion(id);
-        alert('Combinación eliminada correctamente');
+        success('Combinación eliminada correctamente');
         await cargarDatos();
       } catch (error) {
         console.error('Error al eliminar:', error);
-        alert('Error al eliminar la combinación');
+        showError('Error al eliminar la combinación');
       }
     }
   };
@@ -413,9 +415,10 @@ export default function ConfiguracionAjustes() {
       {showModal && (
         <div className="cfg-modal-overlay">
           <div className="cfg-modal-content cfg-modal-lg">
-            <div className="cfg-modal-header">
-              <h2>Nueva Combinación de Ajuste</h2>
-              <button className="cfg-btn-close" onClick={resetModal}>×</button>
+            {/* HEADER CONSISTENTE CON DETALLE DE PEDIDO */}
+            <div className="modal-header-consistente">
+              <span className="modal-title-consistente">Nueva Combinación de Ajuste</span>
+              <button className="modal-close-consistente" onClick={resetModal} aria-label="Cerrar">×</button>
             </div>
 
             <div className="cfg-modal-body">

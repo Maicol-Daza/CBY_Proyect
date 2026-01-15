@@ -28,7 +28,7 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
         <header className="app-header">
             <div className="header-container">
                 <div className="brand">
-                    <Link to="/bienvenido" className="brand-link">
+                    <Link to="/pedidos" className="brand-link">
                         <FaTshirt className="brand-icon" />
                         <span className="brand-text">Clínica del Bluyin</span>
                     </Link>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAlert } from "../../context/AlertContext";
 import './ModalRolPermiso.css';
 
 export const ModalRolPermiso = ({
@@ -8,6 +9,7 @@ export const ModalRolPermiso = ({
     permisos = [],
     relacionSeleccionada,
 }) => {
+    const { warning } = useAlert();
     const [idRol, setIdRol] = useState("");
     const [permisosSeleccionados, setPermisosSeleccionados] = useState([]);
 
@@ -33,7 +35,7 @@ export const ModalRolPermiso = ({
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!idRol) {
-            alert("Seleccione un rol.");
+            warning("Seleccione un rol.");
             return;
         }
         onSave({ id_rol: Number(idRol), permisos: permisosSeleccionados });

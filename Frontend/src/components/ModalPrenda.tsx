@@ -1,5 +1,6 @@
 // src/components/ModalPrenda.tsx (MODIFICADO)
 import { useState, useEffect, useRef } from "react";
+import { useAlert } from "../context/AlertContext";
 import { type Ajuste, crearAjuste } from "../services/ajustesService";
 import { type Accion, crearAccion } from "../services/accionesService";
 import { type AjusteAccion, crearAjusteAccion } from "../services/ajustesAccionService";
@@ -54,6 +55,8 @@ export default function ModalPrenda({
   prendaEditando = null,
   onArreglosUpdated
 }: ModalPrendaProps) {
+  const { success: showSuccess, error: showError, warning: showWarning } = useAlert();
+  
   // Helper: convertir cualquier valor de precio a número seguro
   const parsePrecio = (v: any): number => {
     if (v === null || v === undefined) return 0;
@@ -264,11 +267,11 @@ export default function ModalPrenda({
     if (tipoCrear === 'combinacion') {
       // Para combinación necesitamos al menos un ajuste y una acción seleccionados
       if (ajustesSeleccionadosCrear.length === 0 || accionesSeleccionadasCrear.length === 0) {
-        alert('Selecciona al menos un ajuste y una acción para la combinación');
+        showWarning('Selecciona al menos un ajuste y una acción para la combinación');
         return;
       }
       if (precioCrear <= 0) {
-        alert('Ingresa un precio válido');
+        showWarning('Ingresa un precio válido');
         return;
       }
       
@@ -292,23 +295,23 @@ export default function ModalPrenda({
           precioCrear, 
           descripcionComb
         );
-        alert('Combinación creada correctamente');
+        showSuccess('Combinación creada correctamente');
         resetFormCrear();
         if (onArreglosUpdated) onArreglosUpdated();
       } catch (error) {
         console.error('Error al crear combinación:', error);
-        alert('Error al crear la combinación');
+        showError('Error al crear la combinación');
       } finally {
         setLoadingCrear(false);
       }
     } else {
       // Para ajuste o acción
       if (!nombreCrear.trim()) {
-        alert(`Ingresa un nombre para ${tipoCrear === 'ajuste' ? 'el ajuste' : 'la acción'}`);
+        showWarning(`Ingresa un nombre para ${tipoCrear === 'ajuste' ? 'el ajuste' : 'la acción'}`);
         return;
       }
       if (precioCrear <= 0) {
-        alert('Ingresa un precio válido');
+        showWarning('Ingresa un precio válido');
         return;
       }
 
@@ -316,16 +319,16 @@ export default function ModalPrenda({
       try {
         if (tipoCrear === 'ajuste') {
           await crearAjuste(nombreCrear.trim(), precioCrear);
-          alert('Ajuste creado correctamente');
+          showSuccess('Ajuste creado correctamente');
         } else {
           await crearAccion(nombreCrear.trim(), precioCrear);
-          alert('Acción creada correctamente');
+          showSuccess('Acción creada correctamente');
         }
         resetFormCrear();
         if (onArreglosUpdated) onArreglosUpdated();
       } catch (error) {
         console.error(`Error al crear ${tipoCrear}:`, error);
-        alert(`Error al crear ${tipoCrear === 'ajuste' ? 'el ajuste' : 'la acción'}`);
+        showError(`Error al crear ${tipoCrear === 'ajuste' ? 'el ajuste' : 'la acción'}`);
       } finally {
         setLoadingCrear(false);
       }
@@ -446,12 +449,12 @@ export default function ModalPrenda({
 
   const handleAgregar = () => {
     if (!tipoPrenda.trim()) {
-      alert("Por favor ingrese el tipo de prenda");
+      showWarning("Por favor ingrese el tipo de prenda");
       return;
     }
 
     if (cantidad < 1) {
-      alert("La cantidad debe ser al menos 1");
+      showWarning("La cantidad debe ser al menos 1");
       return;
     }
 
@@ -519,7 +522,16 @@ export default function ModalPrenda({
   return (
     <div className="modal-overlay prenda-modal-overlay">
       <div className="modal-content-prenda prenda-modal-content modal-content">
-         <h2>{prendaEditando ? "Editar Prenda" : "Nueva Prenda"}</h2>
+        <button
+          className="modal-close-consistente"
+          onClick={handleCancelar}
+          aria-label="Cerrar"
+          type="button"
+          style={{ fontFamily: 'inherit', fontWeight: 700, position: 'absolute', top: 18, right: 24, zIndex: 10 }}
+        >
+          &times;
+        </button>
+        <h2>{prendaEditando ? "Editar Prenda" : "Nueva Prenda"}</h2>
 
         {/* Información básica de la prenda */}
         <div className="prenda-info">

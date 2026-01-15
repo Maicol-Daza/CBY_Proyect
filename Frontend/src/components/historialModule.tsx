@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
+import { useAlert } from "../context/AlertContext";
 import "../styles/historialModule.css";
 import { FaEye, FaTimes, FaHistory, FaUndo, FaFileInvoice } from "react-icons/fa";
 import { FaFileExcel, FaFilePdf } from "react-icons/fa6";
@@ -16,6 +17,7 @@ import { useDataRefresh } from "../hooks/useDataRefresh";
 import { DATA_EVENTS, emitDataEvent } from "../utils/eventEmitter";
 
 export const HistorialModule = () => {
+    const { success, error: showError, warning, info } = useAlert();
     const [pedidos, setPedidos] = useState<any[]>([]);
     const [filtros, setFiltros] = useState({
         busqueda: "",
@@ -202,7 +204,7 @@ export const HistorialModule = () => {
             }
         } catch (error) {
             console.error("Error cargando detalles:", error);
-            alert("Error al cargar los detalles del pedido");
+            showError("Error al cargar los detalles del pedido");
         } finally {
             setCargandoDetalles(false);
         }
@@ -264,12 +266,12 @@ export const HistorialModule = () => {
 
         // Validaciones
         if (montoAbono <= 0) {
-            alert("❌ El monto del abono debe ser mayor a 0");
+            warning("El monto del abono debe ser mayor a 0");
             return;
         }
 
         if (montoAbono > saldoPendiente) {
-            alert(`❌ El abono ($${montoAbono.toLocaleString()}) no puede ser mayor al saldo pendiente ($${saldoPendiente.toLocaleString()})`);
+            warning(`El abono ($${montoAbono.toLocaleString()}) no puede ser mayor al saldo pendiente ($${saldoPendiente.toLocaleString()})`);
             return;
         }
 
@@ -291,7 +293,7 @@ export const HistorialModule = () => {
             });
 
             if (response.ok) {
-                alert("✅ Abono registrado correctamente");
+                success("Abono registrado correctamente");
                 
                 // Emitir eventos de actualización
                 emitDataEvent(DATA_EVENTS.ABONO_CREATED);
@@ -322,11 +324,11 @@ export const HistorialModule = () => {
                 setNuevoAbono({ monto: 0, observaciones: "" });
             } else {
                 const errorData = await response.json();
-                alert(`❌ Error: ${errorData.message || errorData.error || "No se pudo registrar el abono"}`);
+                showError(`Error: ${errorData.message || errorData.error || "No se pudo registrar el abono"}`);
             }
         } catch (error) {
             console.error("Error al guardar abono:", error);
-            alert("❌ Error al conectar con el servidor");
+            showError("Error al conectar con el servidor");
         } finally {
             setGuardandoAbono(false);
         }
@@ -434,7 +436,7 @@ export const HistorialModule = () => {
             doc.save(`Historial_Pedidos_${new Date().toISOString().split('T')[0]}.pdf`);
         } catch (err) {
             console.error("Error al exportar PDF:", err);
-            alert("Error al exportar a PDF");
+            showError("Error al exportar a PDF");
         }
     };
 
@@ -477,7 +479,7 @@ export const HistorialModule = () => {
             XLSX.writeFile(wb, `Historial_Pedidos_${new Date().toISOString().split('T')[0]}.xlsx`);
         } catch (err) {
             console.error("Error al exportar Excel:", err);
-            alert("Error al exportar a Excel");
+            showError("Error al exportar a Excel");
         }
     };
 
@@ -580,7 +582,7 @@ export const HistorialModule = () => {
     const handleAbrirDevolucion = (pedido: any) => {
       // VALIDACIÓN: Solo permitir devolución si está entregado
       if (pedido.estado !== "entregado") {
-        alert("❌ Solo se pueden devolver pedidos en estado 'Entregado'.\nEstado actual: " + 
+        warning("Solo se pueden devolver pedidos en estado 'Entregado'. Estado actual: " + 
           (pedido.estado === "en_proceso" ? "En proceso" : pedido.estado));
         return;
       }
@@ -643,7 +645,7 @@ export const HistorialModule = () => {
         setModalFacturasOpen(true);
       } catch (error) {
         console.error("Error al abrir facturas:", error);
-        alert("❌ Error al cargar los datos del pedido para las facturas");
+        showError("Error al cargar los datos del pedido para las facturas");
       }
     };
 
@@ -656,12 +658,12 @@ export const HistorialModule = () => {
     const handleGuardarDevolucion = async () => {
       //VALIDACIÓN: Verificar si la garantía está vencida
       if (!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)) {
-        alert("No se puede registrar la devolución: La garantía ha vencido");
+        warning("No se puede registrar la devolución: La garantía ha vencido");
         return;
       }
 
       if (!pedidoDevolucion || !devolucionData.motivo) {
-        alert("Por favor selecciona un motivo de devolución");
+        warning("Por favor selecciona un motivo de devolución");
         return;
       }
 
@@ -688,7 +690,7 @@ export const HistorialModule = () => {
           throw new Error(data.error || "Error al registrar devolución");
         }
 
-        alert("✓ Devolución registrada correctamente");
+        success("Devolución registrada correctamente");
         
         // Emitir eventos de actualización
         emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
@@ -700,7 +702,7 @@ export const HistorialModule = () => {
         handleCerrarDevolucion();
       } catch (error) {
         console.error("Error:", error);
-        alert(`❌ ${error instanceof Error ? error.message : "Error al registrar"}`);
+        showError(`${error instanceof Error ? error.message : "Error al registrar"}`);
       } finally {
         setCargandoDevolucion(false);
       }
@@ -820,9 +822,21 @@ export const HistorialModule = () => {
                                             </td>
                                         {/* NUEVA COLUMNA DE GARANTÍA */}
                                         <td>
-                                            <span className="garantia-badge">
-                                                {pedido.garantia ? `${pedido.garantia} días` : "Sin garantía"}
-                                            </span>
+                                            {pedido.garantia && pedido.fecha_entrega ? (
+                                                <span className={
+                                                    verificarGarantiaVigente(pedido.fecha_entrega, pedido.garantia)
+                                                        ? "garantia-badge garantia-vigente"
+                                                        : "garantia-badge garantia-vencida"
+                                                }>
+                                                    {verificarGarantiaVigente(pedido.fecha_entrega, pedido.garantia)
+                                                        ? `${calcularDiasRestantes(pedido.fecha_entrega, pedido.garantia)} días`
+                                                        : "Vencida"}
+                                                </span>
+                                            ) : (
+                                                <span className="garantia-badge garantia-sin">
+                                                    Sin garantía
+                                                </span>
+                                            )}
                                         </td>
                                         <td>{formatCOP(pedido.total_pedido ?? pedido.totalPedido ?? 0)}</td>
                                         <td className={parseFloat(pedido.saldo || 0) > 0 ? "monto pendiente" : "monto pagado"}>
@@ -835,7 +849,7 @@ export const HistorialModule = () => {
                                                 type="button"
                                                 onClick={() => handleVerDetalles(pedido.id_pedido)}
                                             >
-                                                <FaEye /> Ver detalles
+                                                <FaEye /> Detalles
                                             </button>
                                             <button
                                                 className="btn-accion-facturas"
@@ -1442,7 +1456,7 @@ export const HistorialModule = () => {
 
       <div className="modal-footer">
         <button
-          className="btn-cancelar"
+          className="btn-cancelar-"
           onClick={handleCerrarDevolucion}
           type="button"
         >

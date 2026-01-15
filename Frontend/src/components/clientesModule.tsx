@@ -5,6 +5,7 @@ import { FaClipboardList, FaEdit, FaTrash, } from 'react-icons/fa';
 import { CgAdd } from "react-icons/cg";
 import { useDataRefresh } from "../hooks/useDataRefresh";
 import { DATA_EVENTS } from "../utils/eventEmitter";
+import { isValidName, isValidCedula, isValidTelefono, isValidEmail, isValidDireccion, ERR } from "../utils/validators";
 
 export const ClientesModule = () => {
     const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -192,14 +193,13 @@ export const ClientesModule = () => {
         if (!clienteEditando) return;
 
         // Validar con lista blanca antes de enviar
-        const validators = require('../utils/validators');
         const errs: { [k: string]: string } = {};
 
-        if (!validators.isValidName(formData.nombre)) errs.nombre = validators.ERR.nombre;
-        if (!validators.isValidCedula(formData.nuip)) errs.nuip = validators.ERR.cedula;
-        if (!validators.isValidTelefono(formData.telefono)) errs.telefono = validators.ERR.telefono;
-        if (formData.email && !validators.isValidEmail(formData.email)) errs.email = validators.ERR.email;
-        if (formData.direccion && !validators.isValidDireccion(formData.direccion)) errs.direccion = validators.ERR.direccion;
+        if (!isValidName(formData.nombre)) errs.nombre = ERR.nombre;
+        if (!isValidCedula(formData.nuip)) errs.nuip = ERR.cedula;
+        if (!isValidTelefono(formData.telefono)) errs.telefono = ERR.telefono;
+        if (formData.email && !isValidEmail(formData.email)) errs.email = ERR.email;
+        if (formData.direccion && !isValidDireccion(formData.direccion)) errs.direccion = ERR.direccion;
 
         setFormErrors(errs);
         if (Object.keys(errs).length > 0) {
@@ -308,7 +308,7 @@ export const ClientesModule = () => {
                     <div className="cm-modal-content-clientes cm-compact-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="cm-modal-header">
                             <h2>Editar Cliente</h2>
-                            <button className="cm-btn-cerrar" onClick={handleCancelar}>✕</button>
+                            <button className="cm-btn-cerrar" onClick={handleCancelar} style={{fontFamily: 'inherit', fontWeight: 700}}>&times;</button>
                         </div>
 
                         <div className="cm-modal-body-clientes">

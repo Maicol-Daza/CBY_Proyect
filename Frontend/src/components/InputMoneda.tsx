@@ -31,17 +31,37 @@ export const InputMoneda = ({
   }, [value]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    let raw = e.target.value;
-    
-    // Remover el símbolo $ si se intenta escribir
-    raw = raw.replace(/\$/g, '');
-    
-    setDisplayValue(raw);
-    
+    const input = e.target;
+    const raw = input.value;
     // Extraer solo números
     const cleaned = raw.replace(/[^\d]/g, '');
     const numero = cleaned ? parseInt(cleaned, 10) : 0;
+    // Formatear el número
+    const formatted = cleaned ? formatCOP(numero) : '';
+    // Calcular la nueva posición del cursor
+    let selectionStart = input.selectionStart || 0;
+    // Contar dígitos antes del cursor en el valor sin formato
+    let digitsBeforeCursor = raw.slice(0, selectionStart).replace(/[^\d]/g, '').length;
+    // Encontrar la nueva posición del cursor después de formatear
+    let newCursorPos = 0;
+    let digitCount = 0;
+    for (let i = 0; i < formatted.length; i++) {
+      if (/\d/.test(formatted[i])) {
+        digitCount++;
+      }
+      if (digitCount === digitsBeforeCursor) {
+        newCursorPos = i + 1;
+        break;
+      }
+    }
+    setDisplayValue(formatted);
     onChange(numero);
+    // Actualizar el cursor después del renderizado
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.selectionStart = inputRef.current.selectionEnd = newCursorPos;
+      }
+    }, 0);
   };
 
   const handleBlur = () => {
@@ -57,7 +77,6 @@ export const InputMoneda = ({
     // Al hacer foco, mostrar solo números sin formato
     if (value > 0) {
       setDisplayValue(value.toString());
-      // Posicionar cursor al final
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.selectionStart = inputRef.current.selectionEnd = inputRef.current.value.length;
@@ -66,15 +85,9 @@ export const InputMoneda = ({
     }
   };
 
+  // Ya no es necesario forzar el cursor por el símbolo $
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Prevenir que el cursor vaya antes del símbolo $
-    if (inputRef.current) {
-      // Si intenta ir al inicio, mantén el cursor después del $
-      if (e.key === 'Home') {
-        e.preventDefault();
-        inputRef.current.selectionStart = 0;
-      }
-    }
+    // Permitir comportamiento normal
   };
 
   return (

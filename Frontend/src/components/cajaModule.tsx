@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthContext } from "../context/AuthContext";
+import { useAlert } from "../context/AlertContext";
 import "../styles/moduloCaja.css";
 import "../styles/inputMoneda.css";
 import { crearMovimiento, obtenerMovimientos, verificarBaseDiaria, type Movimiento } from "../services/movimientos_caja";
@@ -42,6 +43,7 @@ const formatearFechaLocal = (fecha: Date): string => {
 
 export const CajaModule = () => {
   const { user } = useAuthContext();
+  const { success, error: showError, warning } = useAlert();
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
   const [ingresoHoy, setIngresoHoy] = useState(0);
   const [egresoHoy, setEgresoHoy] = useState(0);
@@ -241,7 +243,7 @@ export const CajaModule = () => {
   // Exportar a Excel
   const exportarExcel = () => {
     if (movimientosFiltrados.length === 0) {
-      alert("No hay datos para exportar");
+      warning("No hay datos para exportar");
       return;
     }
 
@@ -267,7 +269,7 @@ export const CajaModule = () => {
   // Exportar a PDF
   const exportarPDF = async () => {
     if (movimientosFiltrados.length === 0) {
-      alert("No hay datos para exportar");
+      warning("No hay datos para exportar");
       return;
     }
 
@@ -313,14 +315,14 @@ export const CajaModule = () => {
       pdf.save(`Caja_${fechaInicio}_a_${fechaFin}.pdf`);
     } catch (error) {
       console.error("Error al exportar PDF:", error);
-      alert("Error al exportar PDF");
+      showError("Error al exportar PDF");
     }
   };
 
   const handleCrearMovimiento = async () => {
     // Validar campos obligatorios
     if (!nuevoMovimiento.descripcion.trim() || nuevoMovimiento.monto <= 0) {
-      alert("Por favor completa todos los campos correctamente");
+      warning("Por favor completa todos los campos correctamente");
       return;
     }
 
@@ -329,11 +331,8 @@ export const CajaModule = () => {
       const saldoDisponible = totalAcumulado;
       
       if (nuevoMovimiento.monto > saldoDisponible) {
-        alert(
-          `Saldo insuficiente\n\n` +
-          `Saldo disponible: ${formatCOP(saldoDisponible)}\n` +
-          `Intenta retirar: ${formatCOP(nuevoMovimiento.monto)}\n` +
-          `Falta: ${formatCOP(nuevoMovimiento.monto - saldoDisponible)}`
+        warning(
+          `Saldo insuficiente. Saldo disponible: ${formatCOP(saldoDisponible)}, Intenta retirar: ${formatCOP(nuevoMovimiento.monto)}, Falta: ${formatCOP(nuevoMovimiento.monto - saldoDisponible)}`
         );
         return; // IMPORTANTE: Detener aquí
       }
@@ -352,7 +351,7 @@ export const CajaModule = () => {
         id_usuario: idUsuario
       });
       
-      alert("Movimiento registrado correctamente");
+      success("Movimiento registrado correctamente");
       setNuevoMovimiento({
         tipo: "entrada",
         descripcion: "",
@@ -362,7 +361,7 @@ export const CajaModule = () => {
       cargarMovimientos();
     } catch (error) {
       console.error("Error:", error);
-      alert("Error al registrar el movimiento");
+      showError("Error al registrar el movimiento");
     } finally {
       setCargando(false);
     }
@@ -376,7 +375,7 @@ export const CajaModule = () => {
           className="btn-nuevo"
           onClick={() => {
             if (!puedeHacerMovimientos) {
-              alert("⚠️ No se puede registrar movimientos.\n\nEl administrador aún no ha ingresado la base de caja del día.\n\nContacte al administrador para habilitar los movimientos.");
+              warning("No se puede registrar movimientos. El administrador aún no ha ingresado la base de caja del día. Contacte al administrador para habilitar los movimientos.");
               return;
             }
             setMostrarModalMovimiento(true);
@@ -605,8 +604,9 @@ export const CajaModule = () => {
               <button 
                 className="modal-close"
                 onClick={() => setMostrarModalMovimiento(false)}
+                style={{fontFamily: 'inherit', fontWeight: 700}}
               >
-                <VscChromeClose size={20} />
+                &times;
               </button>
             </div>
 
