@@ -11,7 +11,7 @@ import ModalPrenda from "../components/ModalPrenda";
 import ModalFacturasUnificado from "../components/ModalFacturasUnificado";
 import validators from '../utils/validators';
 import { type Prenda } from "../services/prendasService";
-import { FaEdit,FaTshirt, FaTrash, FaBox, FaSearch, FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEnvelope, FaCalendarAlt, FaClock, FaCheckCircle, FaDollarSign, FaExclamationTriangle, FaShoppingCart, FaFileInvoice, FaPercent } from "react-icons/fa";
+import { FaEdit,FaTshirt, FaTrash, FaBox, FaSearch, FaUser, FaIdCard, FaPhone, FaMapMarkerAlt, FaEnvelope, FaCalendarAlt, FaClock, FaCheckCircle, FaDollarSign, FaExclamationTriangle, FaShoppingCart, FaFileInvoice, FaPercent, FaTruck  } from "react-icons/fa";
 import { obtenerClientes, type Cliente as ClienteService } from "../services/clientesService";
 import { formatCOP } from '../utils/formatCurrency';
 import { InputMoneda } from "./InputMoneda";
@@ -1064,7 +1064,7 @@ export default function Pedidos() {
             backgroundColor: "#3b82f6"
           }}
         >
-          <FaBox style={{ marginRight: "8px" }} /> Entrega de Pedidos
+          <FaTruck style={{ marginRight: "10px" }} /> Entrega de Pedidos
         </button>
       </div>
 
@@ -1415,19 +1415,16 @@ export default function Pedidos() {
             <h2><FaBox style={{ marginRight: "8px" }} /> Seleccionar Cajón</h2>
             {errores.cajon && <p className="pedido-error" style={{textAlign: 'center'}}>{errores.cajon}</p>}
             
-            {cargandoCajones ? (
-              <div className="cargando">Cargando cajones...</div>
-            ) : (
-              <div className="cajones-grid">
+            <div className="cajones-grid-wrapper" style={{position:'relative'}}>
+              <div className="cajones-grid" style={cargandoCajones ? {opacity:0.5, pointerEvents:'none'} : {}}>
                 {cajones.map((cajon) => {
                   const infoCajon = getInfoCajon(cajon.id_cajon);
                   const estaOcupado = cajon.estado === "ocupado";
-                  
                   return (
                     <div 
                       key={cajon.id_cajon}
                       className={getClaseCajon(cajon)}
-                      onClick={() => !estaOcupado && handleSeleccionarCajon(cajon.id_cajon)}
+                      onClick={() => !estaOcupado && !cargandoCajones && handleSeleccionarCajon(cajon.id_cajon)}
                       style={{
                         opacity: estaOcupado ? 0.5 : 1,
                         cursor: estaOcupado ? "not-allowed" : "pointer",
@@ -1440,7 +1437,12 @@ export default function Pedidos() {
                   );
                 })}
               </div>
-            )}
+              {cargandoCajones && (
+                <div className="cajones-loading-overlay" style={{position:'absolute',top:0,left:0,right:0,bottom:0,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.7)',zIndex:2}}>
+                  <span style={{fontWeight:'bold',fontSize:'1.1rem'}}>Cargando cajones...</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Códigos del cajón seleccionado */}
@@ -1516,7 +1518,7 @@ export default function Pedidos() {
             >
               &times;
             </button>
-            <h2><FaBox style={{ marginRight: "8px" }} /> Entrega de Pedidos</h2>
+            <h2><FaTruck  style={{ marginRight: "8px" }} /> Entrega de Pedidos</h2>
             
             {/* Barra de búsqueda */}
             <div className="field">
@@ -1577,7 +1579,7 @@ export default function Pedidos() {
                           fontSize: "0.8rem",
                           fontWeight: "bold"
                         }}>
-                          <FaShoppingCart style={{ marginRight: "4px" }} /> Pedido
+                          <FaTruck  style={{ marginRight: "4px" }} /> Pedido
                         </div>
                       </div>
                     </div>

@@ -8,7 +8,7 @@ import { ModalRol } from "../components/ui/ModalRol";
 import { ModalPermiso } from "../components/ui/ModalPermiso";
 import { ModalRolPermiso } from "../components/ui/ModalRolPermiso";
 import { Layout } from "../components/layout/Layout";
-import { FaUsers, FaBriefcase, FaUser, FaCheckCircle, FaPen, FaTrash } from "react-icons/fa";
+import { FaUsers, FaBriefcase, FaUser, FaCheckCircle, FaEdit, FaTrash } from "react-icons/fa";
 import { FaShieldAlt, FaLock, FaKey } from "react-icons/fa";
 import "./Pagina.css";
 import "../components/ui/ModalUsuario.css";
@@ -163,40 +163,36 @@ export const UsuariosPagina = () => {
                             </button>
                         </div>
 
-                        {/* Cards de estadísticas */}
-                        <div className="usuarios-cards">
-                            <div className="card-stat">
-                                <div className="card-stat-content">
-                                    <p className="card-stat-label">Total Usuarios</p>
-                                    <h3 className="card-stat-numero">{totalUsuarios}</h3>
-                                </div>
-                                <div className="card-stat-icon icon-users">
-                                    <FaUsers />
-                                </div>
-                            </div>
-
-                            <div className="card-stat">
-                                <div className="card-stat-content">
-                                    <p className="card-stat-label">Administradores</p>
-                                    <h3 className="card-stat-numero">{administradores}</h3>
-                                </div>
-                                <div className="card-stat-icon icon-briefcase">
-                                    <FaBriefcase />
-                                </div>
-                            </div>
-
-                            <div className="card-stat">
-                                <div className="card-stat-content">
-                                    <p className="card-stat-label">Empleados</p>
-                                    <h3 className="card-stat-numero">{empleados}</h3>
-                                </div>
-                                <div className="card-stat-icon icon-user">
-                                    <FaUser />
-                                </div>
-                            </div>
-
-                            
-                        </div>
+                                                {/* Cards de estadísticas estilo dashboard */}
+                                                <div className="estadisticas-grid" style={{marginBottom: '2rem'}}>
+                                                    <div className="stat-card">
+                                                        <div className="stat-info">
+                                                            <p className="stat-label">TOTAL USUARIOS</p>
+                                                            <h2 className="stat-numero">{totalUsuarios}</h2>
+                                                        </div>
+                                                        <div className="stat-icon usuarios">
+                                                            <FaUsers />
+                                                        </div>
+                                                    </div>
+                                                    <div className="stat-card">
+                                                        <div className="stat-info">
+                                                            <p className="stat-label">ADMINISTRADORES</p>
+                                                            <h2 className="stat-numero">{administradores}</h2>
+                                                        </div>
+                                                        <div className="stat-icon">
+                                                            <FaBriefcase />
+                                                        </div>
+                                                    </div>
+                                                    <div className="stat-card">
+                                                        <div className="stat-info">
+                                                            <p className="stat-label">EMPLEADOS</p>
+                                                            <h2 className="stat-numero">{empleados}</h2>
+                                                        </div>
+                                                        <div className="stat-icon">
+                                                            <FaUser />
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                         {/* Tabla de usuarios */}
                         <div className="usuarios-tabla-section">
@@ -232,7 +228,7 @@ export const UsuariosPagina = () => {
                                                             className="boton-accion boton-editar"
                                                             title="Editar usuario"
                                                         >
-                                                            <FaPen /> Editar
+                                                            <FaEdit /> Editar
                                                         </button>
                                                         <button
                                                             onClick={() => eliminarUsuario(u.id_usuario).then(fetchUsuarios)}
@@ -296,7 +292,7 @@ export const UsuariosPagina = () => {
                                                         className="boton-accion boton-editar"
                                                         title="Editar rol"
                                                     >
-                                                        <FaPen /> Editar
+                                                        <FaEdit /> Editar
                                                     </button>
                                                     <button
                                                         onClick={() => eliminarRol(r.id_rol).then(fetchRoles)}
@@ -361,7 +357,7 @@ export const UsuariosPagina = () => {
                                                         className="boton-accion boton-editar"
                                                         title="Editar permiso"
                                                     >
-                                                        <FaPen /> Editar
+                                                        <FaEdit /> Editar
                                                     </button>
                                                     <button
                                                         onClick={() => eliminarPermiso(p.id_permiso).then(fetchPermisos)}
@@ -427,7 +423,7 @@ export const UsuariosPagina = () => {
                                                         className="boton-accion boton-editar"
                                                         title="Editar asignación"
                                                     >
-                                                        <FaPen /> Editar
+                                                        <FaEdit /> Editar
                                                     </button>
                                                     <button
                                                         onClick={() => eliminarRolPermiso(rp.id_rol_permiso).then(fetchRolPermisos)}

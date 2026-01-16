@@ -270,6 +270,13 @@ export default function ModalPrenda({
         showWarning('Selecciona al menos un ajuste y una acción para la combinación');
         return;
       }
+      
+      // Validar límite máximo de selecciones
+      if (ajustesSeleccionadosCrear.length > 13 || accionesSeleccionadasCrear.length > 13) {
+        showWarning('Solo puedes seleccionar un máximo de 13 ajustes y 13 acciones por combinación');
+        return;
+      }
+      
       if (precioCrear <= 0) {
         showWarning('Ingresa un precio válido');
         return;

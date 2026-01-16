@@ -12,7 +12,7 @@ import { obtenerAcciones } from "../services/accionesService";
 import { obtenerAjustesAccion } from "../services/ajustesAccionService";
 import { obtenerPedidos } from "../services/pedidosService";
 import { obtenerCajones, crearCajon, actualizarCajon, eliminarCajon } from "../services/cajonesService";
-import { obtenerCodigos, crearCodigo, eliminarCodigo } from "../services/codigosService";
+import { obtenerCodigos, crearCodigo, eliminarCodigo, actualizarCodigoNumero } from "../services/codigosService";
 import { formatCOP } from "../utils/formatCurrency";
 import { useDataRefresh } from "../hooks/useDataRefresh";
 import { DATA_EVENTS } from "../utils/eventEmitter";
@@ -497,7 +497,24 @@ export const ControlAdministrador = () => {
       for (const codigo of codigosAEliminar) {
         await eliminarCodigo(codigo.id_codigo);
       }
-      success(`Se eliminaron ${cantidadEliminar} código(s)`);
+
+      // Renumerar todos los códigos después de eliminar
+      let codigosActualizados = await obtenerCodigos();
+      codigosActualizados = codigosActualizados.sort((a, b) => {
+        if (a.id_cajon === b.id_cajon) {
+          return a.id_codigo - b.id_codigo;
+        }
+        return a.id_cajon - b.id_cajon;
+      });
+      let numero = 1;
+      for (let i = 0; i < codigosActualizados.length; i++) {
+        if (codigosActualizados[i].codigo_numero !== numero.toString()) {
+          await actualizarCodigoNumero(codigosActualizados[i].id_codigo, numero.toString(), codigosActualizados[i].id_cajon, codigosActualizados[i].estado);
+        }
+        numero++;
+      }
+
+      success(`Se eliminaron ${cantidadEliminar} código(s) y se reenumeraron todos los códigos de todos los cajones.`);
       cargarTodosLosDatos(true); // Actualización silenciosa
     } catch (error) {
       console.error("Error al eliminar códigos:", error);
@@ -516,23 +533,35 @@ export const ControlAdministrador = () => {
 
     setCargandoCajones(true);
     try {
-      // Obtener el último código para continuar la numeración
-      const todosLosCodigos = await obtenerCodigos();
-      let ultimoNumero = 0;
-      todosLosCodigos.forEach(c => {
-        const num = parseInt(c.codigo_numero, 10);
-        if (!isNaN(num) && num > ultimoNumero) {
-          ultimoNumero = num;
-        }
-      });
+      // Obtener todos los códigos actuales y ordenarlos por número
+      let todosLosCodigos = await obtenerCodigos();
+      todosLosCodigos = todosLosCodigos.sort((a, b) => parseInt(a.codigo_numero, 10) - parseInt(b.codigo_numero, 10));
 
-      // Crear los nuevos códigos
-      for (let i = 1; i <= cantidadAgregar; i++) {
-        const nuevoNumero = ultimoNumero + i;
-        await crearCodigo(nuevoNumero.toString(), idCajon);
+      // Insertar los nuevos códigos al final del cajón seleccionado
+      for (let i = 0; i < cantidadAgregar; i++) {
+        await crearCodigo("0", idCajon); // Temporal, luego se renumera
       }
 
-      success(`Se agregaron ${cantidadAgregar} código(s) al cajón`);
+      // Volver a obtener todos los códigos (incluyendo los nuevos)
+      let codigosActualizados = await obtenerCodigos();
+      // Ordenar por id_cajon y luego por id_codigo para mantener orden consistente
+      codigosActualizados = codigosActualizados.sort((a, b) => {
+        if (a.id_cajon === b.id_cajon) {
+          return a.id_codigo - b.id_codigo;
+        }
+        return a.id_cajon - b.id_cajon;
+      });
+
+      // Renumerar todos los códigos de todos los cajones de forma secuencial
+      let numero = 1;
+      for (let i = 0; i < codigosActualizados.length; i++) {
+        if (codigosActualizados[i].codigo_numero !== numero.toString()) {
+          await actualizarCodigoNumero(codigosActualizados[i].id_codigo, numero.toString(), codigosActualizados[i].id_cajon, codigosActualizados[i].estado);
+        }
+        numero++;
+      }
+
+      success(`Se agregaron ${cantidadAgregar} código(s) al cajón y se reenumeraron todos los códigos de todos los cajones.`);
       cargarTodosLosDatos(true); // Actualización silenciosa
     } catch (error) {
       console.error("Error al agregar códigos:", error);
@@ -563,7 +592,24 @@ export const ControlAdministrador = () => {
       }
       // Luego eliminar el cajón
       await eliminarCajon(idCajon);
-      success("Cajón eliminado correctamente");
+
+      // Renumerar todos los códigos después de eliminar el cajón
+      let codigosActualizados = await obtenerCodigos();
+      codigosActualizados = codigosActualizados.sort((a, b) => {
+        if (a.id_cajon === b.id_cajon) {
+          return a.id_codigo - b.id_codigo;
+        }
+        return a.id_cajon - b.id_cajon;
+      });
+      let numero = 1;
+      for (let i = 0; i < codigosActualizados.length; i++) {
+        if (codigosActualizados[i].codigo_numero !== numero.toString()) {
+          await actualizarCodigoNumero(codigosActualizados[i].id_codigo, numero.toString(), codigosActualizados[i].id_cajon, codigosActualizados[i].estado);
+        }
+        numero++;
+      }
+
+      success("Cajón eliminado correctamente y se reenumeraron todos los códigos de todos los cajones.");
       cargarTodosLosDatos(true); // Actualización silenciosa
     } catch (error) {
       console.error("Error al eliminar cajón:", error);
@@ -1035,7 +1081,7 @@ export const ControlAdministrador = () => {
               {seccionCajonesExpandida && (
                 <div className="seccion-contenido">
                   {cargandoCajones && (
-                    <div className="loading-cajones">Procesando...</div>
+                    <div className="loading-cajones">Cargando cajones...</div>
                   )}
 
                   <div className="cajones-tabla-container">

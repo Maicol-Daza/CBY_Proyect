@@ -1,3 +1,62 @@
+.combinaciones-table {
+  border: 1.5px solid #d1d5db;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  background: #fff;
+  overflow: hidden;
+}
+
+.table-responsive-container {
+  background: #fff;
+  border-radius: 10px;
+  border: 1.5px solid #d1d5db;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  padding: 10px 0 10px 0;
+}
+
+.combinaciones-table th {
+  background: #f3f4f6;
+  color: #23272b;
+  font-weight: 700;
+  padding: 14px 18px;
+  border-bottom: 2px solid #e5e7eb;
+}
+.combinaciones-table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+.combinaciones-table tr:hover td {
+  background: #f9fafb;
+}
+.combinaciones-table th,
+.combinaciones-table td {
+  border-right: 1px solid #ececec;
+}
+.combinaciones-table th:last-child,
+.combinaciones-table td:last-child {
+  border-right: none;
+}
+
+.cfg-btn-eliminar {
+  background: #fff;
+  color: #d32f2f;
+  border: 1.5px solid #d32f2f;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-weight: 500;
+  font-size: 0.95em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.cfg-btn-eliminar:hover {
+  background: #ffeaea;
+  color: #b71c1c;
+  border-color: #b71c1c;
+}
 .cfg-btn-cancelar {
   display: inline-block;
   padding: 9px 16px;
@@ -118,7 +177,7 @@
   padding: 12px;
   text-align: left;
   font-weight: bold;
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid #818a92;
 }
 
 .combinaciones-table td {
@@ -244,23 +303,6 @@
 }
 
 
-/* Eliminar conflicto: la X del header consistente debe verse igual que en Detalle del Pedido */
-  background: none !important;
-  border: none !important;
-  font-size: 32px !important;
-  color: #444 !important;
-  font-family: inherit !important;
-  font-weight: 700 !important;
-  cursor: pointer;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, color 0.15s;
-  line-height: 1;
-}
 .modal-header-consistente .modal-close-consistente:hover {
   background: #ffeaea !important;
   color: #dc3545 !important;
@@ -739,7 +781,7 @@
   margin-top: 4px;
 }
 
-/* Animaciones */\n@keyframes fadeIn {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n\n/* InputMoneda m\u00e1s compacto para cfg */\n.cfg-modal-sm .input-moneda-container {\n  margin-bottom: 0;\n}\n\n.cfg-modal-sm .input-moneda-container input {\n  padding: 14px 16px 14px 44px !important;\n  font-size: 15px !important;\n}\n\n/* Eliminar scroll en todos los contenedores del modal */\n.cfg-modal-body .cfg-selectors-container,\n.cfg-modal-body .cfg-checkboxes-list,\n.cfg-modal-body .cfg-precio-section,\n.cfg-modal-body .cfg-resumen-section {\n  overflow-y: visible;\n  max-height: none;\n}
+
 
 @keyframes slideUp {
   from {
@@ -980,4 +1022,29 @@
     width: 22px;
     height: 22px;
   }
+}
+
+/* Contorno exterior para la tabla de combinaciones */
+.combinaciones-table {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  background: #fff;
+}
+
+.table-responsive-container {
+  background: #fff;
+  border-radius: 8px;
+  border: 1.5px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 8px 0 8px 0;
+}
+
+.combinaciones-table th,
+.combinaciones-table td {
+  border-right: 1px solid #ececec;
+}
+.combinaciones-table th:last-child,
+.combinaciones-table td:last-child {
+  border-right: none;
 }

@@ -26,7 +26,7 @@ export const Login = () => {
             const usuario = await login(email, password);
             if (usuario) {
                 const rol = usuario.rol || user?.rol;
-                if (rol === "Administrador") navigate("/principal");
+                if (rol === "Administrador") navigate("/usuarios");
                 else navigate("/pedidos");
             } else {
                 setErrorMsg("Credenciales inválidas");

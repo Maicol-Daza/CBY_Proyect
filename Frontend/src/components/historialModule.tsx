@@ -849,7 +849,7 @@ export const HistorialModule = () => {
                                                 type="button"
                                                 onClick={() => handleVerDetalles(pedido.id_pedido)}
                                             >
-                                                <FaEye /> Detalles
+                                                <FaEye /> Info
                                             </button>
                                             <button
                                                 className="btn-accion-facturas"

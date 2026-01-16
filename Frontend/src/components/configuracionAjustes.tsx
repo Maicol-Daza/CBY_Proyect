@@ -16,7 +16,7 @@ import {
   actualizarAccion, 
   eliminarAccion 
 } from '../services/accionesService';
-import { obtenerAjustesAccion, crearAjusteAccion, eliminarAjusteAccion, AjusteAccion } from '../services/ajustesAccionService';
+import { obtenerAjustesAccion, crearAjusteAccion, actualizarAjusteAccion, eliminarAjusteAccion, AjusteAccion } from '../services/ajustesAccionService';
 import { FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import { formatCOP } from '../utils/formatCurrency';
 import { InputMoneda } from './InputMoneda';
@@ -51,9 +51,19 @@ export default function ConfiguracionAjustes() {
   const [loadingAccion, setLoadingAccion] = useState(false);
   const [editandoAccion, setEditandoAccion] = useState<number | null>(null);
 
+  // Estado para editar combinaciones
+  const [editandoCombinacion, setEditandoCombinacion] = useState<number | null>(null);
+
   // Estados para búsqueda/filtro
   const [busquedaAjuste, setBusquedaAjuste] = useState('');
   const [busquedaAccion, setBusquedaAccion] = useState('');
+  // Estado para búsqueda de combinaciones
+  const [busquedaCombinacion, setBusquedaCombinacion] = useState('');
+
+  // Función para obtener nombres de la combinación (debe ir antes de usarla)
+  const obtenerNombresCombinacion = (combinacion: AjusteAccion) => {
+    return combinacion.descripcion_combinacion || 'Combinación sin descripción';
+  };
 
   // Filtrar ajustes y acciones
   const ajustesFiltrados = ajustes.filter(ajuste =>
@@ -62,6 +72,11 @@ export default function ConfiguracionAjustes() {
   const accionesFiltradas = acciones.filter(accion =>
     accion.nombre_accion.toLowerCase().includes(busquedaAccion.toLowerCase())
   );
+  // Filtrar combinaciones
+  const combinacionesFiltradas = combinaciones.filter(comb => {
+    const descripcion = obtenerNombresCombinacion(comb).toLowerCase();
+    return descripcion.includes(busquedaCombinacion.toLowerCase());
+  });
 
   const parsePrecio = (v: any): number => {
     if (v === null || v === undefined) return 0;
@@ -122,6 +137,12 @@ export default function ConfiguracionAjustes() {
       return;
     }
 
+    // Validar límite máximo de selecciones
+    if (selectedAjustes.length > 13 || selectedAcciones.length > 13) {
+      warning('Solo puedes seleccionar un máximo de 13 ajustes y 13 acciones por combinación');
+      return;
+    }
+
     setLoading(true);
     try {
       const nombresAjustes = selectedAjustes.map(id =>
@@ -134,19 +155,32 @@ export default function ConfiguracionAjustes() {
 
       const descripcion = `${nombresAjustes} / ${nombresAcciones}`;
 
-      await crearAjusteAccion(
-        selectedAjustes[0],
-        selectedAcciones[0],
-        precio,
-        descripcion
-      );
+      if (editandoCombinacion) {
+        // Modo edición
+        await actualizarAjusteAccion(
+          editandoCombinacion,
+          selectedAjustes[0],
+          selectedAcciones[0],
+          precio,
+          descripcion
+        );
+        success('Combinación actualizada correctamente');
+      } else {
+        // Modo creación
+        await crearAjusteAccion(
+          selectedAjustes[0],
+          selectedAcciones[0],
+          precio,
+          descripcion
+        );
+        success('Combinación agregada correctamente');
+      }
 
-      success('Combinación agregada correctamente');
       resetModal();
       await cargarDatos();
     } catch (error) {
-      console.error('Error al agregar combinación:', error);
-      showError('Error al agregar la combinación');
+      console.error('Error al procesar combinación:', error);
+      showError(`Error al ${editandoCombinacion ? 'actualizar' : 'agregar'} la combinación`);
     } finally {
       setLoading(false);
     }
@@ -258,6 +292,32 @@ export default function ConfiguracionAjustes() {
     }
   };
 
+  const handleEditarCombinacion = (combinacion: AjusteAccion) => {
+    setEditandoCombinacion(combinacion.id_ajuste_accion);
+    
+    // Parsear la descripción para obtener todos los ajustes y acciones
+    const descripcion = combinacion.descripcion_combinacion || '';
+    const [partAjustes, partAcciones] = descripcion.split(' / ');
+    
+    // Extraer nombres de ajustes
+    const nombresAjustes = partAjustes ? partAjustes.split(' + ').map(n => n.trim()) : [];
+    const idsAjustes = nombresAjustes
+      .map(nombre => ajustes.find(a => a.nombre_ajuste === nombre)?.id_ajuste)
+      .filter((id): id is number => id !== undefined);
+    
+    // Extraer nombres de acciones
+    const nombresAcciones = partAcciones ? partAcciones.split(' + ').map(n => n.trim()) : [];
+    const idsAcciones = nombresAcciones
+      .map(nombre => acciones.find(a => a.nombre_accion === nombre)?.id_accion)
+      .filter((id): id is number => id !== undefined);
+    
+    setSelectedAjustes(idsAjustes.length > 0 ? idsAjustes : [combinacion.id_ajuste]);
+    setSelectedAcciones(idsAcciones.length > 0 ? idsAcciones : [combinacion.id_accion]);
+    setPrecio(Number(combinacion.precio));
+    setPrecioDisplay(formatCOP(Number(combinacion.precio)));
+    setShowModal(true);
+  };
+
   const handleEliminar = async (id: number) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta combinación?')) {
       try {
@@ -273,6 +333,7 @@ export default function ConfiguracionAjustes() {
 
   const resetModal = () => {
     setShowModal(false);
+    setEditandoCombinacion(null);
     setSelectedAjustes([]);
     setSelectedAcciones([]);
     setPrecio(0);
@@ -293,15 +354,13 @@ export default function ConfiguracionAjustes() {
     setPrecioAccion(0);
   };
 
-  const obtenerNombresCombinacion = (combinacion: AjusteAccion) => {
-    return combinacion.descripcion_combinacion || 'Combinación sin descripción';
-  };
+  // ...existing code...
 
   return (
     <div className="configuracion-container">
-      <div className="header-section">
+      <div className="caja-header">
         <h1>Constructor de Ajustes</h1>
-        <button className="btn-agregar" onClick={() => { setSelectedAjustes([]); setSelectedAcciones([]); setPrecio(0); setShowModal(true); }}>
+        <button className="btn-nuevo" onClick={() => { setEditandoCombinacion(null); setSelectedAjustes([]); setSelectedAcciones([]); setPrecio(0); setShowModal(true); }}>
           + Agregar Combinación
         </button>
       </div>
@@ -309,28 +368,42 @@ export default function ConfiguracionAjustes() {
       {/* Sección de Combinaciones */}
       <div className="combinaciones-section">
         <h2>Combinaciones Configuradas</h2>
-        {combinaciones.length === 0 ? (
+        <div className="search-filter" style={{ marginBottom: '1rem', maxWidth: 400 }}>
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar combinación..."
+            value={busquedaCombinacion}
+            onChange={e => setBusquedaCombinacion(e.target.value)}
+            className="search-input"
+            style={{ width: '100%' }}
+          />
+        </div>
+        {combinacionesFiltradas.length === 0 ? (
           <div className="cfg-empty-state">
-            <p>No hay ajustes configurados</p>
+            <p>No hay combinaciones configuradas</p>
             <p>Haz clic en "Agregar combinación" para comenzar</p>
           </div>
         ) : (
-          <div className="table-responsive-container">
-            <table className="combinaciones-table">
-              <thead>
+          <div className="table-responsive-container" style={{overflowX: 'auto', maxWidth: '100%', padding: 0, border: '1.5px solid #d1d5db', borderRadius: '10px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', background: '#fff'}}>
+            <table className="combinaciones-table" style={{minWidth: 500, borderCollapse: 'separate', borderSpacing: 0, width: '100%', border: 'none', boxShadow: 'none', background: 'transparent'}}>
+              <thead style={{background: '#f5f5f5'}}>
                 <tr>
-                  <th>Combinación</th>
-                  <th>Precio</th>
-                  <th>Acciones</th>
+                  <th style={{padding: '10px 16px', textAlign: 'left', borderBottom: '2px solid #e0e0e0'}}>Combinación</th>
+                  <th style={{padding: '10px 16px', textAlign: 'left', borderBottom: '2px solid #e0e0e0'}}>Precio</th>
+                  <th style={{padding: '10px 16px', textAlign: 'left', borderBottom: '2px solid #e0e0e0'}}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {combinaciones.map((comb) => (
-                  <tr key={comb.id_ajuste_accion}>
-                    <td>{obtenerNombresCombinacion(comb)}</td>
-                    <td>{formatCOP(Number(comb.precio))}</td>
-                    <td className="cfg-actions-cell">
+                {combinacionesFiltradas.map((comb, idx) => (
+                  <tr key={comb.id_ajuste_accion} style={{background: idx % 2 === 0 ? '#fff' : '#f9f9f9'}}>
+                    <td style={{padding: '10px 16px', borderBottom: '1px solid #ececec'}}>{obtenerNombresCombinacion(comb)}</td>
+                    <td style={{padding: '10px 16px', borderBottom: '1px solid #ececec'}}>{formatCOP(Number(comb.precio))}</td>
+                    <td className="cfg-actions-cell" style={{padding: '10px 16px', borderBottom: '1px solid #ececec'}}>
                       <div className="cfg-actions-group">
+                        <button className="cfg-btn-editar" onClick={() => handleEditarCombinacion(comb)} title="Editar" style={{marginRight: '8px'}}>
+                          <FaEdit /> Editar
+                        </button>
                         <button className="cfg-btn-eliminar" onClick={() => handleEliminar(comb.id_ajuste_accion)} title="Eliminar">
                           <FaTrash /> Eliminar
                         </button>
@@ -417,7 +490,7 @@ export default function ConfiguracionAjustes() {
           <div className="cfg-modal-content cfg-modal-lg">
             {/* HEADER CONSISTENTE CON DETALLE DE PEDIDO */}
             <div className="modal-header-consistente">
-              <span className="modal-title-consistente">Nueva Combinación de Ajuste</span>
+              <span className="modal-title-consistente">{editandoCombinacion ? 'Editar Combinación de Ajuste' : 'Nueva Combinación de Ajuste'}</span>
               <button className="modal-close-consistente" onClick={resetModal} aria-label="Cerrar">×</button>
             </div>
 
@@ -486,7 +559,7 @@ export default function ConfiguracionAjustes() {
                 onClick={handleAgregarCombinacion}
                 disabled={loading}
               >
-                {loading ? 'Procesando...' : 'Agregar 1 Combinación'}
+                {loading ? 'Procesando...' : (editandoCombinacion ? 'Actualizar Combinación' : 'Agregar 1 Combinación')}
               </button>
             </div>
           </div>

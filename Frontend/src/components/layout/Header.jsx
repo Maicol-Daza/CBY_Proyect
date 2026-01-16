@@ -15,7 +15,7 @@ export const Header = () => {
             <div className="container">
                 <div className="header-left">
                     <div className="brand">
-                        <a onClick={() => navigate("/principal")}>
+                        <a onClick={() => navigate("/usuarios")}>
                             <span><FaTshirt className="text-2xl" /></span>
                             Clínica del Bluyin
                         </a>

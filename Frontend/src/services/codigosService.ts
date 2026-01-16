@@ -1,3 +1,20 @@
+// Actualizar un código existente
+export async function actualizarCodigoNumero(id_codigo: number, codigo_numero: string, id_cajon?: number, estado?: string): Promise<any> {
+  try {
+    const response = await fetch(`${API_URL}/${id_codigo}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo_numero, id_cajon, estado }),
+    });
+    if (!response.ok) throw new Error('Error al actualizar código');
+    const result = await response.json();
+    emitDataEvent(DATA_EVENTS.CODIGOS_UPDATED, result);
+    return result;
+  } catch (error) {
+    console.error("Error en actualizarCodigoNumero:", error);
+    throw error;
+  }
+}
 // src/services/codigosService.ts
 import { emitDataEvent, DATA_EVENTS } from '../utils/eventEmitter';
 
