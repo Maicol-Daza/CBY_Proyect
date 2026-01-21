@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { ModalRol } from "../components/ui/ModalRol";
 import { leerRoles, crearRol, actualizarRol, eliminarRol } from "../services/rolService";
 import { Layout } from "../components/layout/Layout";
-import "./Pagina.css";
+import "../styles/Pagina.css";
 
 export const RolesPagina = () => {
     const [roles, setRoles] = useState([]);

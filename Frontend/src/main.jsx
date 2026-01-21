@@ -4,8 +4,8 @@ import { App } from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { AlertProvider } from "./context/AlertContext";
 import { BrowserRouter } from "react-router-dom";
-import "../src/index.css";
-import "../src/styles/tables-responsive.css";
+import "./index.css";
+import "./styles/tables-responsive.css";
 import "../src/styles/alertas-globales.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

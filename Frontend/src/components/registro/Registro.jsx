@@ -2,7 +2,7 @@ import { useState } from "react";
 import { crearUsuario } from "../../services/usuarioService";
 import validators from "../../utils/validators";
 import { Link , useNavigate } from "react-router-dom";
-import "./Registro.css";
+import "../../styles/Registro.css";
 
 export const Registro = () => {
     const [formData, setFormData] = useState({

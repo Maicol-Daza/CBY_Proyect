@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "./ModalPermiso.css";
+import "../../styles/ModalPermiso.css";
 
 export const ModalPermiso = ({ onClose, onSave, permisoSeleccionado }) => {
     const [nombre, setNombre] = useState("");

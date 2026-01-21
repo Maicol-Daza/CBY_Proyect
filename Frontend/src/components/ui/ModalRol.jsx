@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import './ModalRol.css';
+import '../../styles/ModalRol.css';
 
 export const ModalRol = ({ onClose, onSave, rolSeleccionado }) => {
     const [nombre, setNombre] = useState("");

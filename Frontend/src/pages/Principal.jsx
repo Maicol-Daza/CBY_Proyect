@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "../components/ui/Card";
 import { Layout } from "../components/layout/Layout";
 
-import "./Principal.css";
+import "../styles/Principal.css";
 
 export const Principal = () => {
   const { user } = useAuthContext();

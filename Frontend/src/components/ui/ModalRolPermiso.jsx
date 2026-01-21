@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAlert } from "../../context/AlertContext";
-import './ModalRolPermiso.css';
+import '../../styles/ModalRolPermiso.css';
 
 export const ModalRolPermiso = ({
     onClose,

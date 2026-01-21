@@ -10,9 +10,9 @@ import { ModalRolPermiso } from "../components/ui/ModalRolPermiso";
 import { Layout } from "../components/layout/Layout";
 import { FaUsers, FaBriefcase, FaUser, FaCheckCircle, FaEdit, FaTrash } from "react-icons/fa";
 import { FaShieldAlt, FaLock, FaKey } from "react-icons/fa";
-import "./Pagina.css";
-import "../components/ui/ModalUsuario.css";
-import "./UsuariosPagina.css";
+import "../styles/Pagina.css";
+import "../styles/ModalUsuario.css";
+import "../styles/UsuariosPagina.css";
 
 export const UsuariosPagina = () => {
     // Estados para Usuarios

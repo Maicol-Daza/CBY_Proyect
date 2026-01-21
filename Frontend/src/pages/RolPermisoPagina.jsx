@@ -9,7 +9,7 @@ import {
     leerPermisosDeRol,
     } from "../services/rolPermisoService";
 import { Layout } from "../components/layout/Layout";
-import "./Pagina.css";
+import "../styles/Pagina.css";
 
 export const RolPermisoPagina = () => {
     const [rolPermisos, setRolPermisos] = useState([]);

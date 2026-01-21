@@ -31,7 +31,7 @@ import {
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import "./ControlAdministrador.css";
+import "../styles/ControlAdministrador.css";
 
 export const ControlAdministrador = () => {
   const { success, error: showError, warning, info } = useAlert();

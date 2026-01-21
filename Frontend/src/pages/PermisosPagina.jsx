@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { ModalPermiso } from "../components/ui/ModalPermiso";
 import { leerPermisos, crearPermiso, actualizarPermiso, eliminarPermiso } from "../services/permisoService";
 import { Layout } from "../components/layout/Layout";
-import "./Pagina.css";
+import "../styles/Pagina.css";
 
 export const PermisosPagina = () => {
     const [permisos, setPermisos] = useState([]);

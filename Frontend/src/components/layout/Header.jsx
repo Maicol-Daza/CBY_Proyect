@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
 import { Navbar } from "./Navbar";
 import { FaTshirt } from 'react-icons/fa';
-import "./Header.css";
+import "../../styles/HeaderLayout.css";
 
 export const Header = () => {
     const { user, logout } = useAuthContext();

@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
 import { FiUsers, FiShield, FiLock, FiLink, FiMonitor } from "react-icons/fi";
-import "./Navbar.css";
+import "../../styles/Navbar.css";
 
 export const Navbar = () => {
     const { user } = useAuthContext();

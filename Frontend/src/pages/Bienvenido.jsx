@@ -2,7 +2,7 @@ import { useAuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import LayoutPublic from "../components/layout/LayoutPublic";
 
-import "./Principal.css";
+import "../styles/Principal.css";
 
 export const Bienvenido = () => {
     const { user, logout } = useAuthContext();
