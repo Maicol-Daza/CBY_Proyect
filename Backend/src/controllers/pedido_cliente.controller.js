@@ -734,7 +734,9 @@ class PedidoClienteController {
       motivo_devolucion,
       descripcion_devolucion,
       solucion_devolucion,
-      monto_devolucion
+      monto_devolucion,
+      cajon_id,
+      codigo_id
     } = req.body;
 
     if (!id || !motivo_devolucion) {
@@ -746,24 +748,68 @@ class PedidoClienteController {
     const connection = await db.getConnection();
 
     try {
-      await connection.query(
-        `UPDATE pedido_cliente 
-         SET motivo_devolucion = ?, 
-             descripcion_devolucion = ?, 
-             solucion_devolucion = ?, 
-             monto_devolucion = ?,
-             fecha_devolucion = NOW(),
-             estado = ?
-         WHERE id_pedido = ?`,
-        [
-          motivo_devolucion,
-          descripcion_devolucion || null,
-          solucion_devolucion || "reembolso",
-          monto_devolucion || 0,
-          "devuelto",
-          id
-        ]
-      );
+      // Si es reembolso, NO cambiar el estado a 'devuelto', solo registrar los datos de devolución
+      if (solucion_devolucion === "reembolso") {
+        await connection.query(
+          `UPDATE pedido_cliente 
+           SET motivo_devolucion = ?, 
+               descripcion_devolucion = ?, 
+               solucion_devolucion = ?, 
+               monto_devolucion = ?,
+               fecha_devolucion = NOW()
+           WHERE id_pedido = ?`,
+          [
+            motivo_devolucion,
+            descripcion_devolucion || null,
+            solucion_devolucion || "reembolso",
+            monto_devolucion || 0,
+            id
+          ]
+        );
+      } else {
+        await connection.query(
+          `UPDATE pedido_cliente 
+           SET motivo_devolucion = ?, 
+               descripcion_devolucion = ?, 
+               solucion_devolucion = ?, 
+               monto_devolucion = ?,
+               fecha_devolucion = NOW(),
+               estado = ?
+           WHERE id_pedido = ?`,
+          [
+            motivo_devolucion,
+            descripcion_devolucion || null,
+            solucion_devolucion || "reembolso",
+            monto_devolucion || 0,
+            "devuelto",
+            id
+          ]
+        );
+      }
+
+      // Si es nuevo procedimiento gratuito, marcar código/cajón como ocupado
+      if (solucion_devolucion === "nuevo_procedimiento" && cajon_id && codigo_id) {
+        // Marcar el código como ocupado y asociarlo al pedido
+        await connection.query(
+          `UPDATE codigos SET id_pedido = ?, estado = 'ocupado' WHERE id_codigo = ?`,
+          [id, codigo_id]
+        );
+        // Verificar si todos los códigos del cajón están ocupados para marcar cajón como ocupado
+        const [codigosDelCajon] = await connection.query(
+          `SELECT COUNT(*) as total_codigos FROM codigos WHERE id_cajon = ?`,
+          [cajon_id]
+        );
+        const [codigosOcupados] = await connection.query(
+          `SELECT COUNT(*) as codigos_ocupados FROM codigos WHERE id_cajon = ? AND estado = 'ocupado'`,
+          [cajon_id]
+        );
+        if (codigosOcupados[0].codigos_ocupados === codigosDelCajon[0].total_codigos) {
+          await connection.query(
+            `UPDATE cajones SET estado = 'ocupado' WHERE id_cajon = ?`,
+            [cajon_id]
+          );
+        }
+      }
 
       res.status(200).json({
         success: true,

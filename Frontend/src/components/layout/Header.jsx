@@ -15,13 +15,13 @@ export const Header = () => {
             <div className="container">
                 <div className="header-left">
                     <div className="brand">
-                        <a onClick={() => navigate("/usuarios")}>
+                        <a onClick={() => navigate("/usuarios")}> 
                             <span><FaTshirt className="text-2xl" /></span>
                             Clínica del Bluyin
                         </a>
                     </div>
-                    {isAdmin && <Navbar />}
                 </div>
+                {isAdmin && <Navbar />}
                 <div className="header-right">
                     <div className="user-info">
                         <div className="user-details">

@@ -1,3 +1,170 @@
+.factura-contenido {
+  /* ...existing code... */
+}
+
+/* --- Estilos para impresión compacta --- */
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  /* Ocultar todo primero */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+  
+  /* Ocultar overlays y fondos oscuros */
+  .modal-overlay,
+  .facturas-modal-overlay {
+    background: transparent !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+  
+  /* Mostrar solo la factura */
+  .modal-factura,
+  .modal-factura * {
+    visibility: visible !important;
+  }
+  
+  .modal-factura {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+  }
+  
+  .factura-contenido {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    font-size: 11px !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+  
+  /* Evitar saltos de página */
+  .factura-header,
+  .factura-empresa,
+  .factura-cliente-info,
+  .table-responsive-container,
+  .factura-tabla,
+  .factura-totales,
+  .factura-footer {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: visible !important;
+  }
+  
+  /* Ocultar todos los botones */
+  .factura-acciones,
+  .factura-acciones.mejorada,
+  .facturas-modal-header,
+  .facturas-modal-footer,
+  .btn-factura,
+  .btn-imprimir,
+  .btn-descargar,
+  .btn-volver {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Preservar colores en impresión */
+  .factura-header {
+    border-bottom: 2px solid #1e40af !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .factura-header h1 {
+    color: #1e40af !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .factura-empresa {
+    background: #f3f4f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .factura-empresa h3 {
+    color: #1e40af !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .factura-cliente-info {
+    background: #f9fafb !important;
+    border-left: 3px solid #3b82f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .factura-tabla thead {
+    background: #1e40af !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .factura-tabla th {
+    background: #1e40af !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .factura-totales {
+    background: #f3f4f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .total-principal {
+    background: #dbeafe !important;
+    border: 1px solid #3b82f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .saldo-pendiente {
+    background: #fef2f2 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
 .modal-factura {
   background: white;
   border-radius: 10px;
@@ -24,7 +191,6 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -59,6 +225,53 @@
   font-family: 'Arial', sans-serif;
   line-height: 1.4;
 }
+
+/* --- Botones mejorados para factura original (tamaño reducido) --- */
+.factura-acciones.mejorada {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.btn-factura {
+  padding: 10px 20px; /* reducido */
+  font-size: 1rem; /* ligeramente menor */
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.btn-imprimir {
+  background: #34a853; /* verde */
+  color: #fff;
+}
+.btn-imprimir:hover {
+  background: #2c8c43;
+}
+
+.btn-descargar {
+  background: #2196f3; /* azul */
+  color: #fff;
+}
+.btn-descargar:hover {
+  background: #1976d2;
+}
+
+.btn-volver {
+  background: #ef4444;
+  color: #fff;
+}
+.btn-volver:hover {
+  background: #d32f2f;
+}
+
 
 .factura-header {
   text-align: center;
@@ -298,215 +511,6 @@
   font-size: 8px;
 }
 
-/* Estilos para impresión */
-@media print {
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-
-  html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: 11px;
-    width: 100% !important;
-    height: auto !important;
-    background: white !important;
-    box-sizing: border-box;
-  }
-
-
-  @page {
-    size: A4;
-    margin: 10mm 0 10mm 0;
-  }
-
-
-  /* Ocultar toda la página excepto la factura */
-  body * {
-    visibility: hidden;
-  }
-  .modal-factura, .modal-factura * {
-    visibility: visible !important;
-  }
-  .modal-factura {
-    position: absolute !important;
-    left: 50% !important;
-    top: 0 !important;
-    transform: translateX(-50%) !important;
-    box-shadow: none !important;
-    max-width: 520px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-    border-radius: 0 !important;
-    background: white !important;
-  }
-
-
-  .factura-acciones {
-    display: none !important;
-  }
-
-
-  .factura-contenido {
-    padding: 0 24px !important;
-    max-width: 100% !important;
-    margin: 0 auto !important;
-  }
-
-
-  .factura-header {
-    margin-bottom: 8px !important;
-    padding-bottom: 5px !important;
-    padding-top: 0 !important;
-    text-align: center !important;
-    width: 100% !important;
-    display: block !important;
-  }
-
-  .factura-header h1 {
-    font-size: 16px !important;
-    text-align: center !important;
-    margin: 0 auto !important;
-    width: 100% !important;
-    display: block !important;
-  }
-
-  .factura-numero {
-    font-size: 10px !important;
-  }
-
-  .factura-empresa {
-    margin-bottom: 8px !important;
-    padding: 6px !important;
-  }
-
-  .factura-empresa h3 {
-    font-size: 12px !important;
-  }
-
-  .factura-empresa p {
-    font-size: 9px !important;
-  }
-
-  .factura-cliente-info {
-    margin-bottom: 8px !important;
-    padding: 6px !important;
-  }
-
-  .info-bloque {
-    font-size: 9px !important;
-  }
-
-  .info-bloque strong {
-    font-size: 10px !important;
-  }
-
-  .factura-tabla {
-    margin: 8px 0 !important;
-    font-size: 9px !important;
-  }
-
-  .factura-tabla th {
-    background: #1e40af !important;
-    color: white !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    padding: 5px !important;
-    font-size: 9px !important;
-  }
-
-  .factura-tabla td {
-    padding: 4px !important;
-    font-size: 9px !important;
-  }
-
-  .prenda-nombre {
-    font-size: 9px !important;
-  }
-
-  .arreglo-item {
-    font-size: 8px !important;
-  }
-
-  .factura-totales {
-    margin: 8px 0 !important;
-    padding: 6px !important;
-  }
-
-  .total-fila {
-    padding: 3px 0 !important;
-    font-size: 9px !important;
-  }
-
-  .total-principal {
-    padding: 5px !important;
-    font-size: 10px !important;
-  }
-
-  .saldo-pendiente {
-    padding: 4px !important;
-  }
-
-
-  .factura-footer {
-    margin-top: 8px !important;
-    padding-top: 5px !important;
-    font-size: 8px !important;
-    page-break-after: avoid !important;
-    text-align: center !important;
-  }
-
-  /* Ocultar cualquier enlace o texto de localhost en impresión */
-  a[href*="localhost"],
-  .factura-footer a[href*="localhost"],
-  .factura-footer,
-  .factura-footer * {
-    /* Si contiene localhost, ocultar */
-  }
-  
-  /* Ocultar cualquier texto que contenga 'localhost' en impresión */
-  .factura-footer,
-  .factura-footer * {
-    /* Usar atributo data o clase si es posible en el HTML, pero como refuerzo: */
-  }
-  
-  /* Solución universal: ocultar cualquier elemento que contenga 'localhost' en impresión */
-  @media print {
-    *:not(script):not(style) {
-      /* Si el contenido textual contiene localhost, ocultar */
-      /* Solo navegadores modernos soportan esto, pero ayuda: */
-      /* No todos los navegadores soportan :has() y :contains(), pero se intenta: */
-    }
-    
-    /* Usar selectores avanzados si el navegador lo soporta */
-    *:has(> a[href*="localhost"]),
-    *:has(> [href*="localhost"]),
-    *:has(> [src*="localhost"]) {
-      display: none !important;
-      visibility: hidden !important;
-    }
-    
-    /* Si el texto es plano, se recomienda en el HTML envolverlo en un span con clase especial, por ejemplo: <span class="ocultar-en-impresion">localhost:5173/HistorialPedidos</span> */
-    .ocultar-en-impresion {
-      display: none !important;
-      visibility: hidden !important;
-    }
-  }
-
-
-  .fecha-impresion {
-    font-size: 7px !important;
-    margin-bottom: 0 !important;
-  }
-}
-
 /* Estilos para ModalFacturas - Clases únicas */
 .facturas-modal-overlay {
   position: fixed;
@@ -544,7 +548,7 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  animation: facturasModalSlideIn 0.3s ease;
+
 }
 
 @keyframes facturasModalSlideIn {
@@ -574,6 +578,43 @@
   font-size: 1.25rem;
   font-weight: 600;
   color: #333;
+}
+
+/* Ajustes específicos para la vista previa: evitar wrap del título y dejar espacio para los botones grandes */
+/* ocultar visualmente el título pero mantener accesibilidad */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Centrar los botones cuando el título está oculto */
+.facturas-modal-header.preview-header {
+  justify-content: center;
+}
+
+.facturas-modal-header.preview-header .preview-btns {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hacer que los botones se adapten mejor en pantallas pequeñas */
+@media (max-width: 768px) {
+  .facturas-modal-header.preview-header h2 {
+    max-width: calc(100% - 220px);
+  }
+  .btn-factura {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+  }
 }
 
 .facturas-btn-cerrar {
@@ -748,8 +789,14 @@
   height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible; /* permitir que las sombras y los botones altos no queden cortados */
   animation: facturasModalSlideIn 0.3s ease;
+}
+
+/* Evitar que los botones queden cortados por el borde redondeado */
+.facturas-modal-header.preview-header {
+  padding-top: 20px;
+  padding-bottom: 12px;
 }
 
 .facturas-preview-content {
@@ -758,7 +805,16 @@
   padding: 10px;
   background-color: #f5f5f5;
   border-radius: 4px;
-  margin: 10px;
+  margin: 12px 10px 10px 10px; /* un poco más de espacio arriba para separar de los botones */
+}
+
+/* Asegurar que el contenedor de botones no se solape con la esquina */
+.preview-btns .btn-factura {
+  padding: 12px 22px;
+}
+
+@media (max-width: 768px) {
+  .preview-btns .btn-factura { padding: 10px 16px; }
 }
 
 .facturas-preview-content iframe {
@@ -767,6 +823,23 @@
   width: 100%;
   height: 100%;
   display: block;
+}
+
+/* Animación de aparición similar al modal de abonos */
+@keyframes facturasModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Asegurar que la vista original también aparezca con la misma animación */
+.modal-factura {
+  animation: facturasModalSlideIn 0.25s ease;
 }
 
 @media (max-width: 1200px) {
@@ -800,5 +873,11 @@
   .facturas-btn-accion {
     width: 100%;
     min-width: unset;
+  }
+
+  /* Ajuste de tamaño para botones grandes en pantallas pequeñas */
+  .btn-factura {
+    padding: 8px 14px;
+    font-size: 0.95rem;
   }
 }

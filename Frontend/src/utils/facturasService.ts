@@ -16,6 +16,7 @@ export interface FacturaData {
   prendas: any[];
   nombre_cajon?: string;
   id_cajon?: number;
+  estado?: string; // Agregado: estado del pedido (ej. 'entregado', 'en_proceso')
 }
 
 interface ArregloItem {
@@ -130,6 +131,7 @@ export const generarHTMLFactura = (data: FacturaData, tipo: 'cliente' | 'bodega'
     <html>
     <head>
       <meta charset="UTF-8">
+      <title>Factura #${data.id_pedido} - CLÍNICA BLUYIN</title>
       <style>
         * {
           margin: 0;
@@ -433,27 +435,55 @@ export const generarHTMLFactura = (data: FacturaData, tipo: 'cliente' | 'bodega'
 export const descargarFacturaPDF = async (data: FacturaData, tipo: 'cliente' | 'bodega'): Promise<void> => {
   try {
     const html = generarHTMLFactura(data, tipo);
-    
-    // Crear div temporal
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-    tempDiv.style.position = 'fixed';
-    tempDiv.style.left = '-10000px';
-    tempDiv.style.top = '-10000px';
-    tempDiv.style.width = '500px';
-    document.body.appendChild(tempDiv);
 
-    const canvas = await html2canvas(tempDiv, {
+    // Crear iframe temporal (aisla estilos de la factura para que no afecten la página)
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.left = '-10000px';
+    iframe.style.top = '-10000px';
+    iframe.style.width = '500px';
+    iframe.style.height = 'auto';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) throw new Error('No se pudo acceder al documento del iframe');
+
+    iframeDoc.open();
+    iframeDoc.write(html);
+    iframeDoc.close();
+
+    // Esperar a que el iframe cargue completamente
+    await new Promise<void>((resolve, reject) => {
+      const onLoad = () => {
+        // Pequeño retraso para asegurar renderizado de estilos y fuentes
+        setTimeout(() => resolve(), 150);
+      };
+      iframe.addEventListener('load', onLoad);
+      // Fallback: si ya está cargado
+      try {
+        if (iframeDoc.readyState === 'complete') onLoad();
+      } catch (e) {
+        // ignore
+      }
+      // Timeout por si algo falla
+      setTimeout(() => reject(new Error('Timeout cargando contenido del iframe')), 5000);
+    });
+
+    const body = iframeDoc.body;
+    const widthPx = 500; // ancho en px para renderizar
+    const canvas = await html2canvas(body, {
       scale: 2,
       logging: false,
       backgroundColor: '#fff',
       useCORS: true,
       allowTaint: true,
-      width: 500,
-      height: tempDiv.scrollHeight
+      width: widthPx,
+      height: body.scrollHeight
     });
 
-    document.body.removeChild(tempDiv);
+    // Limpiar iframe
+    document.body.removeChild(iframe);
 
     const imgData = canvas.toDataURL('image/png');
     const imgWidth = 210; // A4 width in mm
@@ -500,6 +530,7 @@ export const imprimirFactura = async (data: FacturaData, tipo: 'cliente' | 'bode
     }
 
     printWindow.document.write(html);
+    printWindow.document.title = `Factura #${data.id_pedido} - CLÍNICA BLUYIN`;
     printWindow.document.close();
 
     printWindow.addEventListener('load', () => {

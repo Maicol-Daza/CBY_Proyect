@@ -13,6 +13,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { InputMoneda } from './InputMoneda';
 import ModalFacturasUnificado from './ModalFacturasUnificado';
+import ModalCajonCodigo from './ModalCajonCodigo';
 import { useDataRefresh } from "../hooks/useDataRefresh";
 import { DATA_EVENTS, emitDataEvent } from "../utils/eventEmitter";
 
@@ -48,6 +49,12 @@ export const HistorialModule = () => {
     const [cargandoDevolucion, setCargandoDevolucion] = useState(false);
     const [modalFacturasOpen, setModalFacturasOpen] = useState(false);
     const [datosFactura, setDatosFactura] = useState<any>(null);
+
+    // Modal para selección de cajón/código en devolución gratuita
+    const [modalCajonCodigoOpen, setModalCajonCodigoOpen] = useState(false);
+    const [cajonSeleccionado, setCajonSeleccionado] = useState<number|null>(null);
+    const [codigoSeleccionado, setCodigoSeleccionado] = useState<number|null>(null);
+    const [pendienteGuardarDevolucion, setPendienteGuardarDevolucion] = useState(false);
 
     useEffect(() => {
         cargarPedidos();
@@ -638,7 +645,8 @@ export const HistorialModule = () => {
           saldo: datosCompletos.saldo || 0,
           prendas: datosCompletos.prendas || [],
           nombre_cajon: datosCompletos.nombre_cajon,
-          id_cajon: datosCompletos.id_cajon
+          id_cajon: datosCompletos.id_cajon,
+          estado: datosCompletos.estado // Agregado: permitir controlar visibilidad de Factura Estándar
         };
         
         setDatosFactura(datosParaFactura);
@@ -655,58 +663,78 @@ export const HistorialModule = () => {
     };
 
 
-    const handleGuardarDevolucion = async () => {
-      //VALIDACIÓN: Verificar si la garantía está vencida
-      if (!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)) {
-        warning("No se puede registrar la devolución: La garantía ha vencido");
-        return;
-      }
 
-      if (!pedidoDevolucion || !devolucionData.motivo) {
-        warning("Por favor selecciona un motivo de devolución");
-        return;
-      }
+        const handleGuardarDevolucion = async () => {
+            //VALIDACIÓN: Verificar si la garantía está vencida
+            if (!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)) {
+                warning("No se puede registrar la devolución: La garantía ha vencido");
+                return;
+            }
 
-      setCargandoDevolucion(true);
+            if (!pedidoDevolucion || !devolucionData.motivo) {
+                warning("Por favor selecciona un motivo de devolución");
+                return;
+            }
 
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/pedidos/${pedidoDevolucion.id_pedido}/devolucion`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              motivo_devolucion: devolucionData.motivo,
-              descripcion_devolucion: devolucionData.descripcion || null,
-              solucion_devolucion: devolucionData.solucion,
-              monto_devolucion: devolucionData.solucion === "reembolso" ? devolucionData.monto : 0
-            })
-          }
-        );
+            // Si es procedimiento gratuito, mostrar modal de cajón/código antes de guardar
+            if (devolucionData.solucion === "nuevo_procedimiento") {
+                setModalCajonCodigoOpen(true);
+                setPendienteGuardarDevolucion(true);
+                return;
+            }
 
-        const data = await response.json();
+            // Si es reembolso, solo registrar la devolución, NO crear pedido ni activar flujo de entrega
+            if (devolucionData.solucion === "reembolso") {
+                await guardarDevolucionBackend();
+                return;
+            }
 
-        if (!response.ok) {
-          throw new Error(data.error || "Error al registrar devolución");
-        }
+            // Para cualquier otro caso futuro, solo registrar devolución
+            await guardarDevolucionBackend();
+        };
 
-        success("Devolución registrada correctamente");
-        
-        // Emitir eventos de actualización
-        emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
-        emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED);
-        emitDataEvent(DATA_EVENTS.CODIGOS_UPDATED); // Libera códigos si aplica
-        emitDataEvent(DATA_EVENTS.CAJONES_UPDATED);
-        
-        await cargarPedidos();
-        handleCerrarDevolucion();
-      } catch (error) {
-        console.error("Error:", error);
-        showError(`${error instanceof Error ? error.message : "Error al registrar"}`);
-      } finally {
-        setCargandoDevolucion(false);
-      }
-    };
+        // Lógica para guardar devolución en backend (reutilizable)
+        const guardarDevolucionBackend = async (cajonId?: number, codigoId?: number) => {
+            setCargandoDevolucion(true);
+            try {
+                const body: any = {
+                    motivo_devolucion: devolucionData.motivo,
+                    descripcion_devolucion: devolucionData.descripcion || null,
+                    solucion_devolucion: devolucionData.solucion,
+                    monto_devolucion: devolucionData.solucion === "reembolso" ? devolucionData.monto : 0
+                };
+                // Si es procedimiento gratuito, incluir cajón/código
+                if (devolucionData.solucion === "nuevo_procedimiento" && cajonId && codigoId) {
+                    body.cajon_id = cajonId;
+                    body.codigo_id = codigoId;
+                }
+                const response = await fetch(
+                    `http://localhost:3000/api/pedidos/${pedidoDevolucion.id_pedido}/devolucion`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(body)
+                    }
+                );
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Error al registrar devolución");
+                }
+                success("Devolución registrada correctamente");
+                emitDataEvent(DATA_EVENTS.PEDIDOS_UPDATED);
+                emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED);
+                emitDataEvent(DATA_EVENTS.CODIGOS_UPDATED);
+                emitDataEvent(DATA_EVENTS.CAJONES_UPDATED);
+                await cargarPedidos();
+                handleCerrarDevolucion();
+            } catch (error) {
+                console.error("Error:", error);
+                showError(`${error instanceof Error ? error.message : "Error al registrar"}`);
+            } finally {
+                setCargandoDevolucion(false);
+                setPendienteGuardarDevolucion(false);
+            }
+        };
 
 
 
@@ -1327,153 +1355,163 @@ export const HistorialModule = () => {
             )}
 
             {/* MODAL REGISTRAR DEVOLUCIÓN - SIMPLIFICADO */}
-            {modalDevolucionOpen && pedidoDevolucion && (
-  <div className="modal-overlay" onClick={handleCerrarDevolucion}>
-    <div className="modal-content-devolucion" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-header">
-        <h2>Registrar Devolución - Pedido #{pedidoDevolucion.id_pedido}</h2>
-        <button className="btn-cerrar" onClick={handleCerrarDevolucion} type="button">
-          <FaTimes />
-        </button>
-      </div>
+                        {modalDevolucionOpen && pedidoDevolucion && (
+                            <div className="modal-overlay" onClick={handleCerrarDevolucion}>
+                                <div className="modal-content-devolucion" onClick={(e) => e.stopPropagation()}>
+                                    <div className="modal-header">
+                                        <h2>Registrar Devolución - Pedido #{pedidoDevolucion.id_pedido}</h2>
+                                        <button className="btn-cerrar" onClick={handleCerrarDevolucion} type="button">
+                                            <FaTimes />
+                                        </button>
+                                    </div>
+                                    <div className="modal-body-devolucion">
+                                        {/* INFORMACIÓN DEL PEDIDO */}
+                                        <div className="devolucion-info-pedido">
+                                            <div className="info-row">
+                                                <span><strong>Cliente:</strong> {pedidoDevolucion.cliente_nombre}</span>
+                                                <span><strong>Cédula:</strong> {pedidoDevolucion.cliente_cedula}</span>
+                                            </div>
+                                            <div className="info-row">
+                                                <span><strong>Fecha Entrega:</strong> {formatearFecha(pedidoDevolucion.fecha_entrega)}</span>
+                                                <span><strong>Garantía:</strong> {pedidoDevolucion.garantia} días</span>
+                                            </div>
+                                            {/*ADVERTENCIA SI ESTÁ FUERA DE PLAZO */}
+                                            {!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia) && (
+                                                <div className="advertencia-garantia-vencida">
+                                                    <strong>ADVERTENCIA: Garantía Vencida</strong>
+                                                    <p>
+                                                        La garantía venció el {calcularFechaGarantia(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)}.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* FORMULARIO DEVOLUCIÓN */}
+                                        <div className="formulario-devolucion">
+                                            {/* MOTIVO */}
+                                            <div className="form-group">
+                                                <label htmlFor="motivo">
+                                                    <strong>Motivo de la Devolución *</strong>
+                                                </label>
+                                                <select
+                                                    id="motivo"
+                                                    value={devolucionData.motivo}
+                                                    onChange={(e) =>
+                                                        setDevolucionData({ ...devolucionData, motivo: e.target.value })
+                                                    }
+                                                    className="input-devolucion"
+                                                >
+                                                    <option value="">Selecciona un motivo...</option>
+                                                    <option value="medidas_incorrectas">Medidas Incorrectas</option>
+                                                    <option value="defecto_costura">Defecto de Costura</option>
+                                                    <option value="diferencia_pedido">Diferencia con lo Solicitado</option>
+                                                    <option value="calidad_material">Calidad del Material</option>
+                                                    <option value="otro">Otro</option>
+                                                </select>
+                                            </div>
+                                            {/* DESCRIPCIÓN */}
+                                            <div className="form-group">
+                                                <label htmlFor="descripcion">
+                                                    <strong>Descripción del Defecto</strong>
+                                                </label>
+                                                <textarea
+                                                    id="descripcion"
+                                                    value={devolucionData.descripcion}
+                                                    onChange={(e) =>
+                                                        setDevolucionData({ ...devolucionData, descripcion: e.target.value })
+                                                    }
+                                                    placeholder="Describe detalladamente el defecto encontrado..."
+                                                    className="input-devolucion textarea"
+                                                    rows={4}
+                                                />
+                                            </div>
+                                            {/* SOLUCIÓN */}
+                                            <div className="form-group">
+                                                <label htmlFor="solucion">
+                                                    <strong>Solución a Aplicar *</strong>
+                                                </label>
+                                                <select
+                                                    id="solucion"
+                                                    value={devolucionData.solucion}
+                                                    onChange={(e) => {
+                                                        const nuevaSolucion = e.target.value;
+                                                        // Si elige reembolso, cargar automáticamente el monto total
+                                                        const nuevoMonto = nuevaSolucion === "reembolso" 
+                                                            ? parseFloat((pedidoDevolucion.total_pedido ?? pedidoDevolucion.totalPedido ?? 0).toString())
+                                                            : 0;
+                                                        setDevolucionData({ 
+                                                            ...devolucionData, 
+                                                            solucion: nuevaSolucion,
+                                                            monto: nuevoMonto
+                                                        });
+                                                    }}
+                                                    className="input-devolucion"
+                                                >
+                                                    <option value="reembolso">Reembolso Total</option>
+                                                    <option value="nuevo_procedimiento">Nuevo Procedimiento Gratuito</option>
+                                                </select>
+                                            </div>
+                                            {/* MONTO - SOLO SI ES REEMBOLSO CON InputMoneda */}
+                                            {devolucionData.solucion === "reembolso" && (
+                                                <div className="form-group">
+                                                    <label htmlFor="monto">
+                                                        <strong>Monto a Reembolsar</strong>
+                                                    </label>
+                                                    <InputMoneda
+                                                        value={devolucionData.monto}
+                                                        onChange={(valor) =>
+                                                            setDevolucionData({
+                                                                ...devolucionData,
+                                                                monto: valor
+                                                            })
+                                                        }
+                                                        placeholder="$ 0,00"
+                                                        disabled={true}
+                                                    />
+                                                    <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
+                                                        Monto original del pedido: {formatCOP(parseFloat((pedidoDevolucion.total_pedido ?? pedidoDevolucion.totalPedido ?? 0).toString()))}
+                                                    </small>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button
+                                            className="btn-cancelar-"
+                                            onClick={handleCerrarDevolucion}
+                                            type="button"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            className="btn-guardar"
+                                            onClick={handleGuardarDevolucion}
+                                            disabled={cargandoDevolucion}
+                                            type="button"
+                                        >
+                                            {cargandoDevolucion ? "Guardando..." : "✓ Registrar Devolución"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
-      <div className="modal-body-devolucion">
-        {/* INFORMACIÓN DEL PEDIDO */}
-        <div className="devolucion-info-pedido">
-          <div className="info-row">
-            <span><strong>Cliente:</strong> {pedidoDevolucion.cliente_nombre}</span>
-            <span><strong>Cédula:</strong> {pedidoDevolucion.cliente_cedula}</span>
-          </div>
-          <div className="info-row">
-            <span><strong>Fecha Entrega:</strong> {formatearFecha(pedidoDevolucion.fecha_entrega)}</span>
-            <span><strong>Garantía:</strong> {pedidoDevolucion.garantia} días</span>
-          </div>
-
-          {/*ADVERTENCIA SI ESTÁ FUERA DE PLAZO */}
-          {!verificarGarantiaVigente(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia) && (
-            <div className="advertencia-garantia-vencida">
-              <strong>ADVERTENCIA: Garantía Vencida</strong>
-              <p>
-                La garantía venció el {calcularFechaGarantia(pedidoDevolucion.fecha_entrega, pedidoDevolucion.garantia)}.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* FORMULARIO DEVOLUCIÓN */}
-        <div className="formulario-devolucion">
-          {/* MOTIVO */}
-          <div className="form-group">
-            <label htmlFor="motivo">
-              <strong>Motivo de la Devolución *</strong>
-            </label>
-            <select
-              id="motivo"
-              value={devolucionData.motivo}
-              onChange={(e) =>
-                setDevolucionData({ ...devolucionData, motivo: e.target.value })
-              }
-              className="input-devolucion"
-            >
-              <option value="">Selecciona un motivo...</option>
-              <option value="medidas_incorrectas">Medidas Incorrectas</option>
-              <option value="defecto_costura">Defecto de Costura</option>
-              <option value="diferencia_pedido">Diferencia con lo Solicitado</option>
-              <option value="calidad_material">Calidad del Material</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-
-          {/* DESCRIPCIÓN */}
-          <div className="form-group">
-            <label htmlFor="descripcion">
-              <strong>Descripción del Defecto</strong>
-            </label>
-            <textarea
-              id="descripcion"
-              value={devolucionData.descripcion}
-              onChange={(e) =>
-                setDevolucionData({ ...devolucionData, descripcion: e.target.value })
-              }
-              placeholder="Describe detalladamente el defecto encontrado..."
-              className="input-devolucion textarea"
-              rows={4}
-            />
-          </div>
-
-          {/* SOLUCIÓN */}
-          <div className="form-group">
-            <label htmlFor="solucion">
-              <strong>Solución a Aplicar *</strong>
-            </label>
-            <select
-              id="solucion"
-              value={devolucionData.solucion}
-              onChange={(e) => {
-                const nuevaSolucion = e.target.value;
-                // Si elige reembolso, cargar automáticamente el monto total
-                const nuevoMonto = nuevaSolucion === "reembolso" 
-                  ? parseFloat((pedidoDevolucion.total_pedido ?? pedidoDevolucion.totalPedido ?? 0).toString())
-                  : 0;
-                
-                setDevolucionData({ 
-                  ...devolucionData, 
-                  solucion: nuevaSolucion,
-                  monto: nuevoMonto
-                });
-              }}
-              className="input-devolucion"
-            >
-              <option value="reembolso">Reembolso Total</option>
-              <option value="nuevo_procedimiento">Nuevo Procedimiento Gratuito</option>
-            </select>
-          </div>
-
-          {/* MONTO - SOLO SI ES REEMBOLSO CON InputMoneda */}
-          {devolucionData.solucion === "reembolso" && (
-            <div className="form-group">
-              <label htmlFor="monto">
-                <strong>Monto a Reembolsar</strong>
-              </label>
-              <InputMoneda
-                value={devolucionData.monto}
-                onChange={(valor) =>
-                  setDevolucionData({
-                    ...devolucionData,
-                    monto: valor
-                  })
-                }
-                placeholder="$ 0,00"
-                disabled={true}
-              />
-              <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
-                Monto original del pedido: {formatCOP(parseFloat((pedidoDevolucion.total_pedido ?? pedidoDevolucion.totalPedido ?? 0).toString()))}
-              </small>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="modal-footer">
-        <button
-          className="btn-cancelar-"
-          onClick={handleCerrarDevolucion}
-          type="button"
-        >
-          Cancelar
-        </button>
-        <button
-          className="btn-guardar"
-          onClick={handleGuardarDevolucion}
-          disabled={cargandoDevolucion}
-          type="button"
-        >
-          {cargandoDevolucion ? "Guardando..." : "✓ Registrar Devolución"}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                        {/* Modal de selección de cajón/código para devolución gratuita */}
+                        {modalCajonCodigoOpen && (
+                            <ModalCajonCodigo
+                                isOpen={modalCajonCodigoOpen}
+                                onClose={() => {
+                                    setModalCajonCodigoOpen(false);
+                                    setPendienteGuardarDevolucion(false);
+                                }}
+                                onGuardar={(cajonId, codigoId) => {
+                                    setCajonSeleccionado(cajonId);
+                                    setCodigoSeleccionado(codigoId);
+                                    setModalCajonCodigoOpen(false);
+                                    // Guardar devolución con cajón/código
+                                    guardarDevolucionBackend(cajonId, codigoId);
+                                }}
+                            />
+                        )}
 
             {/* Modal de Facturas */}
             <ModalFacturasUnificado

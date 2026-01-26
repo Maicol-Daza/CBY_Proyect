@@ -8,7 +8,7 @@
     "start": "node server.js"
   },
   "keywords": [],
-  "author": "Ramcrack",
+  "author": "Maicol",
   "license": "ISC",
   "description": "",
   "dependencies": {

@@ -6,6 +6,10 @@ export const loginRequest = async (credentials) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
     });
-    if (!res.ok) throw new Error("Error en login");
-    return res.json();
+    const data = await res.json();
+    if (!res.ok) {
+        // Propaga el mensaje de error específico del backend
+        throw new Error(data.error || "Error en login");
+    }
+    return data;
 };

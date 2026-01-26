@@ -1,3 +1,27 @@
+/* Botón cancelar exclusivo para ControlAdministrador */
+.btn-cancelar-control-admin {
+  display: inline-block;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #6b7280;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background 0.2s;
+  box-shadow: none;
+  min-width: 120px;
+  text-align: center;
+}
+.btn-cancelar-control-admin:hover:not(:disabled) {
+  background: #4b5563;
+}
+.btn-cancelar-control-admin:disabled {
+  background: #9ca3af;
+  color: #e5e7eb;
+  cursor: not-allowed;
+}
 .control-admin-container {
   width: 100%;
   max-width: 100%;
@@ -966,74 +990,158 @@
   color: #1f2937;
 }
 
+.modal-content-ca {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 2.5rem 2.2rem 1.5rem 2.2rem;
+  max-width: 420px;
+  margin: 0 auto;
+  position: relative;
+  animation: slideInRight 0.3s;
+}
+
+
+
+
+.modal-footer-ca button {
+  flex: 1;
+  max-width: 180px;
+}
+
+
+/* Unificación: usar el botón global de cancelar */
+.btn-cancelar {
+  @apply btn-cancelar-global;
+  margin-left: 10px;
+}
+
+/* Organización y separación de botones en el modal de cajón */
+.modal-footer-ca {
+  
+  padding-top: 1.5rem ;
+}
+
+
+
+.modal-footer-ca .btn-crear {
+  background: #ffc107;
+  color: #1a1a1a;
+}
+
+.modal-footer-ca .btn-crear:hover:not(:disabled) {
+  background: #e6ad00;
+}
+
+.modal-footer-ca .btn-crear:disabled {
+  background: #ffe082;
+  color: #bdbdbd;
+  cursor: not-allowed;
+}
+
+
+.modal-header-ca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f3f4f6;
+  background: transparent;
+  position: relative;
+  z-index: 10;
+
+.modal-header-ca h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.btn-close:hover {
+  color: #eab308;
+}
+}
+
 /* Modal para crear cajón */
 .modal-cajon {
-  max-width: 400px;
+  width: 100%;
+  min-width: 320px;
+  max-width: 420px;
 }
 
 .modal-cajon .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.3rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-cajon .form-group label {
-  display: block;
   font-weight: 600;
-  margin-bottom: 0.4rem;
-  color: #374151;
-  font-size: 0.875rem;
+  color: #222;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
 }
 
 .modal-cajon .form-group input {
   width: 100%;
-  padding: 8px 12px;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 14px;
+  font-size: 1.05rem;
+  background: #f9fafb;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.modal-cajon .form-group input:focus {
+  border-color: #eab308;
+  background: #fffbe6;
 }
 
 .modal-cajon .form-group small {
-  display: block;
-  margin-top: 0.35rem;
   color: #6b7280;
-  font-size: 0.75rem;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
 }
 
 .modal-cajon .btn-crear {
-  background: #ffc107;
-  color: #1a1a1a;
-  padding: 8px 20px;
+
+  background: linear-gradient(90deg, #eab308 0%, #facc15 100%);
+  color: #222;
+  font-weight: 700;
   border: none;
-  border-radius: 6px;
-  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.65rem 1.8rem;
+  font-size: 1rem;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(234,179,8,0.15);
   transition: all 0.2s ease;
-  font-size: 0.875rem;
+  outline: none;
+  min-width: 140px;
+
 }
 
 .modal-cajon .btn-crear:hover:not(:disabled) {
-  background: #e6ad00;
+  background: linear-gradient(90deg, #facc15 0%, #eab308 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(234,179,8,0.25);
+  transform: translateY(-1px);
 }
 
 .modal-cajon .btn-crear:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.modal-cajon .btn-cancelar {
   background: #f3f4f6;
-  color: #374151;
-  padding: 8px 20px;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
+  color: #bbb;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
-.modal-cajon .btn-cancelar:hover {
-  background: #e5e7eb;
-}
 
 .separador-config {
   border: none;

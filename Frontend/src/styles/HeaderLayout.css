@@ -195,29 +195,31 @@
     .app-header .container {
         padding: 0 1rem;
         gap: 1rem;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
     }
-    
     .header-left {
+        flex-direction: row;
+        align-items: center;
         gap: 0.5rem;
+        width: auto;
     }
-    
     .app-header .brand {
         font-size: 0.95rem;
+        margin-bottom: 0;
     }
-    
     .app-header .brand a span {
         font-size: 1.1rem;
     }
-    
+    .header-nav {
+        width: auto;
+        gap: 0;
+    }
     .app-header .user-details {
         display: none;
     }
-    
     .app-header .logout-button .label {
         display: none;
-    }
-    
-    .header-nav {
-        gap: 0;
     }
 }

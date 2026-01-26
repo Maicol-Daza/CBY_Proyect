@@ -60,7 +60,6 @@
     border: none;
     cursor: pointer;
     margin-bottom: 1.5rem;
-    font-weight: 600;
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -139,20 +138,12 @@
     color: #0881b5;
 }
 
-.card-stat-icon.icon-users {
-    color: #0881b5;
-}
 
-.card-stat-icon.icon-briefcase {
-    color: #0881b5;
-}
-
-.card-stat-icon.icon-user {
-    color: #0881b5;
-}
-
+.card-stat-icon.icon-users,
+.card-stat-icon.icon-briefcase,
+.card-stat-icon.icon-user,
 .card-stat-icon.icon-check {
-    color: #0881b5;
+    color: #0881b5 !important;
 }
 
 .usuarios-tabla-section {
@@ -196,13 +187,12 @@
 .tabla th {
     padding: 1rem 0.6rem;
     text-align: left;
-    font-weight: 600;
-    color: #fcfcfd;
+    color: #070707;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     border-bottom: 2px solid #e5e7eb;
-    background-color: #0881b5;
+    background-color: #e5e7eb;
 ;
 }
 
@@ -303,22 +293,37 @@
     transform: scale(1.05);
 }
 
-.boton-editar {
-    color: #3b82f6;
-}
 
+.boton-editar {
+    color: #0881b5;
+    background: #fff;
+    border: 1px solid #0881b5;
+    border-radius: 4px;
+    padding: 8px 12px;
+    transition: all 0.2s;
+    font-weight: 500;
+    box-shadow: none;
+}
 .boton-editar:hover {
-    color: #1e40af;
-    background-color: #eff6ff;
+    color: #fff;
+    background: #0881b5;
+    border-color: #0881b5;
 }
 
 .boton-eliminar {
-    color: #ef4444;
+    color: #dc2626;
+    background: #fff;
+    border: 1px solid #dc2626;
+    border-radius: 4px;
+    padding: 8px 12px;
+    transition: all 0.2s;
+    font-weight: 500;
+    box-shadow: none;
 }
-
 .boton-eliminar:hover {
-    color: #991b1b;
-    background-color: #fef2f2;
+    color: #fff;
+    background: #dc2626;
+    border-color: #dc2626;
 }
 
 .tabla-vacia {

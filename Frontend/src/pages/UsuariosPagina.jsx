@@ -164,35 +164,35 @@ export const UsuariosPagina = () => {
                         </div>
 
                                                 {/* Cards de estadísticas estilo dashboard */}
-                                                <div className="estadisticas-grid" style={{marginBottom: '2rem'}}>
-                                                    <div className="stat-card">
-                                                        <div className="stat-info">
-                                                            <p className="stat-label">TOTAL USUARIOS</p>
-                                                            <h2 className="stat-numero">{totalUsuarios}</h2>
-                                                        </div>
-                                                        <div className="stat-icon usuarios">
-                                                            <FaUsers />
-                                                        </div>
-                                                    </div>
-                                                    <div className="stat-card">
-                                                        <div className="stat-info">
-                                                            <p className="stat-label">ADMINISTRADORES</p>
-                                                            <h2 className="stat-numero">{administradores}</h2>
-                                                        </div>
-                                                        <div className="stat-icon">
-                                                            <FaBriefcase />
-                                                        </div>
-                                                    </div>
-                                                    <div className="stat-card">
-                                                        <div className="stat-info">
-                                                            <p className="stat-label">EMPLEADOS</p>
-                                                            <h2 className="stat-numero">{empleados}</h2>
-                                                        </div>
-                                                        <div className="stat-icon">
-                                                            <FaUser />
-                                                        </div>
-                                                    </div>
-                                                </div>
+                        <div className="estadisticas-grid" style={{marginBottom: '2rem'}}>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <p className="stat-label">TOTAL USUARIOS</p>
+                                    <h2 className="stat-numero">{totalUsuarios}</h2>
+                                </div>
+                                <div className="stat-icon card-stat-icon icon-users">
+                                    <FaUsers />
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <p className="stat-label">ADMINISTRADORES</p>
+                                    <h2 className="stat-numero">{administradores}</h2>
+                                </div>
+                                <div className="stat-icon card-stat-icon icon-briefcase">
+                                    <FaBriefcase />
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <p className="stat-label">EMPLEADOS</p>
+                                    <h2 className="stat-numero">{empleados}</h2>
+                                </div>
+                                <div className="stat-icon card-stat-icon icon-user">
+                                    <FaUser />
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Tabla de usuarios */}
                         <div className="usuarios-tabla-section">

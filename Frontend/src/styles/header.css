@@ -207,120 +207,111 @@
     }
 }
 
-/* Pantalla media y pequeña - Menú hamburguesa */
+/* Pantalla media y pequeña - Menú hamburguesa y menú lateral */
 @media (max-width: 1024px) {
-    .header-container {
-        flex-wrap: nowrap;
-        padding: 0 1rem;
+    .nav-desktop {
+        display: none !important;
     }
-
     .hamburger-button {
-        display: flex;
+        display: flex !important;
         margin-left: auto;
-        order: 2;
+        z-index: 101;
     }
-
-    .app-header .brand {
-        order: 1;
-    }
-
-    .app-header .nav-menu {
-        position: absolute;
-        top: 100%;
-        right: 0;
-        left: auto;
-        width: 100%;
-        max-height: 0;
-        overflow: hidden;
-        flex-direction: column;
-        justify-content: flex-start;
-        background: #ffffff;
-        border-top: 1px solid #eef2f6;
-        border-bottom: 1px solid #eef2f6;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        transition: max-height 0.3s ease;
-        z-index: 30;
-    }
-
-    .app-header .nav-menu.open {
-        max-height: 600px;
-    }
-
-    .app-header .nav-list {
-        flex-direction: column;
-        gap: 0;
-        width: 100%;
-        padding: 0;
-    }
-
-    .app-header .nav-button {
-        width: 100%;
-        justify-content: flex-start;
-        padding: 1rem 1.5rem;
-        border-radius: 0;
-        gap: 1rem;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    .app-header .nav-button:last-child {
-        border-bottom: none;
-    }
-
-    .app-header .nav-button .label {
-        display: inline;
-    }
-
-    .mobile-user-section {
-        display: flex;
-        flex-direction: column;
-        padding: 1rem 1.5rem;
-        border-top: 1px solid #eef2f6;
-        background: #f9fafb;
-    }
-
-    .mobile-user-details {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 1rem;
-    }
-
-    .mobile-user-details .user-name {
-        color: #374151;
-        font-weight: 500;
-        font-size: 0.875rem;
-    }
-
-    .mobile-user-details .user-role {
-        color: #6b7280;
-        font-size: 0.75rem;
-    }
-
-    .mobile-logout-button {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid #e5e7eb;
-        background: white;
-        color: #ef4444;
-        cursor: pointer;
-        font-size: 0.875rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-        justify-content: center;
-    }
-
-    .mobile-logout-button:hover {
-        background: #fef2f2;
-        border-color: #fecaca;
-        color: #dc2626;
-    }
-
     .app-header .user-info {
         display: none !important;
     }
+}
+
+/* Overlay y menú lateral para móvil */
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.35);
+    z-index: 100;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    transition: background 0.3s;
+}
+.mobile-menu {
+    background: #fff;
+    width: 80vw;
+    max-width: 320px;
+    height: 100vh;
+    box-shadow: -2px 0 12px rgba(0,0,0,0.10);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    animation: slideInMenu 0.25s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideInMenu {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+.mobile-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+}
+.mobile-menu li {
+    margin-bottom: 0.5rem;
+}
+.mobile-menu .nav-button {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.85rem 1rem;
+    border-radius: 0.5rem;
+    gap: 1rem;
+    border: none;
+    background: transparent;
+    color: #374151;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+.mobile-menu .nav-button.active,
+.mobile-menu .nav-button:hover {
+    background: #2563eb;
+    color: #fff;
+}
+.mobile-user-info {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+.mobile-user-info .user-name {
+    color: #374151;
+    font-weight: 600;
+    font-size: 1rem;
+}
+.mobile-user-info .user-role {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+.mobile-user-info .logout-button {
+    margin-top: 0.5rem;
+    background: #fff;
+    color: #ef4444;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.mobile-user-info .logout-button:hover {
+    background: #fef2f2;
+    color: #dc2626;
 }
 
 /* Pantalla pequeña (mobile) */

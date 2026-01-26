@@ -1,28 +1,25 @@
 import React, { useState } from "react";
-import "../styles/header.css"
+import "../styles/header.css";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { FaHome, FaUsers, FaClipboardList, FaHistory, FaCashRegister, FaCog, FaSignOutAlt, FaTshirt, FaBars, FaTimes } from 'react-icons/fa';
+import { FaUsers, FaClipboardList, FaHistory, FaCashRegister, FaCog, FaSignOutAlt, FaTshirt, FaBars } from 'react-icons/fa';
 
-type User = { name: string; role?: string; };
-type Props = { user?: User; onLogout?: () => void; };
+type User = { name: string; role?: string };
+type Props = { user?: User; onLogout?: () => void };
 
+const navItems = [
+    { key: "/pedidos", label: "Pedidos", icon: <FaClipboardList /> },
+    { key: "/clientes", label: "Clientes", icon: <FaUsers /> },
+    { key: "/historialPedidos", label: "Historial", icon: <FaHistory /> },
+    { key: "/moduloCaja", label: "Caja", icon: <FaCashRegister /> },
+    { key: "/configuracionAjustes", label: "Config. Ajustes", icon: <FaCog /> },
+];
 
 export default function Header({ user = { name: "", role: "" }, onLogout }: Props) {
-    const navigate = useNavigate();
     const location = useLocation();
-    const [menuOpen, setMenuOpen] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
 
-    const items = [
-        { key: "/pedidos", label: "Pedidos", icon: <FaClipboardList className="text-xl" /> },
-        { key: "/clientes", label: "Clientes", icon: <FaUsers className="text-xl" /> },
-        { key: "/historialPedidos", label: "Historial", icon: <FaHistory className="text-xl" /> },
-        { key: "/moduloCaja", label: "Caja", icon: <FaCashRegister className="text-xl" /> },
-        { key: "/configuracionAjustes", label: "Config. Ajustes", icon: <FaCog className="text-xl" /> },
-    ];
-
-    const handleNavClick = () => {
-        setMenuOpen(false);
-    };
+    // Cierra el menú al navegar
+    const handleNav = () => setShowMenu(false);
 
     return (
         <header className="app-header">
@@ -34,62 +31,75 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
                     </Link>
                 </div>
 
-                {/* Menú hamburguesa */}
-                <button 
-                    className="hamburger-button"
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    aria-label="Toggle menu"
-                >
-                    {menuOpen ? <FaTimes /> : <FaBars />}
-                </button>
-
-                {/* Navegación */}
-                <nav className={`nav-menu ${menuOpen ? 'open' : ''}`}>
+                {/* Menú de navegación principal (escritorio) */}
+                <nav className="nav-desktop">
                     <ul className="nav-list">
-                        {items.map((it) => {
-                            const active = location.pathname === it.key;
-                            return (
-                                <li key={it.key}>
-                                    <Link 
-                                        to={it.key} 
-                                        className={active ? "nav-button active" : "nav-button"}
-                                        onClick={handleNavClick}
-                                    >
-                                        <span className="icon-container">{it.icon}</span>
-                                        <span className="label">{it.label}</span>
-                                    </Link>
-                                </li>
-                            );
-                        })}
+                        {navItems.map((it) => (
+                            <li key={it.key}>
+                                <Link
+                                    to={it.key}
+                                    className={location.pathname === it.key ? "nav-button active" : "nav-button"}
+                                >
+                                    <span className="icon-container">{it.icon}</span>
+                                    <span className="label">{it.label}</span>
+                                </Link>
+                            </li>
+                        ))}
                     </ul>
-                    <div className="mobile-user-section">
-                        <div className="mobile-user-details">
-                            <span className="user-name">{user.name}</span>
-                            <span className="user-role">{user.role}</span>
-                        </div>
-                        <button 
-                            onClick={() => {
-                                onLogout?.();
-                                setMenuOpen(false);
-                            }} 
-                            className="mobile-logout-button"
-                        >
-                            <FaSignOutAlt />
-                            <span>Salir</span>
-                        </button>
-                    </div>
                 </nav>
 
+                {/* Botón hamburguesa solo visible en móvil */}
+                <button
+                    className="hamburger-button"
+                    onClick={() => setShowMenu((v) => !v)}
+                    aria-label="Abrir menú"
+                >
+                    <FaBars />
+                </button>
+
+                {/* Menú lateral/desplegable para móvil */}
+                {showMenu && (
+                    <div className="mobile-menu-overlay" onClick={handleNav}>
+                        <nav className="mobile-menu" onClick={e => e.stopPropagation()}>
+                            <ul>
+                                {navItems.map((it) => (
+                                    <li key={it.key}>
+                                        <Link
+                                            to={it.key}
+                                            className={location.pathname === it.key ? "nav-button active" : "nav-button"}
+                                            onClick={handleNav}
+                                        >
+                                            <span className="icon-container">{it.icon}</span>
+                                            <span className="label">{it.label}</span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="mobile-user-info">
+                                <span className="user-name">{user.name}</span>
+                                <span className="user-role">{user.role}</span>
+                                <button
+                                    className="logout-button"
+                                    onClick={() => {
+                                        onLogout?.();
+                                        setShowMenu(false);
+                                    }}
+                                >
+                                    <FaSignOutAlt /> Salir
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                )}
+
+                {/* Info usuario y logout (escritorio) */}
                 <div className="user-info">
                     <div className="user-details">
                         <span className="user-name">{user.name}</span>
                         <span className="user-role">{user.role}</span>
                     </div>
-                    <button 
-                        onClick={() => {
-                            onLogout?.();
-                            setMenuOpen(false);
-                        }} 
+                    <button
+                        onClick={() => onLogout?.()}
                         className="logout-button"
                     >
                         <FaSignOutAlt />

@@ -1119,7 +1119,7 @@ export const ControlAdministrador = () => {
                                       type="number" 
                                       min="1" 
                                       max="50" 
-                                      defaultValue="5"
+                                      defaultValue="1"
                                       id={`agregar-${cajon.id_cajon}`}
                                       className="input-mini"
                                     />
@@ -1127,7 +1127,7 @@ export const ControlAdministrador = () => {
                                       className="btn-mini btn-add"
                                       onClick={() => {
                                         const input = document.getElementById(`agregar-${cajon.id_cajon}`);
-                                        handleAgregarCodigosCajon(cajon.id_cajon, parseInt(input.value) || 5);
+                                        handleAgregarCodigosCajon(cajon.id_cajon, parseInt(input.value) || 1);
                                       }}
                                       disabled={cargandoCajones}
                                       title="Agregar códigos"
@@ -1192,7 +1192,7 @@ export const ControlAdministrador = () => {
                               <input 
                                 type="number" 
                                 min="1" 
-                                defaultValue="5"
+                                defaultValue="1"
                                 id={`m-agregar-${cajon.id_cajon}`}
                                 className="input-sm"
                               />
@@ -1200,7 +1200,7 @@ export const ControlAdministrador = () => {
                                 className="btn-sm btn-add"
                                 onClick={() => {
                                   const input = document.getElementById(`m-agregar-${cajon.id_cajon}`);
-                                  handleAgregarCodigosCajon(cajon.id_cajon, parseInt(input.value) || 5);
+                                  handleAgregarCodigosCajon(cajon.id_cajon, parseInt(input.value) || 1);
                                 }}
                                 disabled={cargandoCajones}
                               >
@@ -1252,8 +1252,8 @@ export const ControlAdministrador = () => {
             {/* Modal para crear nuevo cajón */}
             {mostrarModalCajon && (
               <div className="modal-overlay">
-                <div className="modal-content modal-cajon">
-                  <div className="modal-header">
+                <div className="modal-content-ca modal-cajon">
+                  <div className="modal-header-ca">
                     <h2><FaBox /> Crear Nuevo Cajón</h2>
                     <button className="btn-close" onClick={() => setMostrarModalCajon(false)}>×</button>
                   </div>
@@ -1279,19 +1279,21 @@ export const ControlAdministrador = () => {
                       <small>Los códigos se numerarán automáticamente continuando desde el último existente</small>
                     </div>
                   </div>
-                  <div className="modal-footer">
-                    <button 
-                      className="btn-cancelar"
-                      onClick={() => setMostrarModalCajon(false)}
-                    >
-                      Cancelar
-                    </button>
+                  <div className="modal-footer-ca">
                     <button 
                       className="btn-crear"
                       onClick={handleCrearCajon}
                       disabled={cargandoCajones}
                     >
                       {cargandoCajones ? 'Creando...' : 'Crear Cajón'}
+                    </button>
+                    <button
+                      className="btn-cancelar-control-admin"
+                      type="button"
+                      onClick={() => setMostrarModalCajon(false)}
+                      disabled={cargandoCajones}
+                    >
+                      Cancelar
                     </button>
                   </div>
                 </div>

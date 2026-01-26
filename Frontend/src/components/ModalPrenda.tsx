@@ -465,6 +465,12 @@ export default function ModalPrenda({
       return;
     }
 
+    // Validación: debe seleccionar al menos un arreglo
+    if (arreglosSeleccionados.length === 0) {
+      showWarning("Debe seleccionar al menos un arreglo para la prenda");
+      return;
+    }
+
     // Construir lista legible de arreglos 
     const nombresArreglos = arreglosSeleccionados.map(a => {
       if (a.tipo === 'combinacion') {

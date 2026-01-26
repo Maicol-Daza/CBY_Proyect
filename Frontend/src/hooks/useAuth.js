@@ -14,19 +14,20 @@ export const useAuth = () => {
     }, [token]);
 
     const login = async (email, password) => {
-        const data = await loginRequest({ email, password });
-
-        if (data.token) {
-        setToken(data.token);
-        setUser(data.usuario);
-
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.usuario));
-
-        // Devolver el usuario para que el llamador pueda usar su rol inmediatamente
-        return data.usuario;
+        try {
+            const data = await loginRequest({ email, password });
+            if (data.token) {
+                setToken(data.token);
+                setUser(data.usuario);
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.usuario));
+                return data.usuario;
+            }
+            return null;
+        } catch (error) {
+            // Propaga el mensaje de error para mostrarlo en el componente
+            throw error;
         }
-        return null;
     };
 
     const logout = () => {

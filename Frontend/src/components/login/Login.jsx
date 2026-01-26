@@ -28,12 +28,16 @@ export const Login = () => {
                 const rol = usuario.rol || user?.rol;
                 if (rol === "Administrador") navigate("/usuarios");
                 else navigate("/pedidos");
-            } else {
-                setErrorMsg("Credenciales inválidas");
             }
         } catch (err) {
-            console.error("Error en login:", err);
-            setErrorMsg("Ocurrió un error al iniciar sesión. Intenta de nuevo.");
+            // Mostrar mensajes específicos según el error
+            if (err.message === "Usuario no encontrado") {
+                setErrorMsg("El email no coincide con ninguna cuenta registrada.");
+            } else if (err.message === "Contraseña incorrecta") {
+                setErrorMsg("La contraseña es incorrecta.");
+            } else {
+                setErrorMsg("Ocurrió un error al iniciar sesión. Intenta de nuevo.");
+            }
         }
     };
 

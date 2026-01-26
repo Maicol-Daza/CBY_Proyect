@@ -101,9 +101,6 @@
   background-color: #0a7b8a;
 }
 
-.modal-boton-guardar:active {
-  background-color: #3e8e41;
-}
 
 .modal-boton-guardar:focus,
 .modal-boton-cancelar:focus {

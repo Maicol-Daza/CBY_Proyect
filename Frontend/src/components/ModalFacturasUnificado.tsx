@@ -10,17 +10,38 @@ interface ModalFacturasUnificadoProps {
   isOpen: boolean;
   facturaData: FacturaData | null;
   onClose: () => void;
+  initialVista?: VistaActual; // Opcional: abrir directamente una vista de preview al montar
 }
 
 type TipoFactura = 'cliente' | 'bodega' | 'original';
 type VistaActual = 'menu' | 'preview-cliente' | 'preview-bodega' | 'preview-original';
 
-export default function ModalFacturasUnificado({ isOpen, facturaData, onClose }: ModalFacturasUnificadoProps) {
+export default function ModalFacturasUnificado({ isOpen, facturaData, onClose, initialVista }: ModalFacturasUnificadoProps) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string>('');
-  const [vistaActual, setVistaActual] = useState<VistaActual>('menu');
+  // Si el componente recibe `initialVista` queremos evitar renderizar primero el menú
+  // para evitar parpadeos. Inicializamos la vista con `initialVista` si está presente.
+  const [vistaActual, setVistaActual] = useState<VistaActual>(initialVista ?? 'menu');
   const [htmlPreview, setHtmlPreview] = useState<string>('');
   const facturaOriginalRef = useRef<HTMLDivElement>(null);
+
+  // Si el padre pide abrir directamente una vista (ej. tras entrega), mostrarla al montar
+  React.useEffect(() => {
+    if (!isOpen) return;
+    if (!facturaData) return;
+    if (!initialVista) return;
+
+    try {
+      // Para 'original' queremos usar la versión cliente (visualmente es la estándar con header grande)
+      const tipo = initialVista === 'preview-bodega' ? 'bodega' : 'cliente';
+      const html = generarHTMLFactura(facturaData, tipo);
+      setHtmlPreview(html);
+      setVistaActual(initialVista);
+    } catch (err) {
+      console.error('Error al generar preview inicial:', err);
+    }
+  }, [isOpen, facturaData, initialVista]);
+
 
   if (!isOpen || !facturaData) return null;
 
@@ -120,12 +141,85 @@ export default function ModalFacturasUnificado({ isOpen, facturaData, onClose }:
 
   // Handlers para Factura Original
   const handleVerPreviewOriginal = () => {
-    setVistaActual('preview-original');
+    try {
+      const html = generarHTMLFactura(facturaData, 'cliente');
+      setHtmlPreview(html);
+      setVistaActual('preview-original');
+    } catch (err) {
+      setError('Error al cargar vista previa');
+      console.error(err);
+    }
   };
 
   const handleImprimirOriginal = () => {
-    window.print();
+    try {
+      setCargando(true);
+      setError('');
+
+      // Reutilizamos la función que genera el HTML completo con estilos
+      const html = generarHTMLFactura(facturaData, 'cliente');
+
+      const printWindow = window.open('', '_blank', 'width=900,height=700');
+      if (!printWindow) throw new Error('No se pudo abrir la ventana de impresión');
+
+      printWindow.document.open();
+      // generarHTMLFactura ya incluye <html>, <head> y estilos necesarios
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+
+      // Cerrar la ventana automáticamente después de imprimir (onafterprint)
+      let closed = false;
+      const tryClose = () => {
+        if (closed) return;
+        try {
+          printWindow.close();
+        } catch (e) {
+          // Ignorar
+        }
+        closed = true;
+      };
+
+      // onafterprint para cerrar cuando el usuario termine de imprimir
+      printWindow.onafterprint = () => {
+        tryClose();
+      };
+
+      // Fallback: cerrar después de 3s por si onafterprint no se dispara
+      const fallback = setTimeout(() => {
+        tryClose();
+      }, 3000);
+
+      // Lanzar impresión tras un pequeño retraso para que renderice
+      printWindow.addEventListener('load', () => {
+        setTimeout(() => {
+          try {
+            printWindow.print();
+          } catch (e) {
+            console.error('Error al iniciar impresión:', e);
+          }
+          // Limpiamos el estado de carga cuando ya intentamos imprimir
+          setCargando(false);
+        }, 250);
+      });
+
+      // Asegurar que si la ventana se cierra manualmente limpiamos el fallback
+      const interval = setInterval(() => {
+        if (printWindow.closed) {
+          clearTimeout(fallback);
+          clearInterval(interval);
+          closed = true;
+          setCargando(false);
+        }
+      }, 500);
+    } catch (err) {
+      console.error(err);
+      setError('Error al imprimir factura original');
+      setCargando(false);
+    }
   };
+
+
 
   const handleDescargarOriginal = async () => {
     if (!facturaOriginalRef.current) return;
@@ -177,7 +271,15 @@ export default function ModalFacturasUnificado({ isOpen, facturaData, onClose }:
     }
   };
 
+
+
   const handleCerrarPreview = () => {
+    // Si abrimos la vista en modo inicial (preview automática), cerrar completamente el modal al volver
+    if (initialVista) {
+      handleCerrar();
+      return;
+    }
+
     setVistaActual('menu');
     setHtmlPreview('');
   };
@@ -325,18 +427,67 @@ export default function ModalFacturasUnificado({ isOpen, facturaData, onClose }:
     </div>
   );
 
-  // Vista de preview con iframe (para cliente y bodega)
-  if (vistaActual === 'preview-cliente' || vistaActual === 'preview-bodega') {
-    const tipoFactura = vistaActual === 'preview-cliente' ? 'Cliente' : 'Bodega';
+  // Handler genérico para imprimir desde la vista previa (cliente/bodega/estándar)
+  const handleImprimirDesdePreview = async (vista: VistaActual) => {
+    const tipo = vista === 'preview-bodega' ? 'bodega' : 'cliente'; // 'cliente' sirve también para la versión estándar
+    try {
+      setCargando(true);
+      setError('');
+      await imprimirFactura(facturaData, tipo);
+    } catch (err) {
+      setError('Error al imprimir la factura');
+      console.error(err);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Handler genérico para descargar desde la vista previa (cliente/bodega/estándar)
+  const handleDescargarDesdePreview = async (vista: VistaActual) => {
+    const tipo = vista === 'preview-bodega' ? 'bodega' : 'cliente'; // usar 'cliente' para la estándar también
+    try {
+      setCargando(true);
+      setError('');
+      await descargarFacturaPDF(facturaData, tipo);
+    } catch (err) {
+      setError('Error al descargar PDF');
+      console.error(err);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Vista de preview con iframe (ahora también para la factura estándar)
+  if (vistaActual === 'preview-cliente' || vistaActual === 'preview-bodega' || vistaActual === 'preview-original') {
+    const tipoFactura = vistaActual === 'preview-cliente' ? 'Cliente' : vistaActual === 'preview-bodega' ? 'Bodega' : 'Estándar';
     return (
       <div className="facturas-modal-overlay">
         <div className="facturas-modal-preview">
-          <div className="facturas-modal-header">
-            <h2>Vista Previa - Factura {tipoFactura} #{facturaData.id_pedido}</h2>
-            <button className="facturas-btn-cerrar" onClick={handleCerrarPreview}>
-              <FaTimes />
-            </button>
-          </div>
+          {/* Header: botones grandes SOLO para Factura Estándar, para Cliente/Bodega usar el header pequeño con cerrar */}
+          {vistaActual === 'preview-original' ? (
+            <div className="facturas-modal-header preview-header" style={{ display: 'flex', alignItems: 'center' }}>
+              {/* Título oculto visualmente pero accesible para lectores de pantalla */}
+              <h2 className="sr-only">Vista Previa - Factura #{facturaData.id_pedido}</h2>
+              <div className="preview-btns" style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+                <button className="btn-factura btn-imprimir" onClick={() => handleImprimirDesdePreview(vistaActual)} disabled={cargando}>
+                  <FaPrint size={18} style={{ marginRight: 8 }} /> Imprimir
+                </button>
+                <button className="btn-factura btn-descargar" onClick={() => handleDescargarDesdePreview(vistaActual)} disabled={cargando}>
+                  <FaDownload size={18} style={{ marginRight: 8 }} /> Descargar PDF
+                </button>
+                <button className="btn-factura btn-volver" onClick={handleCerrarPreview}>
+                  <FaTimes size={18} style={{ marginRight: 8 }} /> Volver
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="facturas-modal-header">
+              <h2>Vista Previa - Factura {tipoFactura} #{facturaData.id_pedido}</h2>
+              <button className="facturas-btn-cerrar" onClick={handleCerrarPreview}>
+                <FaTimes />
+              </button>
+            </div>
+          )}
 
           <div className="facturas-preview-content">
             <iframe
@@ -351,42 +502,13 @@ export default function ModalFacturasUnificado({ isOpen, facturaData, onClose }:
             />
           </div>
 
-          <div className="facturas-modal-footer">
-            <button className="facturas-btn-cancelar" onClick={handleCerrarPreview}>
-              Cerrar Vista Previa
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Vista de preview para factura original
-  if (vistaActual === 'preview-original') {
-    return (
-      <div className="modal-overlay">
-        <div className="modal-factura">
-          {/* Botones de acción */}
-          <div className="factura-acciones">
-            <button className="btn-primary" onClick={handleImprimirOriginal} disabled={cargando}>
-              <FaPrint /> Imprimir
-            </button>
-            <button className="btn-primary" onClick={handleDescargarOriginal} disabled={cargando}>
-              <FaDownload /> Descargar PDF
-            </button>
-            <button className="btn-cancelar" onClick={handleCerrarPreview}>
-              <FaTimes /> Volver
-            </button>
-          </div>
-
-          {error && (
-            <div className="facturas-error-message">
-              {error}
+          {vistaActual !== 'preview-original' && (
+            <div className="facturas-modal-footer">
+              <button className="facturas-btn-cancelar" onClick={handleCerrarPreview}>
+                Cerrar Vista Previa
+              </button>
             </div>
           )}
-
-          {/* Contenido de la factura original */}
-          {renderFacturaOriginal()}
         </div>
       </div>
     );
@@ -412,22 +534,24 @@ export default function ModalFacturasUnificado({ isOpen, facturaData, onClose }:
             </div>
           )}
 
-          {/* Factura Original */}
-          <div className="facturas-seccion">
-            <div className="facturas-titulo">
-              <h3><FaReceipt /> Factura Estándar</h3>
-              <p>Factura completa con todos los detalles del pedido</p>
+          {/* Factura Original: mostrar SOLO si el pedido está entregado y NO se abrió la vista automáticamente (initialVista) */}
+          { (facturaData.estado && facturaData.estado.toString().toLowerCase() === 'entregado' && !initialVista) && (
+            <div className="facturas-seccion">
+              <div className="facturas-titulo">
+                <h3><FaReceipt /> Factura Estándar</h3>
+                <p>Factura completa con todos los detalles del pedido</p>
+              </div>
+              <div className="facturas-botones">
+                <button
+                  className="facturas-btn-accion facturas-btn-preview"
+                  onClick={handleVerPreviewOriginal}
+                  disabled={cargando}
+                >
+                  <FaEye /> Ver Factura
+                </button>
+              </div>
             </div>
-            <div className="facturas-botones">
-              <button
-                className="facturas-btn-accion facturas-btn-preview"
-                onClick={handleVerPreviewOriginal}
-                disabled={cargando}
-              >
-                <FaEye /> Ver Factura
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Factura Cliente */}
           <div className="facturas-seccion">
