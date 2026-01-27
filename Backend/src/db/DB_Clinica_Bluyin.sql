@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS pedido_cliente (
     saldo DECIMAL(10,2) DEFAULT 0,
     observaciones VARCHAR(500),
     garantia INT NULL DEFAULT NULL COMMENT 'Plazo de garantía en días',
-    estado ENUM('en_proceso', 'entregado', 'devuelto') DEFAULT 'en_proceso',
+    estado ENUM('en_proceso', 'entregado', 'devuelto', 'reembolso') DEFAULT 'en_proceso',
     motivo_devolucion VARCHAR(100),
     descripcion_devolucion LONGTEXT,
     solucion_devolucion VARCHAR(50),

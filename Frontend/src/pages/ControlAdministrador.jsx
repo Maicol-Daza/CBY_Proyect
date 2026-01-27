@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import { useAlert } from "../context/AlertContext";
 import { Layout } from "../components/layout/Layout";
 import { FaUsers, FaShoppingCart, FaReceipt, FaCog, FaCashRegister, FaCheckCircle, FaBox, FaPlus, FaTrash, FaEdit, FaChevronDown, FaChevronUp } from "react-icons/fa";
@@ -480,7 +481,6 @@ export const ControlAdministrador = () => {
   const handleEliminarCodigosCajon = async (idCajon, cantidadEliminar) => {
     const codigosCajon = codigos.filter(c => c.id_cajon === idCajon);
     const codigosDisponibles = codigosCajon.filter(c => c.estado === 'disponible' || !c.estado);
-    
     if (codigosDisponibles.length < cantidadEliminar) {
       warning(`Solo hay ${codigosDisponibles.length} códigos disponibles para eliminar. Los códigos ocupados no se pueden eliminar.`);
       return;
@@ -1352,6 +1352,7 @@ export const ControlAdministrador = () => {
           </div>
         )}
       </div>
+
     </Layout>
   );
 };

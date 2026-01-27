@@ -246,6 +246,27 @@
   border: 1px solid #f5c6cb;
 }
 
+/* Estado REEMBOLSO */
+.estado-reembolso {
+  background-color: #f0f4ff;
+  color: #1e3a8a;
+  border: 1px solid #c7d2fe;
+}
+
+/* CAJA INFORMATIVA PARA DEVOLUCIONES */
+.notice {
+  padding: 12px;
+  border-radius: 4px;
+  margin: 10px 0 12px 0;
+  font-size: 0.95rem;
+}
+
+.notice.info {
+  background-color: #fff3cd; /* amarillo suave */
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
 /* ACCIONES */
 .tabla-pedidos .acciones-historia {
   text-align: center;

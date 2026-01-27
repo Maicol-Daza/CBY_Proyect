@@ -781,6 +781,7 @@ export const HistorialModule = () => {
     <option value="en_proceso">En proceso</option>
     <option value="entregado">Entregado</option>
     <option value="devuelto">Devuelto</option>
+    <option value="reembolso">Reembolso</option>
   </select>
 </div>
 
@@ -845,6 +846,7 @@ export const HistorialModule = () => {
                                                         pedido.estado === "listo" ? "Finalizado" :
                                                         pedido.estado === "entregado" ? "Entregado" :
                                                         pedido.estado === "devuelto" ? "DEVUELTO" :
+                                                        pedido.estado === "reembolso" ? "REEMBOLSO" :
                                                         pedido.estado || "En proceso"}
                                                 </span>
                                             </td>
@@ -1161,8 +1163,8 @@ export const HistorialModule = () => {
                                     )}
                                 </div> */}
 
-                                {/* SECCIÓN DE DEVOLUCIÓN - SOLO SI ESTADO ES DEVUELTO */}
-                                {pedidoSeleccionado.estado === "devuelto" && (
+                                {/* SECCIÓN DE DEVOLUCIÓN - SI ESTADO ES DEVUELTO O REEMBOLSO */}
+                                {(pedidoSeleccionado.estado === "devuelto" || pedidoSeleccionado.estado === "reembolso") && (
                                     <div className="detalle-seccion devolucion-seccion">
                                         <h3>Información de Devolución</h3>
                                         <div className="info-items">
@@ -1449,6 +1451,19 @@ export const HistorialModule = () => {
                                                     <option value="reembolso">Reembolso Total</option>
                                                     <option value="nuevo_procedimiento">Nuevo Procedimiento Gratuito</option>
                                                 </select>
+
+                                                {/* MENSAJES INFORMATIVOS SEGÚN LA SOLUCIÓN */}
+                                                {devolucionData.solucion === "reembolso" && (
+                                                    <div className="notice info">
+                                                        <strong>Reembolso total:</strong> Este reembolso es igual o mayor al total del pedido. El pedido será marcado como <strong>reembolso</strong> y se ocultará de la lista de entregas.
+                                                    </div>
+                                                )}
+
+                                                {devolucionData.solucion === "nuevo_procedimiento" && (
+                                                    <div className="notice info">
+                                                        <strong>Nuevo procedimiento gratuito:</strong> Se asignará un cajón y un código al pedido y el pedido será marcado como <strong>devuelto</strong>.
+                                                    </div>
+                                                )}
                                             </div>
                                             {/* MONTO - SOLO SI ES REEMBOLSO CON InputMoneda */}
                                             {devolucionData.solucion === "reembolso" && (

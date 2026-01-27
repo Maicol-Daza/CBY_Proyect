@@ -748,24 +748,77 @@ class PedidoClienteController {
     const connection = await db.getConnection();
 
     try {
-      // Si es reembolso, NO cambiar el estado a 'devuelto', solo registrar los datos de devolución
-      if (solucion_devolucion === "reembolso") {
-        await connection.query(
-          `UPDATE pedido_cliente 
-           SET motivo_devolucion = ?, 
-               descripcion_devolucion = ?, 
-               solucion_devolucion = ?, 
-               monto_devolucion = ?,
-               fecha_devolucion = NOW()
-           WHERE id_pedido = ?`,
-          [
-            motivo_devolucion,
-            descripcion_devolucion || null,
-            solucion_devolucion || "reembolso",
-            monto_devolucion || 0,
-            id
-          ]
+      // Obtener total del pedido para decidir si el reembolso es TOTAL
+      let totalPedido = 0;
+      try {
+        const [pedidoInfo] = await connection.query(
+          `SELECT total_pedido FROM pedido_cliente WHERE id_pedido = ?`,
+          [id]
         );
+        if (pedidoInfo.length > 0) totalPedido = Number(pedidoInfo[0].total_pedido || 0);
+      } catch (err) {
+        console.warn("No se pudo obtener total del pedido para evaluación de reembolso:", err.message);
+      }
+
+      // Determinar si es reembolso TOTAL
+      const esReembolso = solucion_devolucion === "reembolso";
+      const reembolsoTotal = esReembolso && Number(monto_devolucion || 0) >= Number(totalPedido || 0);
+
+      // Si es reembolso, registrar los datos y, si es reembolso total, cambiar estado a 'reembolso'
+      if (esReembolso) {
+        if (reembolsoTotal) {
+          await connection.query(
+            `UPDATE pedido_cliente 
+             SET motivo_devolucion = ?, 
+                 descripcion_devolucion = ?, 
+                 solucion_devolucion = ?, 
+                 monto_devolucion = ?,
+                 fecha_devolucion = NOW(),
+                 estado = ?
+             WHERE id_pedido = ?`,
+            [
+              motivo_devolucion,
+              descripcion_devolucion || null,
+              solucion_devolucion || "reembolso",
+              monto_devolucion || 0,
+              "reembolso",
+              id
+            ]
+          );
+        } else {
+          // Reembolso parcial: solo registrar datos, no cambiar estado
+          await connection.query(
+            `UPDATE pedido_cliente 
+             SET motivo_devolucion = ?, 
+                 descripcion_devolucion = ?, 
+                 solucion_devolucion = ?, 
+                 monto_devolucion = ?,
+                 fecha_devolucion = NOW()
+             WHERE id_pedido = ?`,
+            [
+              motivo_devolucion,
+              descripcion_devolucion || null,
+              solucion_devolucion || "reembolso",
+              monto_devolucion || 0,
+              id
+            ]
+          );
+        }
+
+        // Registrar movimiento en caja (egreso) por el reembolso
+        try {
+          const usuarioMovimiento = req.body.id_usuario || 1;
+          const montoReembolso = Number(monto_devolucion || 0);
+          if (montoReembolso > 0) {
+            await connection.query(
+              `INSERT INTO movimientos_caja (id_pedido, fecha_movimiento, tipo, descripcion, monto, id_usuario)
+               VALUES (?, NOW(), 'salida', ?, ?, ?)`,
+              [id, `Reembolso - Pedido #${id}`, montoReembolso, usuarioMovimiento]
+            );
+          }
+        } catch (err) {
+          console.warn("No se pudo registrar movimiento de reembolso en caja:", err.message);
+        }
       } else {
         await connection.query(
           `UPDATE pedido_cliente 
@@ -808,6 +861,42 @@ class PedidoClienteController {
             `UPDATE cajones SET estado = 'ocupado' WHERE id_cajon = ?`,
             [cajon_id]
           );
+        }
+      }
+
+      // Si la devolución es un reembolso, liberar códigos asociados al pedido y actualizar estado del cajón si aplica
+      if (solucion_devolucion === "reembolso") {
+        try {
+          const [codigosAsignados] = await connection.query(
+            `SELECT id_codigo, id_cajon FROM codigos WHERE id_pedido = ?`,
+            [id]
+          );
+
+          if (codigosAsignados.length > 0) {
+            // Liberar códigos (quitar asociación con el pedido y marcar disponibles)
+            await connection.query(
+              `UPDATE codigos SET id_pedido = NULL, estado = 'disponible' WHERE id_pedido = ?`,
+              [id]
+            );
+
+            // Verificar cajones afectados y marcar como disponible si no tienen códigos ocupados
+            const cajonesAfectados = [...new Set(codigosAsignados.map(c => c.id_cajon))];
+            for (const idCajon of cajonesAfectados) {
+              const [ocupados] = await connection.query(
+                `SELECT COUNT(*) as ocupados FROM codigos WHERE id_cajon = ? AND (estado = 'ocupado' OR id_pedido IS NOT NULL)`,
+                [idCajon]
+              );
+
+              if (ocupados[0].ocupados === 0) {
+                await connection.query(
+                  `UPDATE cajones SET estado = 'disponible' WHERE id_cajon = ?`,
+                  [idCajon]
+                );
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("Error al liberar códigos durante devolución:", err.message);
         }
       }
 

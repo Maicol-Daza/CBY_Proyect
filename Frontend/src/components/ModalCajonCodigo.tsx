@@ -102,7 +102,7 @@ export const ModalCajonCodigo: React.FC<ModalCajonCodigoProps> = ({
             <h3>
               <FaSearch style={{ marginRight: 6 }} /> Códigos Disponibles
             </h3>
-            <div className="codigos-grid" style={cargandoCodigos ? { opacity: 0.5 } : {}}>
+            <div className="codigos-grid-modal" style={cargandoCodigos ? { opacity: 0.5 } : {}}>
               {codigos.map((codigo) => (
                 <label
                   key={codigo.id_codigo}
