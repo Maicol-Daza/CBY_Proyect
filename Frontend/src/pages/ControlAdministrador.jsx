@@ -7,7 +7,7 @@ import { FaArrowTrendUp, FaArrowTrendDown, FaFileExcel, FaFilePdf } from "react-
 import { Icon } from "@iconify/react";
 import { leerUsuarios } from "../services/usuarioService";
 import { obtenerClientes } from "../services/clientesService";
-import { obtenerMovimientos, verificarBaseDiaria, crearBaseDiaria } from "../services/movimientos_caja";
+import { obtenerMovimientos, verificarBaseDiaria, crearBaseDiaria, verificarCajaCerrada, cerrarCaja } from "../services/movimientos_caja";
 import { obtenerAjustes } from "../services/ajustesService";
 import { obtenerAcciones } from "../services/accionesService";
 import { obtenerAjustesAccion } from "../services/ajustesAccionService";
@@ -67,6 +67,11 @@ export const ControlAdministrador = () => {
   const [montoBaseDiaria, setMontoBaseDiaria] = useState(0);
   const [nuevoMontoBase, setNuevoMontoBase] = useState("");
   const [cargandoBase, setCargandoBase] = useState(false);
+
+  // Estados para cierre de caja
+  const [cajaCerrada, setCajaCerrada] = useState(false);
+  const [fechaCierreCaja, setFechaCierreCaja] = useState(null);
+  const [cargandoCierre, setCargandoCierre] = useState(false);
 
   // Estados para configuración de cajones
   const [cajones, setCajones] = useState([]);
@@ -134,8 +139,11 @@ export const ControlAdministrador = () => {
   const verificarBaseDelDia = async () => {
     try {
       const { existe, monto } = await verificarBaseDiaria();
+      const { cerrada, fecha_cierre } = await verificarCajaCerrada();
       setBaseDiariaExiste(existe);
       setMontoBaseDiaria(monto);
+      setCajaCerrada(cerrada);
+      setFechaCierreCaja(fecha_cierre);
     } catch (error) {
       console.error("Error al verificar base diaria:", error);
     }
@@ -409,6 +417,32 @@ export const ControlAdministrador = () => {
       showError(error.message || "Error al registrar la base de caja");
     } finally {
       setCargandoBase(false);
+    }
+  };
+
+  // Función para cerrar la caja del día
+  const handleCerrarCaja = async () => {
+    const confirmar = window.confirm(
+      "¿Está seguro de que desea cerrar la caja del día? Esta acción no se puede deshacer."
+    );
+    
+    if (!confirmar) return;
+
+    try {
+      setCargandoCierre(true);
+      const usuarioGuardado = JSON.parse(localStorage.getItem("user") || "{}");
+      const idUsuario = usuarioGuardado?.id_usuario || 1;
+      
+      await cerrarCaja(idUsuario);
+      success("Caja del día cerrada correctamente. Los movimientos de caja han sido finalizados.");
+      setCajaCerrada(true);
+      setFechaCierreCaja(new Date().toISOString());
+      cargarTodosLosDatos(true); // Actualización silenciosa
+    } catch (error) {
+      console.error("Error:", error);
+      showError(error.message || "Error al cerrar la caja");
+    } finally {
+      setCargandoCierre(false);
     }
   };
 
@@ -830,6 +864,25 @@ export const ControlAdministrador = () => {
                     <strong>Base configurada para hoy</strong>
                     <p>Monto: <span className="monto-base">{formatearMoneda(montoBaseDiaria)}</span></p>
                     <p className="detalle-texto">Los empleados pueden realizar movimientos de caja normalmente.</p>
+                    {cajaCerrada ? (
+                      <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#f0fdf4', border: '1px solid #86efac', borderRadius: '4px' }}>
+                        <p style={{ color: '#166534', margin: '0 0 8px 0' }}>
+                          <strong>✓ Caja Cerrada</strong>
+                        </p>
+                        <p style={{ color: '#166534', margin: '0', fontSize: '0.9em' }}>
+                          Hora de cierre: {new Date(fechaCierreCaja).toLocaleString('es-CO')}
+                        </p>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={handleCerrarCaja}
+                        className="btn-cerrar-caja"
+                        disabled={cargandoCierre}
+                        style={{ marginTop: '15px', width: '100%' }}
+                      >
+                        {cargandoCierre ? "Cerrando..." : "Cerrar Caja del Día"}
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (

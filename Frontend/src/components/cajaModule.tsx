@@ -3,7 +3,7 @@ import { useAuthContext } from "../context/AuthContext";
 import { useAlert } from "../context/AlertContext";
 import "../styles/moduloCaja.css";
 import "../styles/inputMoneda.css";
-import { crearMovimiento, obtenerMovimientos, verificarBaseDiaria, type Movimiento } from "../services/movimientos_caja";
+import { crearMovimiento, obtenerMovimientos, verificarBaseDiaria, verificarCajaCerrada, type Movimiento } from "../services/movimientos_caja";
 import { formatCOP } from "../utils/formatCurrency";
 import { FaArrowTrendUp, FaArrowTrendDown, FaFileExcel, FaFilePdf, FaMoneyBillWave, FaLock } from "react-icons/fa6";
 import { VscChromeClose } from "react-icons/vsc";
@@ -55,6 +55,9 @@ export const CajaModule = () => {
   const [baseDiariaExiste, setBaseDiariaExiste] = useState(false);
   const [montoBaseDiaria, setMontoBaseDiaria] = useState(0);
   const [verificandoBase, setVerificandoBase] = useState(true);
+
+  // Estado para cierre de caja
+  const [cajaCerrada, setCajaCerrada] = useState(false);
 
   // Estado para modal de nuevo movimiento
   const [mostrarModalMovimiento, setMostrarModalMovimiento] = useState(false);
@@ -110,8 +113,10 @@ export const CajaModule = () => {
       // Solo mostrar loading en la primera carga para evitar parpadeos
       if (esPrimeraVez) setVerificandoBase(true);
       const { existe, monto } = await verificarBaseDiaria();
+      const { cerrada } = await verificarCajaCerrada();
       setBaseDiariaExiste(existe);
       setMontoBaseDiaria(monto);
+      setCajaCerrada(cerrada);
     } catch (error) {
       console.error("Error al verificar base diaria:", error);
     } finally {
@@ -123,7 +128,7 @@ export const CajaModule = () => {
   const esAdmin = user?.rol === "Administrador";
 
   // Verificar si el usuario puede hacer movimientos
-  const puedeHacerMovimientos = esAdmin || baseDiariaExiste;
+  const puedeHacerMovimientos = esAdmin || (baseDiariaExiste && !cajaCerrada);
 
   // Filtrar movimientos por rango de fechas y actualizar totales
   useEffect(() => {
@@ -374,6 +379,10 @@ export const CajaModule = () => {
         <button 
           className="btn-nuevo"
           onClick={() => {
+            if (cajaCerrada) {
+              warning("No se puede registrar movimientos. La caja del día ya ha sido cerrada. Abre una nueva caja para continuar con operaciones.");
+              return;
+            }
             if (!puedeHacerMovimientos) {
               warning("No se puede registrar movimientos. El administrador aún no ha ingresado la base de caja del día. Contacte al administrador para habilitar los movimientos.");
               return;
@@ -402,10 +411,29 @@ export const CajaModule = () => {
         </div>
       )}
 
+      {/* Alerta de caja cerrada */}
+      {!verificandoBase && baseDiariaExiste && cajaCerrada && (
+        <div className="alerta-base-diaria" style={{ backgroundColor: '#fef2f2', borderColor: '#fca5a5' }}>
+          <FaLock style={{ marginRight: '10px', fontSize: '20px', color: '#dc2626' }} />
+          <div>
+            <strong style={{ color: '#dc2626' }}>Caja cerrada</strong>
+            <p style={{ color: '#991b1b' }}>
+              {esAdmin 
+                ? "La caja del día ha sido cerrada. No se pueden realizar nuevos movimientos. Abre una nueva caja para continuar con operaciones."
+                : "La caja del día ha sido cerrada por el administrador. Los movimientos están bloqueados hasta que se abra una nueva caja."}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Indicador de base diaria configurada */}
       {!verificandoBase && baseDiariaExiste && (
         <div className="info-base-diaria">
-          <span>✓ Base del día configurada: <strong>{formatCOP(montoBaseDiaria)}</strong></span>
+          {cajaCerrada ? (
+            <span style={{ color: '#dc2626' }}>✗ Caja cerrada - No hay movimientos permitidos</span>
+          ) : (
+            <span>✓ Base del día configurada: <strong>{formatCOP(montoBaseDiaria)}</strong></span>
+          )}
         </div>
       )}
 

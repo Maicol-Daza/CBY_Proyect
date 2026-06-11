@@ -572,6 +572,28 @@
   cursor: not-allowed;
 }
 
+.btn-cerrar-caja {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.85rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.btn-cerrar-caja:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.btn-cerrar-caja:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
 /* ========== SECCIÓN CAJONES Y CÓDIGOS - PLEGABLE ========== */
 .seccion-cajones {
   margin-bottom: 1.5rem;

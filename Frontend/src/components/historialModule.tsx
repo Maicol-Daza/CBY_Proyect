@@ -1251,10 +1251,21 @@ export const HistorialModule = () => {
                                 </div>
                             </div>
 
-                            {/* Formulario para nuevo abono - SOLO SI ESTÁ EN PROCESO */}
-                            {pedidoAbonoActual.estado === "en_proceso" && Number(pedidoAbonoActual.saldo ?? 0) > 0 && (
+                            {/* Formulario para nuevo abono - MOSTRAR SI ESTÁ EN PROCESO O ENTREGADO CON SALDO PENDIENTE */}
+                            {(pedidoAbonoActual.estado === "en_proceso" || pedidoAbonoActual.estado === "entregado") && Number(pedidoAbonoActual.saldo ?? 0) > 0 && (
                                 <div className="abonos-nuevo-form">
-                                    <h4 className="abonos-section-title">Registrar Nuevo Abono</h4>
+                                    <h4 className="abonos-section-title">
+                                        {pedidoAbonoActual.estado === "entregado" ? (
+                                            <>Completar Pago de Pedido Entregado</>
+                                        ) : (
+                                            <>Registrar Nuevo Abono</>
+                                        )}
+                                    </h4>
+                                    {pedidoAbonoActual.estado === "entregado" && (
+                                        <div className="abonos-mensaje info" style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#e0f2fe', borderLeft: '4px solid #0ea5e9', borderRadius: '6px', color: '#0c4a6e' }}>
+                                            Este pedido fue entregado con saldo pendiente. Puedes registrar el abono restante aquí para completar el pago.
+                                        </div>
+                                    )}
                                     <div className="abonos-form-grid">
                                         <div className="abonos-form-group">
                                             <label>Monto del Abono *</label>
@@ -1287,14 +1298,18 @@ export const HistorialModule = () => {
                             )}
 
                             {/* Mensajes de estado */}
-                            {pedidoAbonoActual.estado !== "en_proceso" && (
+                            {pedidoAbonoActual.estado !== "en_proceso" && pedidoAbonoActual.estado !== "entregado" && Number(pedidoAbonoActual.saldo ?? 0) > 0 && (
                                 <div className="abonos-mensaje warning">
-                                Solo se pueden registrar abonos en pedidos con estado "En proceso"
+                                Este pedido no permite registrar abonos en su estado actual
                                 </div>
                             )}
-                            {pedidoAbonoActual.estado === "en_proceso" && Number(pedidoAbonoActual.saldo ?? 0) === 0 && (
+                            {(pedidoAbonoActual.estado === "en_proceso" || pedidoAbonoActual.estado === "entregado") && Number(pedidoAbonoActual.saldo ?? 0) === 0 && (
                                 <div className="abonos-mensaje success">
-                                    Este pedido ya está completamente pagado
+                                    {pedidoAbonoActual.estado === "entregado" ? (
+                                        <>✓ Pedido entregado y completamente pagado</>
+                                    ) : (
+                                        <>Este pedido ya está completamente pagado</>
+                                    )}
                                 </div>
                             )}
 

@@ -116,12 +116,12 @@ class HistorialAbonosController {
 
       const pedido = pedidoActual[0];
 
-      // Validar que el pedido esté en proceso
-      if (pedido.estado !== 'en_proceso') {
+      // Validar que el pedido esté en proceso o entregado con saldo pendiente
+      if (pedido.estado !== 'en_proceso' && pedido.estado !== 'entregado') {
         await connection.rollback();
         return res.status(400).json({ 
-          error: 'Solo se pueden registrar abonos en pedidos con estado "En proceso"',
-          message: 'Solo se pueden registrar abonos en pedidos con estado "En proceso"'
+          error: 'Solo se pueden registrar abonos en pedidos con estado "En proceso" o "Entregado" con saldo pendiente',
+          message: 'Solo se pueden registrar abonos en pedidos con estado "En proceso" o "Entregado" con saldo pendiente'
         });
       }
 

@@ -634,7 +634,8 @@ class PedidoClienteController {
       await this.liberarCodigosPedido(id, connection);
 
       //CREAR MOVIMIENTO EN CAJA Y ACTUALIZAR SALDO
-      const montoACobrar = abonoEntrega ? Number(abonoEntrega) : saldoAnterior;
+      // Permite entregas parciales: si abonoEntrega es 0, no cobra nada en este momento
+      const montoACobrar = abonoEntrega ? Number(abonoEntrega) : 0;
       
       if (montoACobrar > 0) {
         // USAR id_usuario del request
@@ -650,8 +651,9 @@ class PedidoClienteController {
       }
 
       // ACTUALIZAR ABONO Y SALDO CUANDO SE ENTREGA
+      // Permite entregas con saldo pendiente que se puede completar con abonos después
       const nuevoAbono = abonoAnterior + montoACobrar;
-      const nuevoSaldo = totalPedido - nuevoAbono; // Debería ser 0 si se pagó completo
+      const nuevoSaldo = totalPedido - nuevoAbono; // Puede ser > 0 si se entrega con saldo pendiente
 
       await connection.query(
         `UPDATE pedido_cliente SET abono = ?, saldo = ? WHERE id_pedido = ?`,

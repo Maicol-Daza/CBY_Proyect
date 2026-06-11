@@ -67,6 +67,7 @@ export async function obtenerMovimientosPorTipo(tipo: "entrada" | "salida") {
 // ============ FUNCIONES PARA BASE DE CAJA DIARIA ============
 
 const DESCRIPCION_BASE_DIARIA = "BASE_CAJA_DIARIA";
+const DESCRIPCION_CIERRE_CAJA = "CIERRE_CAJA_DIARIA";
 
 // Formatear fecha local a string YYYY-MM-DD
 const formatearFechaLocal = (fecha: Date): string => {
@@ -125,6 +126,84 @@ export async function crearBaseDiaria(monto: number, id_usuario: number) {
     const result = await response.json();
     // Emitir eventos de actualización
     emitDataEvent(DATA_EVENTS.BASE_DIARIA_CREATED, result);
+    emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED);
+    return result;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+}
+
+// Verificar si la caja está cerrada para el día actual
+export async function verificarCajaCerrada(): Promise<{ cerrada: boolean; fecha_cierre: string | null }> {
+  try {
+    const movimientos = await obtenerMovimientos();
+    const hoy = formatearFechaLocal(new Date());
+    
+    const cierreCaja = movimientos.find((mov: Movimiento) => {
+      const fechaMov = new Date(mov.fecha_movimiento);
+      const fechaMovStr = formatearFechaLocal(fechaMov);
+      return fechaMovStr === hoy && 
+             mov.descripcion.includes(DESCRIPCION_CIERRE_CAJA);
+    });
+    
+    return {
+      cerrada: !!cierreCaja,
+      fecha_cierre: cierreCaja ? cierreCaja.fecha_movimiento : null
+    };
+  } catch (error) {
+    console.error("Error al verificar cierre de caja:", error);
+    return { cerrada: false, fecha_cierre: null };
+  }
+}
+
+// Cerrar la caja del día (solo admin)
+export async function cerrarCaja(id_usuario: number) {
+  try {
+    // Verificar si la caja ya está cerrada
+    const { cerrada } = await verificarCajaCerrada();
+    if (cerrada) {
+      throw new Error("La caja ya fue cerrada hoy");
+    }
+    
+    // Obtener total de movimientos del día
+    const movimientos = await obtenerMovimientos();
+    const hoy = formatearFechaLocal(new Date());
+    
+    let totalIngresos = 0;
+    let totalEgresos = 0;
+    
+    movimientos.forEach((mov: Movimiento) => {
+      const fechaMov = new Date(mov.fecha_movimiento);
+      const fechaMovStr = formatearFechaLocal(fechaMov);
+      const monto = Number(mov.monto) || 0;
+      
+      if (fechaMovStr === hoy) {
+        if (mov.tipo === "entrada") {
+          totalIngresos += monto;
+        } else if (mov.tipo === "salida") {
+          totalEgresos += monto;
+        }
+      }
+    });
+    
+    const totalNeto = totalIngresos - totalEgresos;
+    
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: "entrada",
+        descripcion: `${DESCRIPCION_CIERRE_CAJA} - Ingresos: ${totalIngresos}, Egresos: ${totalEgresos}, Neto: ${totalNeto}`,
+        monto: Math.abs(totalNeto),
+        fecha_movimiento: new Date().toISOString(),
+        id_usuario: id_usuario
+      })
+    });
+    
+    if (!response.ok) throw new Error("Error al cerrar caja");
+    const result = await response.json();
+    // Emitir eventos de actualización
     emitDataEvent(DATA_EVENTS.MOVIMIENTOS_UPDATED);
     return result;
   } catch (error) {
