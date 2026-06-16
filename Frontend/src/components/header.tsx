@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "../styles/header.css";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { FaUsers, FaClipboardList, FaHistory, FaCashRegister, FaCog, FaSignOutAlt, FaTshirt, FaBars } from 'react-icons/fa';
+import NotificacionPedidosProximos from "./NotificacionPedidosProximos";
 
 type User = { name: string; role?: string };
 type Props = { user?: User; onLogout?: () => void };
@@ -98,6 +99,7 @@ export default function Header({ user = { name: "", role: "" }, onLogout }: Prop
                         <span className="user-name">{user.name}</span>
                         <span className="user-role">{user.role}</span>
                     </div>
+                    <NotificacionPedidosProximos />
                     <button
                         onClick={() => onLogout?.()}
                         className="logout-button"
