@@ -16,6 +16,7 @@ import ModalFacturasUnificado from './ModalFacturasUnificado';
 import ModalCajonCodigo from './ModalCajonCodigo';
 import { useDataRefresh } from "../hooks/useDataRefresh";
 import { DATA_EVENTS, emitDataEvent } from "../utils/eventEmitter";
+import { obtenerHistorialCodigosPorPedido } from "../services/historialCodigosService";
 
 export const HistorialModule = () => {
     const { success, error: showError, warning, info } = useAlert();
@@ -55,6 +56,10 @@ export const HistorialModule = () => {
     const [cajonSeleccionado, setCajonSeleccionado] = useState<number|null>(null);
     const [codigoSeleccionado, setCodigoSeleccionado] = useState<number|null>(null);
     const [pendienteGuardarDevolucion, setPendienteGuardarDevolucion] = useState(false);
+
+    // Estado para historial de códigos
+    const [historialCodigos, setHistorialCodigos] = useState<any[]>([]);
+    const [cargandoHistorialCodigos, setCargandoHistorialCodigos] = useState(false);
 
     useEffect(() => {
         cargarPedidos();
@@ -208,6 +213,19 @@ export const HistorialModule = () => {
                 setAbonosPedido([]);
             } finally {
                 setLoadingAbonos(false);
+            }
+
+            // Cargar historial de códigos del pedido
+            try {
+                setCargandoHistorialCodigos(true);
+                const historial = await obtenerHistorialCodigosPorPedido(id_pedido);
+                setHistorialCodigos(Array.isArray(historial) ? historial : []);
+                console.log("Historial de códigos cargado:", historial);
+            } catch (e) {
+                console.warn("Error al cargar historial de códigos:", e);
+                setHistorialCodigos([]);
+            } finally {
+                setCargandoHistorialCodigos(false);
             }
         } catch (error) {
             console.error("Error cargando detalles:", error);
@@ -1015,7 +1033,7 @@ export const HistorialModule = () => {
                                             <span className={`estado-badge estado-${pedidoSeleccionado.estado?.toLowerCase()}`}>
                                               {pedidoSeleccionado.estado === "en_proceso" ? "En proceso" :
                                                 pedidoSeleccionado.estado === "listo" ? "Finalizado" :
-                                                  pedidoSeleccionado.estado === "entregado" ? " Entregado (Cajón Liberado)" :
+                                                  pedidoSeleccionado.estado === "entregado" ? "Entregado" :
                                                     pedidoSeleccionado.estado === "devuelto" ? "DEVUELTO" :
                                                     pedidoSeleccionado.estado || "En proceso"}
                                             </span>
@@ -1023,6 +1041,59 @@ export const HistorialModule = () => {
                                         </div>
                                       </div>
                                     </div>
+                                </div>
+
+                                {/* HISTORIAL DE CÓDIGOS ASIGNADOS - ARRIBA */}
+                                <div className="detalle-seccion historial-codigos-section">
+                                    <h3>Historial de Códigos Asignados</h3>
+                                    {cargandoHistorialCodigos ? (
+                                        <p>Cargando historial de códigos...</p>
+                                    ) : historialCodigos.length === 0 ? (
+                                        <p style={{ color: "#999", fontStyle: "italic" }}>
+                                            No hay historial de códigos registrado para este pedido
+                                        </p>
+                                    ) : (
+                                        <div className="table-responsive-container">
+                                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                                                <thead>
+                                                    <tr>
+                                                        <th style={{ textAlign: "left", padding: "6px 10px", borderBottom: "2px solid #e0e0e0" }}>Fecha</th>
+                                                        <th style={{ textAlign: "left", padding: "6px 10px", borderBottom: "2px solid #e0e0e0" }}>Acción</th>
+                                                        <th style={{ textAlign: "left", padding: "6px 10px", borderBottom: "2px solid #e0e0e0" }}>Código</th>
+                                                        <th style={{ textAlign: "left", padding: "6px 10px", borderBottom: "2px solid #e0e0e0" }}>Cajón</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {historialCodigos.map((h: any, idx: number) => (
+                                                        <tr key={h.id_historial_codigo || idx} style={{ backgroundColor: idx % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                                                            <td style={{ padding: "6px 10px", borderBottom: "1px solid #ececec" }}>
+                                                                {h.fecha_registro ? new Date(h.fecha_registro).toLocaleString('es-CO') : "-"}
+                                                            </td>
+                                                            <td style={{ padding: "6px 10px", borderBottom: "1px solid #ececec" }}>
+                                                                <span style={{
+                                                                    display: "inline-block",
+                                                                    padding: "2px 8px",
+                                                                    borderRadius: "4px",
+                                                                    fontSize: "0.8rem",
+                                                                    fontWeight: 600,
+                                                                    backgroundColor: h.accion === 'asignado' ? '#dbeafe' : h.accion === 'liberado' ? '#fef3c7' : '#e0e7ff',
+                                                                    color: h.accion === 'asignado' ? '#1e40af' : h.accion === 'liberado' ? '#92400e' : '#3730a3'
+                                                                }}>
+                                                                    {h.accion === 'asignado' ? 'Asignado' : h.accion === 'liberado' ? 'Liberado' : 'Reasignado'}
+                                                                </span>
+                                                            </td>
+                                                            <td style={{ padding: "6px 10px", borderBottom: "1px solid #ececec", fontWeight: 600 }}>
+                                                                {h.codigo_numero || "-"}
+                                                            </td>
+                                                            <td style={{ padding: "6px 10px", borderBottom: "1px solid #ececec" }}>
+                                                                {h.nombre_cajon || (h.id_cajon ? `Cajón ${h.id_cajon}` : "-")}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* PRENDAS Y ARREGLOS */}
@@ -1533,9 +1604,10 @@ export const HistorialModule = () => {
                                     setModalCajonCodigoOpen(false);
                                     setPendienteGuardarDevolucion(false);
                                 }}
-                                onGuardar={(cajonId, codigoId) => {
+                                onGuardar={(cajonId, codigosIds) => {
+                                    const codigoId = Array.isArray(codigosIds) ? codigosIds[0] : codigosIds;
                                     setCajonSeleccionado(cajonId);
-                                    setCodigoSeleccionado(codigoId);
+                                    setCodigoSeleccionado(codigoId || null);
                                     setModalCajonCodigoOpen(false);
                                     // Guardar devolución con cajón/código
                                     guardarDevolucionBackend(cajonId, codigoId);

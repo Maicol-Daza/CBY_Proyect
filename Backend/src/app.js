@@ -34,5 +34,6 @@ app.use('/api/movimientos_caja', require('./routes/movimientos_caja.routes'));
 app.use('/api/email', require('./routes/email.route'));
 
 app.use('/api/historial_abonos', require('./routes/historial_abonos.routes'));
+app.use('/api/historial_codigos', require('./routes/historial_codigos.routes'));
 
 module.exports = app;

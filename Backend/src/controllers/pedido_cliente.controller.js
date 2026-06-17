@@ -193,6 +193,16 @@ class PedidoClienteController {
             `UPDATE codigos SET id_pedido = ?, estado = 'ocupado' WHERE id_codigo = ?`,
             [id_pedido, id_codigo]
           );
+          
+          // Registrar en historial de códigos (asignado)
+          await connection.query(
+            `INSERT INTO historial_codigo_pedido (id_pedido, id_codigo, id_cajon, codigo_numero, nombre_cajon, accion)
+             SELECT ?, c.id_codigo, c.id_cajon, c.codigo_numero, cj.nombre_cajon, 'asignado'
+             FROM codigos c
+             LEFT JOIN cajones cj ON c.id_cajon = cj.id_cajon
+             WHERE c.id_codigo = ?`,
+            [id_pedido, id_codigo]
+          );
         }
 
         // 5 Verificar si todos los códigos del cajón están ocupados para marcar cajón como ocupado
@@ -257,6 +267,18 @@ class PedidoClienteController {
           `UPDATE codigos SET id_pedido = NULL, estado = 'disponible' WHERE id_pedido = ?`,
           [id_pedido]
         );
+
+        // Registrar liberación en historial de códigos
+        for (const codigo of codigosAsociados) {
+          await connection.query(
+            `INSERT INTO historial_codigo_pedido (id_pedido, id_codigo, id_cajon, codigo_numero, nombre_cajon, accion)
+             SELECT ?, c.id_codigo, c.id_cajon, c.codigo_numero, cj.nombre_cajon, 'liberado'
+             FROM codigos c
+             LEFT JOIN cajones cj ON c.id_cajon = cj.id_cajon
+             WHERE c.id_codigo = ?`,
+            [id_pedido, codigo.id_codigo]
+          );
+        }
 
         // Verificar cada cajón para ver si se puede marcar como disponible
         const cajonesIds = [...new Set(codigosAsociados.map(codigo => codigo.id_cajon))];

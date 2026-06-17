@@ -146,4 +146,16 @@ CREATE TABLE IF NOT EXISTS historial_abonos (
 );
 
 
-
+CREATE TABLE IF NOT EXISTS historial_codigo_pedido (
+    id_historial_codigo INT AUTO_INCREMENT PRIMARY KEY,
+    id_pedido INT NOT NULL,
+    id_codigo INT,
+    id_cajon INT,
+    codigo_numero VARCHAR(50),
+    nombre_cajon VARCHAR(30),
+    accion ENUM('asignado', 'liberado', 'reasignado') NOT NULL DEFAULT 'asignado',
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_pedido) REFERENCES pedido_cliente(id_pedido) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_codigo) REFERENCES codigos(id_codigo) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (id_cajon) REFERENCES cajones(id_cajon) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
