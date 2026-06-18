@@ -2227,6 +2227,14 @@
   color: #f59e0b;
 }
 
+.confirmacion-item-icon.pagando {
+  color: #10b981;
+}
+
+.confirmacion-item-icon.nuevo-saldo {
+  color: #ef4444;
+}
+
 .confirmacion-item div {
   display: flex;
   flex-direction: column;
@@ -2246,6 +2254,16 @@
 
 .confirmacion-valor.saldo {
   color: #f59e0b;
+}
+
+.confirmacion-valor.pagando {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.confirmacion-valor.nuevo-saldo {
+  color: #ef4444;
+  font-weight: 700;
 }
 
 .confirmacion-aviso {

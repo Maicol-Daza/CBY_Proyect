@@ -582,7 +582,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
-  width: 100%;
+  max-width: 250px;
 }
 
 .btn-cerrar-caja:hover:not(:disabled) {

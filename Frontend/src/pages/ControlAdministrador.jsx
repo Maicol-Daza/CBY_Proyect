@@ -878,7 +878,7 @@ export const ControlAdministrador = () => {
                         onClick={handleCerrarCaja}
                         className="btn-cerrar-caja"
                         disabled={cargandoCierre}
-                        style={{ marginTop: '15px', width: '100%' }}
+                        style={{ marginTop: '15px', width: 'auto', padding: '10px 24px' }}
                       >
                         {cargandoCierre ? "Cerrando..." : "Cerrar Caja del Día"}
                       </button>

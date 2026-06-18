@@ -843,7 +843,6 @@ export const HistorialModule = () => {
                             <table className="tabla-pedidos">
                                 <thead>
                                     <tr>
-                                        <th>Código</th>
                                         <th>Cliente</th>
                                         <th>Fecha Pedido</th>
                                         <th>Fecha Entrega</th>
@@ -857,7 +856,6 @@ export const HistorialModule = () => {
                                 <tbody>
                                     {pedidosFiltrados.map((pedido) => (
                                         <tr key={pedido.id_pedido}>
-                                            <td>{pedido.id_pedido || "-"}</td>
                                             <td>{pedido.cliente_nombre || "-"}</td>
                                             <td>{formatearFecha(pedido.fecha_pedido)}</td>
                                             <td>{formatearFecha(pedido.fecha_entrega)}</td>
@@ -900,7 +898,7 @@ export const HistorialModule = () => {
                                                 type="button"
                                                 onClick={() => handleVerDetalles(pedido.id_pedido)}
                                             >
-                                                <FaEye /> Info
+                                                <FaEye /> Informacion
                                             </button>
                                             <button
                                                 className="btn-accion-facturas"
@@ -945,7 +943,7 @@ export const HistorialModule = () => {
                 <div className="modal-overlay" onClick={handleCerrarDetalles}>
                     <div className="modal-content-detalle" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Detalle del Pedido - {pedidoSeleccionado.id_pedido}</h2>
+                            <h2>Detalle del Pedido</h2>
                             <button className="btn-cerrar" onClick={handleCerrarDetalles} type="button">
                                 <FaTimes />
                             </button>
