@@ -712,7 +712,7 @@ export const HistorialModule = () => {
         };
 
         // Lógica para guardar devolución en backend (reutilizable)
-        const guardarDevolucionBackend = async (cajonId?: number, codigoId?: number) => {
+        const guardarDevolucionBackend = async (cajonId?: number, codigoId?: number, nuevaFecha?: string) => {
             setCargandoDevolucion(true);
             try {
                 const body: any = {
@@ -725,6 +725,9 @@ export const HistorialModule = () => {
                 if (devolucionData.solucion === "nuevo_procedimiento" && cajonId && codigoId) {
                     body.cajon_id = cajonId;
                     body.codigo_id = codigoId;
+                    if (nuevaFecha) {
+                        body.nueva_fecha_entrega = nuevaFecha;
+                    }
                 }
                 const response = await fetch(
                     `http://localhost:3000/api/pedidos/${pedidoDevolucion.id_pedido}/devolucion`,
@@ -981,19 +984,7 @@ export const HistorialModule = () => {
                                     <div className="detalle-seccion pedido-info">
                                       <h3>Información del Pedido</h3>
                                       <div className="info-items">
-                                        <div className="info-item">
-                                          <label>Código:</label>
-                                          <p>{pedidoSeleccionado.id_pedido}</p>
-                                        </div>
-                                        
-                                        {/*  OCULTAR CAJÓN SI EL PEDIDO YA ESTÁ ENTREGADO */}
-                                        {pedidoSeleccionado.estado !== "entregado" && (
-                                          <div className="info-item">
-                                            <label>Cajón:</label>
-                                            <p>{pedidoSeleccionado.nombre_cajon ?? pedidoSeleccionado.id_cajon ?? "-"}</p>
-                                          </div>
-                                        )}
-                                        
+                                 
                                         <div className="info-item">
                                           <label>Fecha Inicio:</label>
                                           <p>{formatearFecha(pedidoSeleccionado.fecha_pedido)}</p>
@@ -1043,14 +1034,14 @@ export const HistorialModule = () => {
                                     </div>
                                 </div>
 
-                                {/* HISTORIAL DE CÓDIGOS ASIGNADOS - ARRIBA */}
+                                {/* Historial de Códigos Asignados y Fechas del pedido - ARRIBA */}
                                 <div className="detalle-seccion historial-codigos-section">
-                                    <h3>Historial de Códigos Asignados</h3>
+                                    <h3>Historial de Códigos Asignados y Fechas del pedido</h3>
                                     {cargandoHistorialCodigos ? (
-                                        <p>Cargando historial de códigos...</p>
+                                        <p>Cargando historial de códigos y fechas...</p>
                                     ) : historialCodigos.length === 0 ? (
                                         <p style={{ color: "#999", fontStyle: "italic" }}>
-                                            No hay historial de códigos registrado para este pedido
+                                            No hay historial de códigos y fechas registrados para este pedido
                                         </p>
                                     ) : (
                                         <div className="table-responsive-container">
@@ -1604,13 +1595,13 @@ export const HistorialModule = () => {
                                     setModalCajonCodigoOpen(false);
                                     setPendienteGuardarDevolucion(false);
                                 }}
-                                onGuardar={(cajonId, codigosIds) => {
+                          onGuardar={(cajonId, codigosIds, nuevaFecha) => {
                                     const codigoId = Array.isArray(codigosIds) ? codigosIds[0] : codigosIds;
                                     setCajonSeleccionado(cajonId);
                                     setCodigoSeleccionado(codigoId || null);
                                     setModalCajonCodigoOpen(false);
-                                    // Guardar devolución con cajón/código
-                                    guardarDevolucionBackend(cajonId, codigoId);
+                                    // Guardar devolución con cajón/código y nueva fecha de entrega
+                                    guardarDevolucionBackend(cajonId, codigoId, nuevaFecha);
                                 }}
                             />
                         )}

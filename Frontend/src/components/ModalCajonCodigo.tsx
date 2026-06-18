@@ -7,7 +7,7 @@ import "../styles/modalCajonCodigo.css";
 interface ModalCajonCodigoProps {
   isOpen: boolean;
   onClose: () => void;
-  onGuardar: (cajonId: number, codigosIds: number[]) => void;
+  onGuardar: (cajonId: number, codigosIds: number[], nuevaFechaEntrega?: string) => void;
   cajonInicial?: number | null;
   codigosIniciales?: number[] | null;
 }
@@ -25,6 +25,7 @@ export const ModalCajonCodigo: React.FC<ModalCajonCodigoProps> = ({
   const [codigosSeleccionados, setCodigosSeleccionados] = useState<number[]>(codigosIniciales || []);
   const [cargandoCajones, setCargandoCajones] = useState(false);
   const [cargandoCodigos, setCargandoCodigos] = useState(false);
+  const [nuevaFechaEntrega, setNuevaFechaEntrega] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -69,7 +70,7 @@ export const ModalCajonCodigo: React.FC<ModalCajonCodigoProps> = ({
 
   const handleGuardar = () => {
     if (cajonSeleccionado && codigosSeleccionados.length > 0) {
-      onGuardar(cajonSeleccionado, codigosSeleccionados);
+      onGuardar(cajonSeleccionado, codigosSeleccionados, nuevaFechaEntrega || undefined);
     }
   };
 
@@ -126,8 +127,24 @@ export const ModalCajonCodigo: React.FC<ModalCajonCodigoProps> = ({
             </div>
           </div>
         )}
+        {/* Campo de fecha de entrega - obligatorio para nuevo procedimiento gratuito */}
+        <div className="card" style={{ marginTop: 16, padding: 12 }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#dc2626' }}>
+            <FaBox style={{ marginRight: 6 }} /> Nueva Fecha de Entrega *
+          </h4>
+          <input
+            type="date"
+            value={nuevaFechaEntrega}
+            onChange={(e) => setNuevaFechaEntrega(e.target.value)}
+            style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.95rem' }}
+            min={new Date().toISOString().slice(0, 10)}
+          />
+          <small style={{ color: '#dc2626', marginTop: 4, display: 'block', fontWeight: 600 }}>
+            * Campo obligatorio - Debes seleccionar una fecha para continuar
+          </small>
+        </div>
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
-          <button className="pedidos-btn-primary" onClick={handleGuardar} disabled={!cajonSeleccionado || codigosSeleccionados.length === 0}>
+          <button className="pedidos-btn-primary" onClick={handleGuardar} disabled={!cajonSeleccionado || codigosSeleccionados.length === 0 || !nuevaFechaEntrega}>
             Guardar Selección
           </button>
         </div>

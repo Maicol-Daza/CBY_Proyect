@@ -760,7 +760,8 @@ class PedidoClienteController {
       solucion_devolucion,
       monto_devolucion,
       cajon_id,
-      codigo_id
+      codigo_id,
+      nueva_fecha_entrega
     } = req.body;
 
     if (!id || !motivo_devolucion) {
@@ -864,13 +865,32 @@ class PedidoClienteController {
         );
       }
 
-      // Si es nuevo procedimiento gratuito, marcar código/cajón como ocupado
+      // Si es nuevo procedimiento gratuito, marcar código/cajón como ocupado y registrar historial
       if (solucion_devolucion === "nuevo_procedimiento" && cajon_id && codigo_id) {
         // Marcar el código como ocupado y asociarlo al pedido
         await connection.query(
           `UPDATE codigos SET id_pedido = ?, estado = 'ocupado' WHERE id_codigo = ?`,
           [id, codigo_id]
         );
+        
+        // REGISTRAR EN HISTORIAL DE CÓDIGOS (asignado)
+        await connection.query(
+          `INSERT INTO historial_codigo_pedido (id_pedido, id_codigo, id_cajon, codigo_numero, nombre_cajon, accion)
+           SELECT ?, c.id_codigo, c.id_cajon, c.codigo_numero, cj.nombre_cajon, 'asignado'
+           FROM codigos c
+           LEFT JOIN cajones cj ON c.id_cajon = cj.id_cajon
+           WHERE c.id_codigo = ?`,
+          [id, codigo_id]
+        );
+        
+        // ACTUALIZAR FECHA DE ENTREGA si se proporciona una nueva
+        if (nueva_fecha_entrega) {
+          await connection.query(
+            `UPDATE pedido_cliente SET fecha_entrega = ? WHERE id_pedido = ?`,
+            [nueva_fecha_entrega, id]
+          );
+        }
+        
         // Verificar si todos los códigos del cajón están ocupados para marcar cajón como ocupado
         const [codigosDelCajon] = await connection.query(
           `SELECT COUNT(*) as total_codigos FROM codigos WHERE id_cajon = ?`,
@@ -888,7 +908,7 @@ class PedidoClienteController {
         }
       }
 
-      // Si la devolución es un reembolso, liberar códigos asociados al pedido y actualizar estado del cajón si aplica
+      // Si la devolución es un reembolso, liberar códigos asociados al pedido, registrar historial y actualizar estado del cajón si aplica
       if (solucion_devolucion === "reembolso") {
         try {
           const [codigosAsignados] = await connection.query(
@@ -902,6 +922,18 @@ class PedidoClienteController {
               `UPDATE codigos SET id_pedido = NULL, estado = 'disponible' WHERE id_pedido = ?`,
               [id]
             );
+
+            // REGISTRAR LIBERACIÓN EN HISTORIAL DE CÓDIGOS - ESTO FALTABA PARA REEMBOLSO
+            for (const codigo of codigosAsignados) {
+              await connection.query(
+                `INSERT INTO historial_codigo_pedido (id_pedido, id_codigo, id_cajon, codigo_numero, nombre_cajon, accion)
+                 SELECT ?, c.id_codigo, c.id_cajon, c.codigo_numero, cj.nombre_cajon, 'liberado'
+                 FROM codigos c
+                 LEFT JOIN cajones cj ON c.id_cajon = cj.id_cajon
+                 WHERE c.id_codigo = ?`,
+                [id, codigo.id_codigo]
+              );
+            }
 
             // Verificar cajones afectados y marcar como disponible si no tienen códigos ocupados
             const cajonesAfectados = [...new Set(codigosAsignados.map(c => c.id_cajon))];
